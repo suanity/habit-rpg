@@ -253,23 +253,17 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 function supaHeaders(){return{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};}
 
-async function supaLoad(code){
-  try{
-    const r=await fetch(`${SUPA_URL}/rest/v1/user_data?code=eq.${encodeURIComponent(code)}&select=data`,{headers:supaHeaders()});
-    if(!r.ok)return null;
-    const rows=await r.json();
-    return rows.length>0?rows[0].data:null;
-  }catch{return null;}
+// все обращения к базе идут через серверные функции: таблицы напрямую недоступны
+async function rpc(fn,args){
+  const r=await fetch(`${SUPA_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:supaHeaders(),body:JSON.stringify(args)});
+  if(!r.ok)throw new Error('http '+r.status);
+  return r.json();
 }
 
 async function supaUpsert(code,data){
   try{
-    const r=await fetch(`${SUPA_URL}/rest/v1/user_data`,{
-      method:'POST',
-      headers:{...supaHeaders(),'Prefer':'resolution=merge-duplicates'},
-      body:JSON.stringify({code,data,updated_at:new Date().toISOString()})
-    });
-    return r.ok;
+    const res=await rpc('save_data',{p_code:code,p_data:data});
+    return !!(res&&res.ok);
   }catch{return false;}
 }
 
@@ -289,7 +283,6 @@ function setSyncDot(state){
 }
 
 // ── ACTIVATION ─────────────────────────────────────────────────────────────
-const VALID_CODES=['HRPG-0V48-2A2C-AR1I','HRPG-6DPQ-92WR-LVV4','HRPG-WUD4-C6V0-QJBO','HRPG-EU9N-JSPJ-PKJJ','HRPG-R21N-YGGK-1BJC','HRPG-TE8T-JF21-V1H3','HRPG-UG3Q-Z4LF-0SLD','HRPG-4AEM-O8WE-HNJ1','HRPG-XY5Q-989Z-NCZF','HRPG-C1P3-SQ2W-N1D2','HRPG-CK52-B75M-CELH','HRPG-TQA2-62PK-QMZR','HRPG-7RIA-EEWH-DH3V','HRPG-FB3C-T9V9-PHY9','HRPG-YW0I-T5CA-HSFF','HRPG-ARUU-11ZB-QWN7','HRPG-XBOA-FCHF-SXXI','HRPG-54UQ-W8YE-STFM','HRPG-I5CF-GLMN-GVH1','HRPG-JI5K-KURQ-DM3K','HRPG-09XU-EYV7-LAO4','HRPG-4WO5-U2GK-DY0P','HRPG-EJSU-PIT1-N1CG','HRPG-D8NE-2N0A-92I2','HRPG-UYQ7-M5LP-JXPW','HRPG-BQ8G-6V71-YB85','HRPG-11W0-DIOG-56AK','HRPG-R1TZ-CDD7-XZQ5','HRPG-SFNF-H80D-1COU','HRPG-8W0H-1WNA-X9BB','HRPG-P8SG-AI8M-797F','HRPG-ORMR-HWL7-Z41N','HRPG-G7GV-DHCG-FL8L','HRPG-YWF0-008A-FKKI','HRPG-MTMJ-F017-8ZTA','HRPG-NWGK-HFTG-OHCK','HRPG-06KQ-WGRE-CBNJ','HRPG-V8SW-N46Q-IIBB','HRPG-5710-AVEL-S6ET','HRPG-UKB7-I48T-LLNL','HRPG-0GU8-2XSY-VNSF','HRPG-PVLM-49YV-CCKG','HRPG-PL29-MHGM-GF3Y','HRPG-U9ME-ERWO-D2N4','HRPG-829E-LJVH-VNSL','HRPG-TK3O-X96V-3HS7','HRPG-9URU-5WEW-CLB3','HRPG-MELO-L8SY-PW4C','HRPG-RE3U-MR8S-827U','HRPG-9Y0L-3TSM-WWZO'];
 const ACT_KEY='habit-rpg-code';
 let userCode=null;
 try{userCode=localStorage.getItem(ACT_KEY);}catch{}
@@ -317,12 +310,20 @@ function showActivation(){
   inp.onkeydown=e=>{if(e.key==='Enter')btn.click();};
   btn.onclick=async()=>{
     const code=inp.value.trim().toUpperCase();
-    if(!VALID_CODES.includes(code)){err.textContent='Неверный код. Проверь и попробуй снова.';inp.classList.add('error');setTimeout(()=>inp.classList.remove('error'),400);return;}
-    btn.disabled=true;loading.textContent='Загружаю данные...';
+    btn.disabled=true;loading.textContent='Проверяю код...';
+    let res=null;
+    try{res=await rpc('activate_code',{p_code:code});}
+    catch{loading.textContent='';btn.disabled=false;err.textContent='Нет связи с сервером. Попробуй ещё раз.';return;}
+    if(!res||!res.ok){
+      loading.textContent='';btn.disabled=false;
+      err.textContent='Неверный код. Проверь и попробуй снова.';
+      inp.classList.add('error');setTimeout(()=>inp.classList.remove('error'),400);
+      return;
+    }
     try{localStorage.setItem(ACT_KEY,code);}catch{}
     userCode=code;
-    // пробуем загрузить облачные данные
-    const cloud=await supaLoad(code);
+    // облачные данные приходят вместе с подтверждением кода
+    const cloud=res.data;
     if(cloud){
       S={...DEFAULTS(),...cloud};
       S.tasks=S.tasks.map(t=>({streak:true,...t}));
