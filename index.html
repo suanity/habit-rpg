@@ -2,6 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob:; connect-src https://ivmdbkukjvxzoazcicet.supabase.co https://habit-bot-nu.vercel.app https://telegram.org; manifest-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'"/>
+<meta name="referrer" content="no-referrer"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <title>NO NPC</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -97,6 +99,18 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 .cr-tab{padding:10px 2px;border-radius:5px;background:var(--s2);border:2px solid #000;outline:1px solid var(--line);outline-offset:-3px;font-family:var(--px);font-size:7px;color:var(--muted)}
 .cr-tab.on{color:var(--gold);outline:2px solid var(--gold);background:#1c1a14}
 .cr-pane[hidden]{display:none}
+.cr-gender{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 auto 8px;max-width:300px}
+.cr-g{padding:11px 4px;border-radius:5px;background:var(--s2);border:2px solid #000;outline:1px solid var(--line);outline-offset:-3px;font-family:var(--px);font-size:8px;color:var(--muted)}
+.cr-g.on{color:var(--gold);outline:2px solid var(--gold);background:#1c1a14}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--s3);border:2px solid #000;justify-self:center}
+.dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+.rl{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:14px 0 10px}
+.rl-i{display:flex;flex-direction:column;gap:3px;padding:8px 9px;border-radius:4px;background:var(--s3);border:2px solid #000;color:var(--faint)}
+.rl-i b{font-family:var(--px);font-size:8px;font-weight:400;letter-spacing:.5px}
+.rl-i span{font-size:10px}
+.rl-i.on{border-left:4px solid var(--rc);color:var(--text)}
+.rl-i.on b{color:var(--rc)}
+.rl-i.cur{outline:2px solid var(--gold);outline-offset:-3px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .dice{width:100%}
 
@@ -228,18 +242,18 @@ const PANTC=['#3b5b92','#262a38','#5b6275','#a58d62','#5b6b3f','#222f55','#6a4a3
 const EYEC=['#6b3f1d','#2a2230','#3f8fe0','#3fa86a','#8a97a8','#d49a2a'];
 const BODY_NAMES=['Худой','Обычный','Атлет','Крупный'];
 const GENDER_NAMES=['Парень','Девушка'];
-const HAIR_NAMES=['Короткая','Шипы','Ирокез','Длинные','Каре','Хвост','Пучок','Афро','Ёжик','Назад','Кудри','Косы','Андеркат','Пробор','Хвостики','Лысый'];
+const HAIR_NAMES=['Короткая','Шипы','Ирокез','Длинные','Каре','Хвост','Пучок','Афро','Ёжик','Назад','Кудри','Косы','Андеркат','Пробор','Хвостики','Лысый','Кудрявый фейд','Длинные кудри','Шторки','Маллет'];
 const EYE_NAMES=['Обычные','Острые','Большие','Сонные','Точки'];
 const BROW_NAMES=['Обычные','Густые','Тонкие','Хмурые'];
 const MOUTH_NAMES=['Ровный','Улыбка','Ухмылка','Оскал'];
 const BEARD_NAMES=['Нет','Щетина','Усы','Эспаньолка','Борода','Густая'];
-const OUTFIT_NAMES=['Худи','Футболка','Бомбер','Броня','Майка','Костюм','Кожанка','Мантия','Спортивка','Разгрузка'];
-const PANT_NAMES=['Джинсы','Карго','Шорты','Джоггеры','Юбка','Брюки'];
-const SHOE_NAMES=['Белые','Чёрные','Ботинки','Хай-топы'];
-const ACC_NAMES=['Нет','Очки','Тёмные','Кепка','Повязка','Наушники','Шапка','Серьга','Шрам'];
+const OUTFIT_NAMES=['Худи','Футболка','Бомбер','Броня','Майка','Костюм','Кожанка','Мантия','Спортивка','Разгрузка','Оверсайз-футболка','Рашгард','Оверсайз-худи','Рубашка в клетку','Джерси'];
+const PANT_NAMES=['Джинсы','Карго','Шорты','Джоггеры','Юбка','Брюки','Широкие джинсы','Широкие спортивные'];
+const SHOE_NAMES=['Белые','Чёрные','Ботинки','Хай-топы','Массивные ботинки','Массивные кроссовки'];
+const ACC_NAMES=['Нет','Очки','Тёмные','Кепка','Повязка','Наушники','Шапка','Серьга','Шрам','Круглые очки','Большие очки','Цепочка'];
 const ITEM_NAMES=['Нет','Камера','Кофе','Книга','Меч','Гантель'];
 const CAPE_NAMES=['Нет','Красный','Чёрный','Синий'];
-const AV_RANGE={g:2,b:4,sk:8,h:16,hc:12,e:5,ec:6,br:4,m:4,fh:6,o:10,oc:12,p:6,pc:8,s:4,a:9,it:6,cp:4};
+const AV_RANGE={g:2,b:4,sk:8,h:20,hc:12,e:5,ec:6,br:4,m:4,fh:6,o:15,oc:12,p:8,pc:8,s:6,a:12,it:6,cp:4};
 const AV_KEYS=Object.keys(AV_RANGE);
 const AV_CORE=['g','sk','h','hc','o','oc','a'];
 const OUTLINE_RGB=[20,10,30];
@@ -339,15 +353,18 @@ function validAvatar(a){
   if(!AV_CORE.every(k=>Number.isInteger(a[k])))return false;
   return AV_KEYS.every(k=>a[k]===undefined||(Number.isInteger(a[k])&&a[k]>=0&&a[k]<AV_RANGE[k]));
 }
-function randomAvatar(){
+function randomAvatar(g){
   const r=n=>Math.floor(Math.random()*n),o={};
   for(const k of AV_KEYS)o[k]=r(AV_RANGE[k]);
-  // чтобы случайный герой выглядел цельно
-  o.fh=o.g===1?0:(Math.random()<.65?0:o.fh);
-  o.cp=Math.random()<.7?0:o.cp;
-  o.it=Math.random()<.5?0:o.it;
-  o.a=Math.random()<.45?0:o.a;
-  o.h=o.h===15&&Math.random()<.8?r(15):o.h;
+  if(g===0||g===1)o.g=g;
+  const pick=a=>a[r(a.length)];
+  if(o.g===0){o.h=pick([0,1,2,5,6,7,8,9,10,12,13,15,16,18,19]);o.p=pick([0,1,2,3,5,6,7]);}
+  else{o.h=pick([0,3,4,5,6,7,10,11,13,14,17,18,19,12]);}
+  o.fh=o.g===1?0:(Math.random()<.7?0:o.fh);
+  o.cp=Math.random()<.8?0:o.cp;
+  o.it=Math.random()<.6?0:o.it;
+  o.a=Math.random()<.35?0:o.a;
+  if(Math.random()<.6){o.o=10+r(5);o.p=o.g===1&&Math.random()<.3?4:6+r(2);o.s=4+r(2);}
   return o;
 }
 
@@ -435,6 +452,30 @@ function drawLegs(c){
     P.vl(24,50,Math.min(len,59),PR[3]);P.vl(25,50,Math.min(len,59),PR[3]);
   };
   const beltC=0x2a2230;
+  const wideP=(kind)=>{
+    drawShoes(c);
+    for(const sx of[-1,1]){
+      const hx=25+sx*4.2,kx=25+sx*4.6,ax=25+sx*4.8;
+      const clip=rect(0,0,PW,60.3);
+      P.fill(inter(cap(hx,46,kx,54,4.5,4.9),clip),PR,{edge:true});
+      P.fill(inter(cap(kx,53.5,ax,58.6,4.9,5.5),clip),PR,{edge:true});
+      P.hl(Math.round(ax-5.3),Math.round(ax+4.8),60,PR[3]);
+      // складки у колена и «гармошка» у кроссовок
+      const xo=Math.round(25+sx*4.6);
+      P.hl(xo-3,xo+2,54,PR[3]);P.hl(xo-3,xo+2,55,PR[0]);
+      P.hl(xo-4,xo+3,58,PR[3]);P.hl(xo-4,xo+3,59,PR[2]);P.hl(xo-5,xo+4,60,PR[3]);
+      P.vl(Math.round(25+sx*9.2)-(sx<0?0:1),48,52,PR[2]);
+      if(kind===6){ // потёртости и карман
+        P.hl(xo-1,xo+1,50,PR[0]);P.hl(xo-2,xo+1,51,PR[0]);P.px(xo+sx,56,PR[0]);P.px(xo-sx,57,PR[0]);
+        P.line(25+sx*8,46,25+sx*7,48,PR[3]);
+      }else{ // спортивные: лампас
+        const lx=Math.round(25+sx*7.9)-(sx<0?0:1);P.vl(lx,48,59,0xf1f3f9);
+      }
+    }
+    P.vl(24,50,56,PR[3]);P.vl(25,50,56,PR[3]);
+    P.hl(25-d.hp,25+d.hp,46,kind===6?beltC:PR[3]);if(kind===6)P.hl(25-1,25,46,0xe3b64a);
+  };
+  if(pt>=6){wideP(pt);return;}
   if(robe){
     // мантия покрывает ноги — рисуется в drawTop; тут только стопы
   }else if(pt===0){pants(61.5,0);P.hl(25-d.hp,25+d.hp,46,beltC);P.hl(25-1,25,46,0xe3b64a);
@@ -465,8 +506,22 @@ function drawShoes(c){
     {col:'#2a2d3a',sole:'#e0e3ec',acc:'#5a6070',h:0},
     {col:'#6a4426',sole:'#2a1a10',acc:'#a8743f',h:1},
     {col:'#d63b3b',sole:'#e9ecf3',acc:'#ffffff',h:1},
+    {col:'#3a2f2a',sole:'#c8a46a',acc:'#e0b060',h:1},
+    {col:'#eceff6',sole:'#cfd5e4',acc:'#ff7a2f',h:0},
   ][av.s];
   const R=ramp(sets.col),SO=pk(hex2(sets.sole)),AC=pk(hex2(sets.acc));
+  if(av.s>=4){
+    for(const sx of[-1,1]){
+      const fx=25+sx*5.3,x0=Math.round(fx-5.4),x1=Math.round(fx+5.4);
+      if(av.s===4)P.fill(cap(fx-sx*.4,57,fx-sx*.3,61.5,3.7,3.9),R,{edge:true});
+      P.fill(ell(fx,61.9,5.6,3.1),R,{edge:true});
+      // толстая подошва
+      P.hl(x0,x1,63,SO);P.hl(x0,x1,64,mixp(SO,0x000000,.35));
+      if(av.s===4){for(let x=x0;x<=x1;x+=2)P.px(x,64,mixp(SO,0x000000,.6));P.hl(Math.round(fx-3),Math.round(fx+2),60,AC);P.hl(Math.round(fx-3),Math.round(fx+2),58,R[3]);P.px(Math.round(fx-1),59,AC);P.px(Math.round(fx+1),59,AC);}
+      else{P.hl(x0+1,x1-1,62,R[2]);P.px(Math.round(fx+sx*1.2),61,AC);P.px(Math.round(fx+sx*2.2),61,AC);P.hl(Math.round(fx-2),Math.round(fx+2),60,AC);P.px(Math.round(fx-1),59,R[0]);P.px(Math.round(fx+1),59,R[0]);}
+    }
+    return;
+  }
   for(const sx of[-1,1]){
     const fx=25+sx*4.7;
     if(sets.h){ // голенище
@@ -484,11 +539,11 @@ function drawShoes(c){
 }
 
 // ── ВЕРХ: торс, рукава ────────────────────────────────────────────────────
-function armCaps(d,sx){
-  const jx=25+sx*(d.sh-1.1),ex=jx+sx*.9,wx=ex+sx*.6;
+function armCaps(d,sx,fat=0){
+  const jx=25+sx*(d.sh-1.1+fat*.45),ex=jx+sx*(.9+fat*.25),wx=ex+sx*.6;
   return{
-    upper:cap(jx,32.4,ex,40.4,d.ar+.35,d.ar),
-    fore:cap(ex,40,wx,47.6,d.ar,d.ar-.55),
+    upper:cap(jx,32.4,ex,40.4,d.ar+.35+fat,d.ar+fat),
+    fore:cap(ex,40,wx,47.6,d.ar+fat*.9,d.ar-.55+fat*.35),
     hand:ell(wx+sx*.1,49.3,2.35,2.6),
     jx,ex,wx,
   };
@@ -497,11 +552,11 @@ function drawArms(c,sleeve,SR,o={}){
   // sleeve: 'long'|'short'|'none'
   const{P,d,S}=c;
   for(const sx of[-1,1]){
-    const a=armCaps(d,sx);
+    const a=armCaps(d,sx,o.fat||0);
     if(sleeve==='long'){
       P.fill(a.upper,SR,{edge:true});P.fill(a.fore,SR,{edge:true});
     }else if(sleeve==='short'){
-      P.fill(a.fore,S,{edge:true});P.fill(a.upper,SR,{edge:true});
+      P.fill(o.fat?cap(a.ex,40,a.wx,47.6,d.ar,d.ar-.55):a.fore,S,{edge:true});P.fill(a.upper,SR,{edge:true});
     }else{
       P.fill(a.fore,S,{edge:true});P.fill(a.upper,S,{edge:true});
     }
@@ -538,6 +593,7 @@ function drawTop(c){
     neckShadow(c);
     return;
   }
+  if(o>=10){drawCasual(c);return;}
   // базовый торс
   let top=OR,base=OR;
   if(o===3)top=ramp('#aab4c6');
@@ -683,6 +739,102 @@ function drawTop(c){
     P.fill(ell(25,30.3,d.nk+1.2,1.4),S,{flat:true});P.hl(25-d.nk-1,25+d.nk,31,OR[3]);
   }
   neckShadow(c);
+}
+
+// ── СТРИТВИР ──────────────────────────────────────────────────────────────
+const DG={'0':['111','101','101','101','111'],'1':['010','110','010','010','111'],'2':['111','001','111','100','111'],'3':['111','001','111','001','111'],'4':['101','101','111','001','001'],'5':['111','100','111','001','111'],'6':['111','100','111','101','111'],'7':['111','001','010','010','010'],'8':['111','101','111','101','111'],'9':['111','101','111','001','111']};
+function pixNum(P,x,y,str,col){let cx=x;for(const ch of str){const g=DG[ch];if(!g)continue;g.forEach((r,j)=>{for(let i=0;i<3;i++)if(r[i]==='1')P.set(cx+i,y+j,col);});cx+=5;}}
+function overTorso(d,k,y1){
+  return symRows([[29,d.nk+.4],[30,d.sh-1.5],[31.5,d.sh+.9],[34,d.ch+1.9*k],[39,d.ch+2.3*k],[45,d.wa+3.2*k],[y1,d.hp+3.8*k]]);
+}
+function drawCasual(c){
+  const{P,av,d,f,S,OR,PR}=c;
+  const o=av.o,W=0xf1f3f9,Wd=0xc9ccd6,dark=ramp('#2b3040');
+  const hw=(y)=>{const h=lerpPts([[29,d.nk+.4],[30,d.sh-1.5],[31.5,d.sh+.9],[34,d.ch+1.9],[39,d.ch+2.3],[45,d.wa+3.2],[51,d.hp+3.8]],y);return h==null?0:h;};
+  if(o===10){ // оверсайз-футболка
+    P.fill(overTorso(d,1,50),OR,{edge:true});
+    drawArms(c,'short',OR,{fat:1.5});
+    // ворот
+    P.fill(ell(25,30.4,d.nk+1.4,1.6),S,{flat:true});
+    P.hl(25-d.nk-1,25+d.nk,31,OR[3]);P.hl(25-d.nk-1,25+d.nk,32,OR[2]);
+    // край рукавов
+    for(const sx of[-1,1]){const a=armCaps(d,sx,1.5);P.hl(Math.round(a.ex-d.ar-1.2),Math.round(a.ex+d.ar+.2),39,OR[3]);P.hl(Math.round(a.ex-d.ar-1.2),Math.round(a.ex+d.ar+.2),40,OR[2]);}
+    // принт
+    const pc=mixp(0xf1f3f9,OR[2],.1);
+    P.hl(21,28,36,pc);P.hl(20,29,37,pc);P.hl(21,28,38,pc);P.px(23,37,OR[0]);P.px(26,37,OR[0]);P.hl(22,27,40,pc);
+    // складки
+    P.line(25-5,43,25-8,47,OR[2]);P.line(25+6,42,25+8,47,OR[2]);P.line(25-2,45,25-3,49,OR[2]);
+    P.hl(25-hw(49),25+hw(49)-1,49,OR[2]);P.hl(25-hw(50),25+hw(50)-1,50,OR[3]);
+  }else if(o===11){ // рашгард
+    const A=OR,Bk=dark;
+    P.fill(torsoShape(d),A,{edge:true});
+    drawArms(c,'long',A,{});
+    // цветные вставки: бока и рукава
+    for(let y=33;y<=47;y++){const h=lerpPts([[29,d.nk+.4],[30,d.sh-2.4],[31.5,d.sh-.4],[34,d.ch],[39,d.ch-.3],[43,d.wa],[48,d.hp]],y);if(h==null)continue;
+      for(let k=0;k<2;k++){P.set(Math.round(25-h+.4+k),y,Bk[k?2:3]);P.set(Math.round(25+h-1.4-k+1),y,Bk[k?1:2]);}}
+    for(const sx of[-1,1]){const a=armCaps(d,sx);
+      for(let t=0;t<=1;t+=.12){const x=a.jx+(a.wx-a.jx)*t+sx*(d.ar-1.1),y=33+(47-33)*t;P.set(Math.round(x),Math.round(y),Bk[2]);P.set(Math.round(x),Math.round(y)+1,Bk[2]);}
+      P.hl(Math.round(a.wx-d.ar+.6),Math.round(a.wx+d.ar-.6),46,Bk[3]);
+    }
+    // реглан-швы и мышцы
+    P.line(25-d.nk-.5,31,25-d.ch+1,36,A[3]);P.line(25+d.nk+.5,31,25+d.ch-1,36,A[3]);
+    P.hl(25-d.ch+3,25-1,38,A[3]);P.hl(25+1,25+d.ch-3,38,A[3]);P.vl(25,34,41,A[2]);P.vl(24,34,41,A[2]);
+    for(let y=41;y<=46;y+=2){P.px(24,y,A[3]);P.px(25,y,A[3]);}
+    // высокий ворот
+    P.fill(ell(25,30.2,d.nk+1.4,2.1),A,{edge:true,dark:1});
+    P.fill(ell(25,30.4,d.nk-.2,1.2),S,{flat:true});P.hl(25-d.nk+1,25+d.nk-2,30,S[3]);
+    // лого
+    P.hl(25-d.ch+3,25-d.ch+5,35,W);P.px(25-d.ch+4,36,W);
+    P.hl(25-d.hp,25+d.hp-1,47,A[3]);P.hl(25-d.hp,25+d.hp-1,48,Bk[2]);
+  }else if(o===12){ // оверсайз-худи
+    P.fill(overTorso(d,1.15,51),OR,{edge:true});
+    drawArms(c,'long',OR,{fat:1.4,cuff:OR});
+    // широкий капюшон
+    P.fill(ell(25,29.8,d.nk+4.8,3),OR,{edge:true,dark:1});
+    P.fill(ell(25,30.6,d.nk+.6,1.7),S,{flat:true});P.hl(25-d.nk,25+d.nk-1,30,S[2]);
+    P.vl(22,32,38,W);P.vl(27,32,39,W);P.px(22,39,Wd);P.px(27,40,Wd);
+    // принт на груди
+    P.hl(21,28,35,W);P.hl(22,27,36,Wd);P.px(24,36,OR[0]);P.px(25,36,OR[0]);
+    // карман-кенгуру
+    P.fill(poly([[25-d.wa-.4,41.5],[25+d.wa+.4,41.5],[25+d.wa+3,50],[25-d.wa-3,50]]),OR,{edge:true,dark:1,dith:false,flat:true});
+    P.hl(25-d.wa+1,25+d.wa-1,42,OR[2]);P.vl(25,43,50,OR[3]);
+    // складки на рукавах и резинка
+    for(const sx of[-1,1]){const a=armCaps(d,sx,1.4);P.hl(Math.round(a.ex-d.ar),Math.round(a.ex+d.ar-1),41,OR[3]);P.hl(Math.round(a.ex-d.ar),Math.round(a.ex+d.ar-1),42,OR[2]);}
+    P.hl(25-hw(50),25+hw(50)-1,50,OR[3]);P.hl(25-hw(51),25+hw(51)-1,51,OR[2]);
+  }else if(o===13){ // рубашка в клетку, расстёгнутая
+    const tex=(x,y)=>(x%5===0?-1:0)+(y%5===2?1:0);
+    const hh=(y)=>{const h=lerpPts([[29,d.nk+.4],[30,d.sh-1.6],[31.5,d.sh+.4],[34,d.ch+.9],[39,d.ch+1.2],[45,d.wa+1.8],[49,d.hp+2.1]],y);return h==null?0:h;};
+    P.fill(symRows([[29,d.nk+.4],[30,d.sh-1.6],[31.5,d.sh+.4],[34,d.ch+.9],[39,d.ch+1.2],[45,d.wa+1.8],[49,d.hp+2.1]]),OR,{edge:true,tex});
+    drawArms(c,'long',OR,{fat:.7,cuff:OR});
+    // футболка внутри
+    const tee=ramp('#eef0f6');
+    P.fill(poly([[25-3.2,30.3],[25+3.2,30.3],[25+3.4,49],[25-3.4,49]]),tee,{flat:true});
+    P.fill(ell(25,30.5,d.nk+.2,1.3),S,{flat:true});
+    P.hl(24,25,36,0x9aa3b8);P.px(24,37,0x9aa3b8);
+    // края рубашки и воротник
+    P.vl(25-4,32,49,OR[3]);P.vl(25+3,32,49,OR[3]);
+    P.fill(poly([[25-d.nk-1,29.6],[25-2,31],[25-4.4,35],[25-d.nk-2.6,32]]),OR,{edge:true,dark:-1,flat:true});
+    P.fill(poly([[25+d.nk+1,29.6],[25+2,31],[25+4.4,35],[25+d.nk+2.6,32]]),OR,{edge:true,dark:-1,flat:true});
+    // карман, пуговицы
+    P.rectf(25-d.ch+1,38,25-d.ch+4,41,OR[2]);P.hl(25-d.ch+1,25-d.ch+4,38,OR[3]);P.px(25-d.ch+2,39,0xe9d9a8);
+    P.px(25-4,40,0xe9d9a8);P.px(25+3,43,0xe9d9a8);
+    P.hl(25-hh(48),25+hh(48)-1,48,OR[3]);P.hl(25-hh(49),25+hh(49)-1,49,OR[2]);
+  }else{ // 14: джерси
+    P.fill(overTorso(d,.9,50),OR,{edge:true});
+    drawArms(c,'none',OR);
+    // проймы
+    for(const sx of[-1,1])P.fill(cap(25+sx*(d.sh-1.7),31.5,25+sx*(d.sh-1.2),38,2.7,2.6),S,{edge:true});
+    // лямки
+    for(const sx of[-1,1]){const x=25+sx*(d.nk+1.6);P.fill(rect(Math.min(x,x+sx*3.4),29.5,Math.max(x,x+sx*3.4),33.4),OR,{edge:true,flat:true});}
+    // V-вырез с окантовкой
+    P.fill(poly([[25-d.nk-.2,30],[25+d.nk+.2,30],[25,35.5]]),S,{flat:true});
+    for(let k=0;k<5;k++){P.px(25-d.nk-.2+k*.9,30+k*1.1,W);P.px(25+d.nk-.8-k*.9+1,30+k*1.1,W);}
+    // номер
+    pixNum(P,21,37,String((av.hc*8+av.pc+av.oc*3)%90+10),W);
+    // полосы по бокам
+    P.vl(Math.round(25-hw(44)+2),41,49,Wd);P.vl(Math.round(25+hw(44)-3),41,49,Wd);
+    P.hl(25-hw(49),25+hw(49)-1,49,OR[3]);P.hl(25-hw(50),25+hw(50)-1,50,W);
+  }
 }
 function neckShadow(c){}
 
@@ -874,6 +1026,13 @@ function drawHairBack(c){
       P.fill(cap(25+sx*10,12,25+sx*13.5+sx*o,19,2.6,3.2),HR,{edge:true,tex:strand});
       P.fill(cap(25+sx*13.5+sx*o,19,25+sx*13.5+sx*o*1.4,28,3.2,1.5),HR,{edge:true,tex:strand});
     }
+  }else if(h===17){ // длинные кудри
+    const bumps=[];
+    for(let y=11;y<=38;y+=3.6){const w=lerpPts([[10,9.4],[18,11.2],[28,11.8],[38,9.6]],y);bumps.push([25-w-.4,y],[25+w+.4,y]);}
+    P.fill(rows(9,36,y=>{const w=lerpPts([[9,9.2],[16,10.6],[26,11],[36,9.2]],y);return w==null?null:[25-w,25+w];}),HR,{edge:true,tex:()=>0});
+    bumps.forEach(([x,y],i)=>P.fill(ell(x+(i%2?sway*.4:-sway*.4),y,3.1,2.9),HR,{edge:true}));
+  }else if(h===19){ // маллет: длинная задняя часть
+    P.fill(rows(12,34,y=>{const w=lerpPts([[12,9.4],[22,9.2],[28,8.2],[34,5.2]],y);return w==null?null:[25-w+(y>28?-sway*.5:0),25+w+(y>28?sway*.5:0)];}),HR,{edge:true,tex:strandV,dark:1});
   }else if(h===6){ // пучок — сзади
   }
   P.ox=0;
@@ -945,6 +1104,25 @@ function drawHairFront(c){
   }else if(h===14){ // хвостики
     fillCap(capShape({hl0:11,hlk:3.8,sideW:7.4,sideY:16.2}));
     for(const sx of[-1,1])P.rectf(Math.round(25+sx*10.2)-1,12,Math.round(25+sx*10.2)+1,13,0xec4899);
+  }else if(h===16){ // кудрявый фейд: бока коротко, сверху кудри
+    P.fill(capShape({hl0:11,hlk:4,hlp:1.2,sideW:7.4,sideY:15.6}),R,{edge:true,flat:true,dark:2});
+    for(let y=8;y<=15;y++)for(let x=14;x<=36;x++)if(P.get(x,y)>=0&&(x*3+y*5)%5===0&&Math.abs(x-25)>5.5)P.set(x,y,R[2]);
+    const bumps=[[18,8.5],[22,5.6],[26,4.8],[30,5.8],[33,8.8],[20,9],[25,9],[30,9.6],[23,7.2],[28,7.4],[16.6,11.2],[33.6,11.2]];
+    for(const[bx,by]of bumps)P.fill(ell(bx,by,2.9,2.7),R,{edge:true});
+    for(const[bx,by]of bumps.slice(0,6))P.px(bx-1,by-1,R[3]);
+  }else if(h===17){ // длинные кудри: чёлка из завитков
+    fillCap(capShape({hl0:10.6,hlk:4.4,hlp:1.2,sideW:7.5,sideY:19}),{tex:()=>0});
+    const bumps=[[17,10],[21,7],[25,6],[29,7],[33,10],[16,15],[34,15],[19.5,11.6],[30.5,11.6],[25,10.4],[16,19.5],[34,19.5]];
+    for(const[bx,by]of bumps)P.fill(ell(bx,by,2.9,2.7),R,{edge:true});
+    for(const sx of[-1,1])for(const yy of[24,28.4,32.6])P.fill(ell(25+sx*10.6+sx*sway*.3,yy,2.9,2.8),R,{edge:true});
+  }else if(h===18){ // шторки: пробор по центру
+    fillCap(capShape({hl0:9.2,hlk:8.2,hlp:1.15,sideW:7.5,sideY:18.5}),{tex:strandV});
+    P.line(25,7,24,10,R[3]);P.line(24,10,22,12,R[3]);P.line(26,10,28,12,R[3]);
+    P.px(25,8,R[0]);
+  }else if(h===19){ // маллет: короткий верх с чёлкой
+    fillCap(capShape({hl0:11.8,hlk:2.6,hlp:1.3,sideW:7.4,sideY:16.6,tilt:-.1}));
+    for(let x=19;x<=31;x+=3)P.px(x,12,R[3]);
+    P.line(21,8,17,12,R[3]);P.line(28,8,32,12,R[3]);
   }
 }
 
@@ -992,6 +1170,34 @@ function drawAccessory(c){
     P.fill(ell(25,3.4,2.4,2),OR,{edge:true});
   }else if(a===7){ // серьга
     P.px(16,21,0xffe08a);P.px(16,22,0xe3b64a);P.px(15,22,0xe3b64a);
+  }else if(a===9){ // круглые очки
+    const fr=0x1b1420;
+    for(const sx of[-1,1]){
+      const X=(col)=>sx<0?col:49-col;
+      for(let y=14;y<=22;y++)for(let x=16;x<=25;x++){
+        const dd=Math.hypot(x+.5-21,y+.5-18.4);
+        if(dd>2.3&&dd<=3.3)P.set(X(x),y,fr);
+        else if(dd<=2.3&&x===19&&y===17)P.set(X(x),y,mixp(0xffffff,0xa8dcff,.4));
+      }
+    }
+    P.hl(24,25,17,fr);P.hl(13,15,17,fr);P.hl(34,36,17,fr);
+  }else if(a===10){ // большие очки
+    const fr=ramp(OUTC[av.oc]);
+    for(const sx of[-1,1]){
+      const X=(col)=>sx<0?col:49-col;
+      for(let y=15;y<=21;y++)for(let x=16;x<=24;x++){
+        const edge=x===16||x===24||y===15||y===21;
+        if(edge)P.set(X(x),y,fr[3]);
+        else if(P.get(X(x),y)>=0&&((x+y)&3)!==0)P.set(X(x),y,mixp(P.get(X(x),y),0x1c2b55,.28));
+      }
+      P.set(X(17),16,0xffffff);P.set(X(18),17,mixp(0xffffff,0xa8dcff,.5));
+      P.set(X(16),15,fr[2]);P.set(X(24),21,fr[2]);
+    }
+    P.hl(25,25,17,fr[3]);P.hl(24,25,16,fr[3]);P.hl(13,15,17,fr[3]);P.hl(34,36,17,fr[3]);
+  }else if(a===11){ // цепочка
+    const g=0xe3b64a,gl=0xfff2c0;
+    for(let k=0;k<=6;k++){const y=31+k*.75;P.px(25-6.5+k*1.05-.5,y,k%2?g:gl);P.px(25+6.5-k*1.05-.5,y,k%2?g:gl);}
+    P.px(24,36,g);P.px(25,36,gl);P.fill(ell(25,38,1.6,1.7),ramp('#e3b64a'),{edge:true,flat:true});P.px(24,37,0xffffff);
   }else if(a===8){ // шрам
     P.line(18,13,21,20,0xe0a8a0);P.line(19,13,22,20,mixp(S[2],0xc04050,.4));
     P.px(20,16,S[0]);P.px(21,17,S[0]);
@@ -999,7 +1205,7 @@ function drawAccessory(c){
 }
 
 // ── ВЫВОД ─────────────────────────────────────────────────────────────────
-const CROPS={head:[0,0,PW,34],bust:[9,2,32,29],face:[10,4,30,26],top:[2,24,46,28],legs:[6,44,38,22],full:[0,0,PW,PH]};
+const CROPS={head:[0,0,PW,34],bust:[9,2,32,29],face:[10,4,30,26],top:[2,24,46,28],legs:[6,48,38,18],full:[0,0,PW,PH]};
 const _fc=new Map();
 function avKey(av){return AV_KEYS.map(k=>av[k]).join(',');}
 function frameCanvas(av,bob,blink){
@@ -1070,9 +1276,9 @@ const STAT_META={
   AURA:{c:'#f472b6',ru:'Влияние',hint:'контент, общение, видимость'},
   GOLD:{c:'#f3c55a',ru:'Деньги',hint:'доход, учёт, работа на результат'},
 };
-const RANKS=['NPC','ROOKIE','PLAYER','VETERAN','ELITE','LEGEND'];
-const RANK_AT=[0,1,7,21,45,90];
-const RANK_C={NPC:'#8a93a8',ROOKIE:'#6fe28b',PLAYER:'#5bd9d0',VETERAN:'#a78bfa',ELITE:'#ffd24a',LEGEND:'#ff6b9a'};
+const RANKS=['NPC','SPAWN','GRINDER','CONTENDER','CHAMPION','LEGEND','IMMORTAL'];
+const RANK_AT=[0,1,7,21,45,90,180];
+const RANK_C={NPC:'#8a93a8',SPAWN:'#6fe28b',GRINDER:'#5bd9d0',CONTENDER:'#5b9bff',CHAMPION:'#a78bfa',LEGEND:'#ffd24a',IMMORTAL:'#ff6b9a'};
 const DAILY_CAP=150;
 
 const PROGRAMS=[
@@ -1092,9 +1298,9 @@ const ENEMIES=[
 ];
 const NICKS=['Рысь','Волк','Ворон','Тень','Кай','Нова','Феникс','Гром','Лис','Искра','Орион','Мираж'];
 const CAST=[
-  {g:0,b:2,sk:2,h:12,hc:1,e:1,ec:1,br:1,m:2,fh:4,o:6,oc:11,p:1,pc:1,s:2,a:0,it:0,cp:0},
-  {g:1,b:0,sk:1,h:3,hc:10,e:2,ec:2,br:0,m:1,fh:0,o:5,oc:8,p:4,pc:1,s:3,a:1,it:3,cp:1},
-  {g:0,b:1,sk:6,h:7,hc:0,e:0,ec:1,br:3,m:3,fh:2,o:2,oc:5,p:3,pc:2,s:1,a:2,it:0,cp:0},
+  {g:0,b:2,sk:2,h:16,hc:1,e:1,ec:1,br:1,m:2,fh:0,o:12,oc:11,p:6,pc:0,s:4,a:9,it:0,cp:0},
+  {g:1,b:0,sk:1,h:17,hc:3,e:2,ec:2,br:0,m:1,fh:0,o:11,oc:8,p:7,pc:1,s:5,a:11,it:0,cp:0},
+  {g:0,b:1,sk:6,h:18,hc:0,e:0,ec:1,br:3,m:3,fh:0,o:10,oc:1,p:6,pc:2,s:5,a:10,it:0,cp:0},
 ];
 const NICK_RE=/^[A-Za-zА-Яа-яЁё0-9_ .-]{3,16}$/;
 
@@ -1111,7 +1317,7 @@ const rankIdx=r=>Math.max(0,RANKS.indexOf(r));
 const levelOf=xp=>Math.floor(Math.sqrt(Math.max(0,xp)/30))+1;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function hap(kind){try{const H=TGW&&TGW.HapticFeedback;if(!H)return;if(kind==='ok')H.notificationOccurred('success');else if(kind==='err')H.notificationOccurred('error');else H.impactOccurred('light');}catch{}}
-const DEFAULT_AV={g:0,b:1,sk:2,h:0,hc:2,e:0,ec:0,br:0,m:1,fh:0,o:0,oc:6,p:0,pc:0,s:0,a:0,it:0,cp:0};
+const DEFAULT_AV={g:0,b:1,sk:2,h:0,hc:2,e:0,ec:0,br:0,m:1,fh:0,o:10,oc:5,p:6,pc:0,s:4,a:0,it:0,cp:0};
 const safeAv=a=>validAvatar(a)?normAv(a):{...DEFAULT_AV};
 const avAttr=a=>{a=safeAv(a);return AV_KEYS.map(k=>a[k]).join(',');};
 const parseAv=s=>{const p=String(s).split(',').map(Number),o={};AV_KEYS.forEach((k,i)=>o[k]=p[i]);return safeAv(o);};
@@ -1209,27 +1415,27 @@ function renderSplash(){
     <button class="btn" id="enter">ВОЙТИ В ЛОББИ</button>
     <div class="foot-note">Главный конкурент — ты вчерашний.</div>
   </div>`,true);
-  $('enter').onclick=()=>{hap();ui.step='creator';ui.edit=false;C.av=randomAvatar();C.nick='';route();};
+  $('enter').onclick=()=>{hap();ui.step='creator';ui.edit=false;C.av=randomAvatar(0);C.nick='';route();};
 }
 
 // ── СОЗДАНИЕ ГЕРОЯ ─────────────────────────────────────────────────────────
 const CR_TABS=[
   {id:'face',name:'ЛИЦО',secs:[['sw','sk','КОЖА',SKIN],['tl','e','ГЛАЗА',EYE_NAMES,'face'],['sw','ec','ЦВЕТ ГЛАЗ',EYEC],['tl','br','БРОВИ',BROW_NAMES,'face'],['tl','m','РОТ',MOUTH_NAMES,'face'],['tl','fh','БОРОДА',BEARD_NAMES,'face']]},
   {id:'hair',name:'ВОЛОСЫ',secs:[['tl','h','ПРИЧЁСКА',HAIR_NAMES,'head'],['sw','hc','ЦВЕТ ВОЛОС',HAIRC]]},
-  {id:'body',name:'ТЕЛО',secs:[['tl','g','ПЕРСОНАЖ',GENDER_NAMES,'full'],['tl','b','ТЕЛОСЛОЖЕНИЕ',BODY_NAMES,'full']]},
+  {id:'body',name:'ТЕЛО',secs:[['tl','b','ТЕЛОСЛОЖЕНИЕ',BODY_NAMES,'full']]},
   {id:'wear',name:'ОДЕЖДА',secs:[['tl','o','ВЕРХ',OUTFIT_NAMES,'top'],['sw','oc','ЦВЕТ ВЕРХА',OUTC],['tl','p','НИЗ',PANT_NAMES,'legs'],['sw','pc','ЦВЕТ НИЗА',PANTC],['tl','s','ОБУВЬ',SHOE_NAMES,'legs'],['tl','cp','ПЛАЩ',CAPE_NAMES,'full']]},
   {id:'extra',name:'ДЕТАЛИ',secs:[['tl','a','АКСЕССУАР',ACC_NAMES,'head'],['tl','it','ПРЕДМЕТ',ITEM_NAMES,'full']]},
 ];
 function creatorCanBack(){return !W.data.joined||validAvatar(W.data.me&&W.data.me.avatar);}
 function renderCreator(){
-  if(!C.av)C.av=randomAvatar();
+  if(!C.av)C.av=randomAvatar(0);
   const sw=(k,arr,label)=>`<div class="cr-sec"><div class="cr-h">${label}</div><div class="cr-row">${arr.map((c,i)=>`<button class="sw" data-k="${k}" data-v="${i}" style="background:${c}" aria-label="${label} ${i+1}"></button>`).join('')}</div></div>`;
   const tl=(k,names,label,crop)=>`<div class="cr-sec"><div class="cr-h">${label}</div><div class="cr-row">${names.map((nm,i)=>`<button class="tile" data-k="${k}" data-v="${i}"><canvas data-tile="1" data-k="${k}" data-v="${i}" data-crop="${crop}"></canvas>${esc(nm)}</button>`).join('')}</div></div>`;
   const panes=CR_TABS.map(t=>`<div class="cr-pane" data-pane="${t.id}"${ui.crTab===t.id?'':' hidden'}>${t.secs.map(s=>s[0]==='sw'?sw(s[1],s[3],s[2]):tl(s[1],s[3],s[2],s[4])).join('')}</div>`).join('');
   const nickBlock=ui.edit?'':`<div class="cr-sec"><div class="cr-h">ПОЗЫВНОЙ</div><input class="inp" id="nick" maxlength="16" placeholder="Как тебя называть" autocomplete="off" value="${esc(C.nick)}"><div class="row2" style="margin-top:8px"><button class="btn ghost sm" id="nickRnd">СЛУЧАЙНЫЙ</button><div class="faint" style="font-size:11px;align-self:center">3–16 символов: буквы, цифры, пробел, _ . -</div></div><div class="err" id="crErr"></div></div>`;
   setApp(`<div style="padding-top:6px">
     <div class="topbar"><div class="brand">${ui.edit?'ИЗМЕНИТЬ ГЕРОЯ':'ВЫБЕРИ ГЕРОЯ'}</div>${creatorCanBack()?'<button class="ico" id="crBack" aria-label="Назад">←</button>':''}</div>
-    <div class="cr-sticky"><div class="cr-stage"><canvas id="crMain"></canvas><button class="dice-btn" id="dice">СЛУЧАЙНО</button></div>
+    <div class="cr-sticky"><div class="cr-gender">${GENDER_NAMES.map((nm,i)=>`<button class="cr-g${C.av.g===i?' on':''}" data-g="${i}">${nm.toUpperCase()}</button>`).join('')}</div><div class="cr-stage"><canvas id="crMain"></canvas><button class="dice-btn" id="dice">СЛУЧАЙНО</button></div>
       <div class="cr-tabs">${CR_TABS.map(t=>`<button class="cr-tab${ui.crTab===t.id?' on':''}" data-crtab="${t.id}">${t.name}</button>`).join('')}</div></div>
     ${panes}
     ${nickBlock}
@@ -1241,10 +1447,12 @@ function renderCreator(){
   app.onclick=e=>{
     const tb=e.target.closest('[data-crtab]');
     if(tb){ui.crTab=tb.dataset.crtab;document.querySelectorAll('.cr-pane').forEach(p=>p.hidden=p.dataset.pane!==ui.crTab);document.querySelectorAll('.cr-tab').forEach(b=>b.classList.toggle('on',b.dataset.crtab===ui.crTab));hap();refreshCreator();return;}
+    const gb=e.target.closest('[data-g]');
+    if(gb){C.av.g=Number(gb.dataset.g);if(C.av.g===1)C.av.fh=0;document.querySelectorAll('.cr-g').forEach(b=>b.classList.toggle('on',Number(b.dataset.g)===C.av.g));hap();refreshCreator();return;}
     const t=e.target.closest('.tile,.sw');
     if(t){C.av[t.dataset.k]=Number(t.dataset.v);hap();refreshCreator();return;}
   };
-  $('dice').onclick=()=>{C.av=randomAvatar();hap();refreshCreator();};
+  $('dice').onclick=()=>{C.av=randomAvatar(C.av.g===1?1:0);hap();refreshCreator();};
   const back=$('crBack');if(back)back.onclick=()=>{ui.step=null;ui.edit=false;route();};
   const ni=$('nick');
   if(ni){ni.oninput=()=>{C.nick=ni.value;$('crErr').textContent='';};ni.onkeydown=e=>{if(e.key==='Enter')$('crGo').click();};}
@@ -1254,7 +1462,7 @@ function renderCreator(){
 
 function refreshCreator(){
   const main=$('crMain');if(main)drawHero(main,C.av);
-  document.querySelectorAll(`.cr-pane[data-pane="${ui.crTab}"] canvas[data-tile]`).forEach(cv=>{const k=cv.dataset.k;drawHero(cv,{...C.av,[k]:Number(cv.dataset.v)},cv.dataset.crop||undefined,true);});
+  document.querySelectorAll(`.cr-pane[data-pane="${ui.crTab}"] canvas[data-tile]`).forEach(cv=>{const k=cv.dataset.k;drawHero(cv,{...C.av,[k]:Number(cv.dataset.v),...((k==='p'||k==='s')?{o:11,cp:0}:{})},cv.dataset.crop||undefined,true);});
   document.querySelectorAll('.tile[data-k],.sw[data-k]').forEach(el=>el.classList.toggle('sel',C.av[el.dataset.k]===Number(el.dataset.v)));
 }
 
@@ -1396,7 +1604,7 @@ function heroTab(me,xp,lvl){
   return`
   <div class="panel"><div class="stage"><div class="plat">${heroTag(me.avatar,'')}</div><div class="nm">${esc(me.nick)}</div>
     <div class="chips"><span class="chip rank" style="--rc:${rankColor(me.rank)}">${esc(me.rank)}</span><span class="chip">LV ${lvl}</span><span class="chip">${xp} XP</span></div></div>
-    <div class="ladder">${RANKS.map((r,i)=>`<div class="${i<=ri?'on':''}${i===ri?' cur':''}" style="--rc:${RANK_C[r]}">${r}</div>`).join('')}</div>
+    <div class="rl">${RANKS.map((r,i)=>`<div class="rl-i${i<=ri?' on':''}${i===ri?' cur':''}" style="--rc:${RANK_C[r]}"><b>${r}</b><span>${i?RANK_AT[i]+' '+plural(RANK_AT[i],['день','дня','дней']):'старт'}</span></div>`).join('')}</div>
     <div class="bar-meta"><span>${nxt?`до ранга ${RANKS[ri+1]}: ${Math.max(0,nxt-n(me.days))} ${plural(Math.max(0,nxt-n(me.days)),['день','дня','дней'])}`:'максимальный ранг'}</span><span>${n(me.days)} дн. в игре</span></div></div>
   <div class="h-sec">ХАРАКТЕРИСТИКИ</div>
   <div class="panel">${STATS.map(k=>{const M=STAT_META[k],v=n((me.stats||{})[k]);return`<div class="stat-row" style="--c:${M.c}"><div>${iconSVG(k,M.c,28)}</div><div><div class="nm">${k} · ${M.ru}</div><div class="bar" style="--c:${M.c};--c2:${M.c}"><i style="width:${Math.round(v/mx*100)}%"></i></div></div><div class="v">${v}<small>XP</small></div></div>`;}).join('')}
@@ -1413,13 +1621,16 @@ function heroTab(me,xp,lvl){
 }
 
 function lobbyTab(d){
-  const board=d.board||[],total=n(d.players_total),online=n(d.online_today);
+  const board=d.board||[],roster=d.roster||[],total=n(d.players_total),online=n(d.online_today);
   const myPos=board.findIndex(b=>b.me)+1;
   return`
   <div class="panel"><div class="kv"><div class="c"><div class="l">В лобби</div><div class="n">${total}</div><div class="s">${plural(total,['игрок','игрока','игроков'])}</div></div><div class="c"><div class="l">Сегодня в деле</div><div class="n" style="color:var(--green)">${online}</div><div class="s">закрыли квест</div></div></div></div>
   <div class="h-sec">ТОП НЕДЕЛИ<span>по дням активности</span></div>
   ${board.length?board.map((b,i)=>`<div class="bd-row${b.me?' me':''}"><span class="bd-pos">${i+1}</span>${heroTag(b.avatar,'bust')}<div style="min-width:0"><div class="bd-nick">${esc(b.nick)}</div><div class="bd-rank" style="--rc:${rankColor(b.rank)}">${esc(b.rank)}</div></div><span></span><span class="bd-days">${n(b.days)} дн.</span></div>`).join(''):'<div class="empty">На этой неделе никто ещё не закрыл квест. Первое место свободно.</div>'}
   ${myPos?`<div class="note-sm">Ты на ${myPos} месте.</div>`:'<div class="note-sm">Закрой квест — и ты появишься в рейтинге.</div>'}
+  <div class="h-sec">ИГРОКИ<span>${total} в лобби · зелёная точка: квест закрыт сегодня</span></div>
+  ${roster.length?roster.map(b=>`<div class="bd-row rs${b.me?' me':''}"><span class="dot${b.active?' on':''}"></span>${heroTag(b.avatar,'bust')}<div style="min-width:0"><div class="bd-nick">${esc(b.nick)}${b.me?' · ты':''}</div><div class="bd-rank" style="--rc:${rankColor(b.rank)}">${esc(b.rank)}</div></div><span></span><span class="bd-days">${n(b.days)} дн.</span></div>`).join(''):'<div class="empty">В лобби пока никого.</div>'}
+  ${total>roster.length?`<div class="note-sm">Показаны ${roster.length} из ${total}.</div>`:''}
   <div class="h-sec">ПОЗОВИ СВОИХ</div>
   <div class="panel"><div class="muted" style="font-size:13px;line-height:1.6;margin-bottom:12px">Лобби живёт, пока в нём есть люди. Один в лобби — это тренировка. Вдвоём — уже игра.</div><button class="btn sm" id="invite">ПОЗВАТЬ ДРУГА</button></div>
   <div class="note-sm">В рейтинге считаются дни, в которые закрыт хотя бы один квест. Дни, а не очки: выиграть можно только постоянством.</div>`;
@@ -1477,7 +1688,7 @@ function route(){
   const d=W.data;
   if(!d){errorScreen();return;}
   if(!d.joined){if(ui.step==='creator')renderCreator();else renderSplash();return;}
-  if(!validAvatar(d.me&&d.me.avatar)&&ui.step!=='creator'){ui.edit=true;ui.step='creator';C.av=randomAvatar();}
+  if(!validAvatar(d.me&&d.me.avatar)&&ui.step!=='creator'){ui.edit=true;ui.step='creator';C.av=randomAvatar(0);}
   if(ui.step==='creator'){renderCreator();return;}
   if(!S.program||ui.reprogram){renderProgram();return;}
   if(S.enemy===null||ui.reenemy){renderEnemy();return;}
