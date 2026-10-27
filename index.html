@@ -2,806 +2,892 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Habit RPG</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>NO NPC</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Habit RPG">
-<meta name="theme-color" content="#0b0d12">
+<meta name="apple-mobile-web-app-title" content="NO NPC">
+<meta name="theme-color" content="#0a0b10">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-const _m={name:'Habit RPG',short_name:'Habit RPG',start_url:'.',display:'standalone',background_color:'#0b0d12',theme_color:'#0b0d12',icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b0d12'/><text y='.9em' font-size='72' x='50%' dominant-baseline='middle' text-anchor='middle'>⚔️</text></svg>",sizes:'192x192',type:'image/svg+xml'}]};
+const _m={name:'NO NPC',short_name:'NO NPC',start_url:'.',display:'standalone',background_color:'#0a0b10',theme_color:'#0a0b10',icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230a0b10'/><text x='50' y='64' font-size='44' font-family='monospace' font-weight='bold' fill='%23ffd24a' text-anchor='middle'>NO</text></svg>",sizes:'192x192',type:'image/svg+xml'}]};
 const _mb=new Blob([JSON.stringify(_m)],{type:'application/json'});
 const _ml=document.createElement('link');_ml.rel='manifest';_ml.href=URL.createObjectURL(_mb);document.currentScript.after(_ml);
 </script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap');
 :root{
-  --bg:#0b0d12;--s1:#131722;--s2:#181d29;--s3:#1e2334;
-  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.13);
-  --text:#edf1f7;--muted:#9da7bc;--faint:#4e566a;
-  --gold:#f3c55a;--teal:#5bd9d0;--green:#6fe28b;--red:#ff6b6b;--orange:#ff9966;
-  --r:20px;--sh:0 8px 32px rgba(0,0,0,.3);
+  --bg:#0a0b10;--s1:#11131b;--s2:#171a25;--s3:#1f2330;
+  --line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.16);
+  --text:#eef1f7;--muted:#9aa3b8;--faint:#5a627a;
+  --gold:#ffd24a;--green:#6fe28b;--red:#ff6b6b;--teal:#5bd9d0;--orange:#ff9966;
+  --VIGOR:#ff6b6b;--MIND:#5bd9d0;--WILL:#a78bfa;--AURA:#f472b6;--GOLD:#f3c55a;
+  --px:'Press Start 2P',ui-monospace,monospace;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{background:radial-gradient(ellipse at top,#171d2b,#0b0d12 60%);min-height:100vh;color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
-button,input,select{font:inherit;color:inherit}button{cursor:pointer}input,select{cursor:text}
-.app{max-width:460px;margin:0 auto;padding:16px 14px 48px}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.brand{font-family:'Exo 2',sans-serif;font-size:19px;font-weight:800;display:flex;align-items:center;gap:8px}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--faint);transition:background .3s}
-.sync-dot.ok{background:var(--green)}
-.sync-dot.syncing{background:var(--gold);animation:pulse .8s infinite}
-.sync-dot.err{background:var(--red)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.tbr{display:flex;gap:8px}
-.icobtn{width:40px;height:40px;border-radius:13px;border:1px solid var(--border);background:var(--s1);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:17px}
-.icobtn:hover{background:var(--s2)}
-/* activation */
-.act-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center}
-.act-logo{font-size:64px;margin-bottom:20px}
-.act-title{font-family:'Exo 2',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px}
-.act-sub{font-size:13px;color:var(--muted);margin-bottom:32px;line-height:1.6}
-.act-input{width:100%;padding:16px;border-radius:14px;background:var(--s2);border:1px solid var(--border);color:var(--text);font-size:17px;font-weight:700;text-align:center;letter-spacing:2px;margin-bottom:12px}
-.act-input:focus{outline:none;border-color:rgba(243,197,90,.5)}
-.act-input.error{border-color:rgba(255,107,107,.5);animation:shake .3s}
-.act-error{font-size:12px;color:var(--red);min-height:16px;margin-bottom:12px}
-.act-btn{width:100%;padding:15px;border:none;border-radius:13px;background:var(--gold);color:#111;font-size:16px;font-weight:800;font-family:'Exo 2',sans-serif}
-.act-loading{font-size:13px;color:var(--muted);margin-top:12px}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-/* start screen */
-.start-screen{text-align:center;padding:48px 24px}
-.start-title{font-family:'Exo 2',sans-serif;font-size:28px;font-weight:800;margin-bottom:8px}
-.start-sub{font-size:14px;color:var(--muted);margin-bottom:32px;line-height:1.6}
-.start-dur{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px}
-.start-dur label{font-size:13px;color:var(--muted)}
-.start-dur input{width:72px;padding:10px;border-radius:12px;background:var(--s2);border:1px solid var(--border);color:var(--text);text-align:center;font-size:16px;font-weight:700}
-.btn-start{width:100%;padding:18px;border:none;border-radius:16px;background:var(--gold);color:#111;font-size:18px;font-weight:800;font-family:'Exo 2',sans-serif}
-.chal-bar{padding:12px 14px;border:1px solid rgba(91,217,208,.22);border-radius:16px;background:rgba(91,217,208,.06);margin-bottom:12px}
-.chal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.chal-title{font-size:13px;font-weight:700;color:var(--teal)}
-.chal-dates{font-size:12px;color:var(--muted)}
-.prog-track{height:7px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;margin-bottom:6px}
-.prog-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),#a0ede9)}
-.chal-foot{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
-.chal-reset{font-size:11px;color:var(--faint);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline}
-.hero{padding:16px;border:1px solid var(--border);border-radius:var(--r);background:linear-gradient(160deg,rgba(243,197,90,.1),rgba(255,255,255,.02));box-shadow:var(--sh);display:grid;grid-template-columns:88px 1fr;gap:14px;align-items:start;margin-bottom:12px}
-.av-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
-.av{width:84px;height:84px;border-radius:24px;background:linear-gradient(135deg,#252e46,#161b28);border:1px solid rgba(243,197,90,.22);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:40px}
-.av img{width:100%;height:100%;object-fit:cover}
-.av-sub{font-size:11px;color:var(--muted)}
-.hero-r{display:flex;flex-direction:column;gap:8px}
-.hname{font-family:'Exo 2',sans-serif;font-size:21px;font-weight:800;line-height:1.1}
-.rank-row{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}
-.rank{padding:6px 11px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid}
-.xp-total{font-family:'Exo 2',sans-serif;font-size:21px;font-weight:800;color:var(--gold)}
-.bar-track{height:8px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
-.bar-fill{height:100%;border-radius:999px}
-.next-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
-.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.scard{padding:12px 8px;text-align:center;border:1px solid var(--border);border-radius:16px;background:var(--s1)}
-.sv{font-family:'Exo 2',sans-serif;font-size:19px;font-weight:800}
-.sl{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.3}
-.sec{margin-bottom:12px}
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
-.sec-title{font-family:'Exo 2',sans-serif;font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
-.sec-sub{font-size:12px;color:var(--muted)}
-.task-list{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--s1)}
-.task-item{display:flex;align-items:center;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--s2);gap:10px}
-.task-item.done{border-color:rgba(243,197,90,.35);background:rgba(243,197,90,.07)}
-.task-cb{background:none;border:none;padding:0;display:flex;align-items:center;flex:1;gap:10px;text-align:left;cursor:pointer}
-.task-txt{display:flex;flex-direction:column;gap:3px}
-.task-name{font-size:14px;font-weight:600;color:#edf1f7}
-.task-meta{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.task-streak-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(255,153,102,.15);color:var(--orange);border:1px solid rgba(255,153,102,.25)}
-.task-streak-badge.on{background:rgba(255,153,102,.25);border-color:rgba(255,153,102,.5)}
-.check{width:26px;height:26px;border-radius:9px;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.task-item.done .check{background:var(--gold);border-color:var(--gold);color:#111}
-.num-inp{width:66px;padding:8px;border-radius:12px;background:#0d1017;border:1px solid var(--border);color:#edf1f7;text-align:center;font-weight:600;font-size:14px;flex-shrink:0}
-.num-inp:focus{outline:none;border-color:rgba(243,197,90,.4)}
-.xp-box{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:14px;background:rgba(243,197,90,.08);border:1px solid rgba(243,197,90,.18);margin-top:8px}
-.xp-earned{font-family:'Exo 2',sans-serif;font-size:22px;font-weight:800;color:var(--gold)}
-.chips{display:flex;gap:6px;flex-wrap:wrap}
-.chip{padding:5px 9px;border-radius:9px;background:var(--s2);border:1px solid var(--border);font-size:11px;color:var(--muted)}
-.streak-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.streak-card{padding:13px 14px;border:1px solid var(--border);border-radius:16px;background:var(--s1)}
-.sc-label{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:6px}
-.sc-val{font-family:'Exo 2',sans-serif;font-size:20px;font-weight:800}
-.sc-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.level-list{display:flex;flex-direction:column;gap:7px;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--s1)}
-.level-row{display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border:1px solid var(--border);border-radius:13px;background:var(--s2)}
-.level-row.active-lv{border-color:rgba(243,197,90,.3);background:rgba(243,197,90,.07)}
-.lv-name{font-size:13px;font-weight:700}
-.lv-range{font-size:11px;color:var(--muted)}
-.lv-remain{font-size:11px;color:var(--muted);text-align:right}
-.days-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border:1px solid var(--border);border-radius:16px;background:var(--s1);color:var(--text);text-align:left}
-.dt-left{display:flex;flex-direction:column;gap:3px}
-.dt-title{font-size:13px;font-weight:700;color:#edf1f7}
-.dt-sub{font-size:11px;color:var(--muted)}
-.dt-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.arrow{font-size:14px;color:var(--muted);transition:transform .25s;display:inline-block}
-.arrow.open{transform:rotate(180deg)}
-.days-wrap{margin-top:8px}
-.days-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
-.day-cell{padding:9px 5px;background:var(--s1);border:1px solid var(--border);border-radius:16px;text-align:center}
-.day-cell.is-today{border-color:rgba(243,197,90,.3);background:rgba(243,197,90,.05)}
-.dc-wd{font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase}
-.dc-dt{font-size:9px;color:var(--faint);margin-top:3px}
-.dc-xp{font-size:9px;color:var(--muted);margin-top:1px}
-.overlay{position:fixed;inset:0;background:rgba(7,9,14,.7);backdrop-filter:blur(8px);display:none;align-items:flex-end;justify-content:center;padding:12px;z-index:50}
-.overlay.show{display:flex}
-.sheet{max-width:460px;width:100%;max-height:90vh;overflow-y:auto;background:#0f1320;border:1px solid var(--border2);border-radius:26px;padding:18px}
-.sh-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.sh-title{font-family:'Exo 2',sans-serif;font-size:20px;font-weight:800}
-.grp{padding:13px;background:var(--s1);border:1px solid var(--border);border-radius:18px;margin-bottom:10px}
-.grp-title{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700;margin-bottom:10px}
-.field{display:flex;flex-direction:column;gap:5px;margin-bottom:9px}
-.field:last-child{margin-bottom:0}
-.field label{font-size:12px;color:var(--muted)}
-.inp{width:100%;padding:10px 12px;border-radius:12px;background:#0a0e17;border:1px solid var(--border);color:#edf1f7}
-.inp:focus{outline:none;border-color:rgba(243,197,90,.4)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.mini{padding:9px 11px;border-radius:11px;background:var(--s2);border:1px solid var(--border);color:var(--text);font-size:13px;font-weight:600;white-space:nowrap}
-.mini:hover{background:var(--s3)}
-.del{padding:9px 11px;border-radius:11px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.18);color:#ffb5b5;font-size:13px}
-.tog{padding:7px 11px;border-radius:11px;font-size:11px;font-weight:700;border:1px solid;cursor:pointer}
-.tog.on{background:rgba(111,226,139,.15);border-color:rgba(111,226,139,.35);color:var(--green)}
-.tog.off{background:rgba(255,255,255,.04);border-color:var(--border);color:var(--muted)}
-.btn-p{width:100%;padding:13px;border:none;border-radius:13px;background:var(--gold);color:#111;font-size:15px;font-weight:700}
-.btn-s{width:100%;padding:13px;border:1px solid var(--border);border-radius:13px;background:var(--s2);color:var(--text);font-size:15px;font-weight:700}
-.btn-d{width:100%;padding:13px;border:1px solid rgba(255,107,107,.2);border-radius:13px;background:rgba(255,107,107,.1);color:#ffb5b5;font-size:15px;font-weight:700}
-.g2btn{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.save-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;position:sticky;bottom:0;padding:10px 0 4px;background:#0f1320}
-.notice{font-size:12px;color:var(--muted);text-align:center;min-height:16px;margin-top:8px}
-.dur-box{padding:11px;border-radius:12px;background:rgba(243,197,90,.08);border:1px solid rgba(243,197,90,.18);font-size:13px;font-weight:600;color:var(--gold);text-align:center;margin-top:8px;min-height:40px;display:flex;align-items:center;justify-content:center}
-.hint{font-size:11px;color:var(--faint);margin-top:6px;line-height:1.5}
-.task-edit-row{display:grid;grid-template-columns:24px 1fr 64px 48px auto auto;gap:6px;align-items:center;margin-bottom:6px;padding:8px;border-radius:12px;background:var(--s2);border:1px solid var(--border)}
-.task-edit-row.dragging{opacity:.4}
-.drag-handle{color:var(--faint);font-size:16px;cursor:grab;user-select:none;text-align:center}
-.drag-handle:active{cursor:grabbing}
-.lv-edit-row{display:grid;grid-template-columns:1fr 44px auto;gap:6px;align-items:center;margin-bottom:6px}
-.lv-auto-badge{font-size:10px;color:var(--teal);background:rgba(91,217,208,.1);border:1px solid rgba(91,217,208,.2);border-radius:8px;padding:2px 8px;display:inline-block;margin-bottom:8px}
-.rule-row{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:center;margin-bottom:6px}
-footer{padding:20px 0 4px;text-align:center;color:var(--faint);font-size:11px}
-@media(max-width:380px){.stats4{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:76px 1fr}.av{width:72px;height:72px;font-size:34px}.days-grid{grid-template-columns:repeat(4,1fr)}.task-edit-row{grid-template-columns:24px 1fr 56px 40px auto auto}}
-/* world */
-.act-link{display:inline-block;margin-top:18px;font-size:13px;color:var(--teal);text-decoration:none}
-.act-ghost{width:100%;margin-top:10px;padding:13px;border-radius:13px;border:1px solid var(--border2);background:var(--s2);font-size:14px;font-weight:700}
-.wq.hl{box-shadow:0 0 0 2px var(--gold)}
-.world-banner{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;margin-bottom:12px;border:1px solid rgba(91,217,208,.28);border-radius:16px;background:linear-gradient(135deg,rgba(91,217,208,.1),rgba(243,197,90,.06));text-align:left}
-.wb-title{font-family:'Exo 2',sans-serif;font-size:15px;font-weight:800}
-.wb-sub{font-size:12px;color:var(--muted);margin-top:2px}
-.wb-online{font-size:11px;color:var(--teal);white-space:nowrap}
-.w-hero{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.wq{--sc:#f3c55a;padding:13px;border:1px solid var(--border);border-left:3px solid var(--sc);border-radius:14px;background:var(--s2);margin-bottom:8px}
-.wq.done{opacity:.6}
-.wq.boss{background:linear-gradient(135deg,rgba(243,197,90,.1),var(--s2));border-color:rgba(243,197,90,.3);border-left-color:var(--sc)}
-.wq-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.wq-stat{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--sc)}
-.wq-xp{font-family:'Exo 2',sans-serif;font-size:14px;font-weight:800;color:var(--gold)}
-.wq-boss{font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--orange);margin-bottom:4px}
-.wq-title{font-size:14px;font-weight:700}
-.wq-descr{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
-.wq-act{margin-top:10px}
-.wq-act:empty{display:none}
-.wq-btn{width:100%;padding:10px;border-radius:11px;border:1px solid var(--border2);background:var(--s3);font-weight:700;font-size:13px}
-.wq-btn.go{background:var(--gold);border-color:var(--gold);color:#111}
-.wq-btn:disabled{opacity:.6}
-.wq-done{font-size:12px;font-weight:700;color:var(--green)}
-.bd-row{display:grid;grid-template-columns:24px 1fr auto auto;gap:8px;align-items:center;padding:9px 10px;border-radius:11px;font-size:13px;border:1px solid transparent}
-.bd-row.me{background:rgba(243,197,90,.1);border-color:rgba(243,197,90,.25)}
-.bd-pos{color:var(--muted);font-weight:700}
-.bd-nick{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bd-rank{font-size:11px;color:var(--muted)}
-.bd-days{font-weight:700;color:var(--teal)}
-.w-toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#0f1320;border:1px solid var(--border2);padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;z-index:70;transition:all .25s;max-width:90vw;text-align:center}
-.w-toast.show{opacity:1;transform:translate(-50%,0)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{background:radial-gradient(ellipse at 50% -10%,#1a2036 0%,#0a0b10 55%) fixed,var(--bg)}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 4px);z-index:0}
+button,input{font:inherit;color:inherit}button{cursor:pointer;border:none;background:none}
+canvas{image-rendering:pixelated;image-rendering:crisp-edges}
+.px{font-family:var(--px);letter-spacing:.5px}
+.app{position:relative;z-index:1;max-width:460px;margin:0 auto;padding:14px 14px calc(104px + env(safe-area-inset-bottom))}
+.app.nopad{padding-bottom:28px}
+
+/* кнопки и панели */
+.btn{display:block;width:100%;padding:15px 14px;border:2px solid #000;border-radius:6px;background:var(--gold);color:#17120a;font-family:var(--px);font-size:11px;line-height:1.4;text-align:center;box-shadow:0 4px 0 #a37a00;transition:transform .06s,box-shadow .06s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #a37a00}
+.btn:disabled{opacity:.55;pointer-events:none}
+.btn.ghost{background:var(--s2);color:var(--text);box-shadow:0 4px 0 #05060a;border-color:#000;outline:1px solid var(--line2);outline-offset:-3px}
+.btn.ghost:active{box-shadow:0 1px 0 #05060a}
+.btn.sm{padding:11px 10px;font-size:9px}
+.btn.green{background:var(--green);box-shadow:0 4px 0 #2c8a45}
+.panel{background:var(--s1);border:2px solid #000;border-radius:8px;box-shadow:0 0 0 2px var(--line),0 6px 0 #05060a;padding:14px;margin-bottom:16px}
+.h-sec{font-family:var(--px);font-size:10px;color:var(--muted);letter-spacing:1px;margin:20px 2px 10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.h-sec span{font-family:'Inter';font-size:11px;color:var(--faint);letter-spacing:0}
+.muted{color:var(--muted)}.faint{color:var(--faint)}
+.sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--faint);margin-left:8px;vertical-align:middle}
+.sync-dot.ok{background:var(--green)}.sync-dot.syncing{background:var(--gold);animation:pulse .8s infinite}.sync-dot.err{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* верхняя панель */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brand{font-family:var(--px);font-size:13px;letter-spacing:1px}
+.brand b{color:var(--gold)}
+.ico{width:38px;height:38px;border-radius:6px;background:var(--s2);border:2px solid #000;outline:1px solid var(--line2);outline-offset:-3px;display:flex;align-items:center;justify-content:center;font-size:16px}
+
+/* вход / сплэш */
+.screen{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:28px 6px 40px;text-align:center}
+.tag{font-family:var(--px);font-size:9px;color:var(--teal);letter-spacing:1.5px;margin-bottom:18px}
+.logo{font-family:var(--px);font-size:34px;line-height:1.15;color:var(--text);text-shadow:3px 0 var(--AURA),-3px 0 var(--teal);margin-bottom:6px}
+.logo.sm{font-size:22px}
+.lead{font-size:14px;line-height:1.65;color:var(--muted);margin:18px auto 26px;max-width:340px}
+.lead b{color:var(--text);font-weight:600}
+.cast{display:flex;justify-content:center;align-items:flex-end;gap:2px;margin:6px 0 4px;height:110px}
+.cast canvas{width:66px;height:auto;animation:bob 1.2s steps(2) infinite}
+.cast canvas:nth-child(2n){animation-delay:.3s}.cast canvas:nth-child(3n){animation-delay:.6s}
+@keyframes bob{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+.foot-note{font-size:12px;color:var(--faint);margin-top:18px}
+.inp{width:100%;padding:13px 14px;border-radius:6px;background:#0b0d14;border:2px solid #000;outline:1px solid var(--line2);outline-offset:-3px;color:var(--text);font-size:16px}
+.inp:focus{outline-color:var(--gold)}
+.err{min-height:18px;font-size:12px;color:var(--red);margin:8px 2px}
+.act-input{text-align:center;letter-spacing:2px;font-weight:700}
+.link{color:var(--teal);font-size:13px;text-decoration:none;display:inline-block;margin-top:16px}
+
+/* создание героя */
+.cr-prev{display:flex;flex-direction:column;align-items:center;gap:10px;margin:6px 0 16px}
+.cr-stage{width:190px;height:230px;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(ellipse at 50% 90%,#2a3050 0%,transparent 70%),var(--s1);border:2px solid #000;border-radius:8px;box-shadow:0 0 0 2px var(--line);padding-bottom:14px;position:relative}
+.cr-stage canvas{width:154px;height:auto;animation:bob 1.2s steps(2) infinite}
+.cr-stage::after{content:'';position:absolute;bottom:10px;left:50%;width:110px;height:10px;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(0,0,0,.5),transparent 70%)}
+.cr-sec{margin-bottom:14px}
+.cr-h{font-family:var(--px);font-size:9px;color:var(--muted);letter-spacing:1px;margin:0 2px 8px}
+.cr-row{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}
+.cr-row::-webkit-scrollbar{display:none}
+.tile{flex:0 0 auto;min-width:64px;padding:6px;border-radius:6px;background:var(--s2);border:2px solid #000;outline:1px solid var(--line);outline-offset:-3px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:var(--muted)}
+.tile.sel{outline:2px solid var(--gold);color:var(--gold);background:#1c1a14}
+.tile canvas{width:56px;height:auto}
+.tile.wide canvas{width:72px}
+.sw{flex:0 0 auto;width:36px;height:36px;border-radius:6px;border:2px solid #000;outline:1px solid var(--line2);outline-offset:-3px}
+.sw.sel{outline:3px solid var(--gold)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dice{width:100%}
+
+/* выбор сезона / босса */
+.card-pick{display:block;width:100%;text-align:left;padding:14px;margin-bottom:12px;border-radius:8px;background:var(--s1);border:2px solid #000;box-shadow:0 0 0 2px var(--line),0 4px 0 #05060a}
+.card-pick:active{transform:translateY(2px)}
+.card-pick .t{font-family:var(--px);font-size:11px;line-height:1.5;display:flex;justify-content:space-between;gap:8px}
+.card-pick .t em{font-style:normal;color:var(--gold)}
+.card-pick .d{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+.note-sm{font-size:11px;color:var(--faint);line-height:1.5;margin-top:14px;text-align:center}
+
+/* домашний экран */
+.me-strip{display:flex;align-items:center;gap:12px}
+.me-strip canvas{width:54px;height:auto;flex:0 0 auto;background:var(--s2);border:2px solid #000;border-radius:6px;padding:3px}
+.me-name{font-family:var(--px);font-size:12px;line-height:1.4;word-break:break-all}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{font-family:var(--px);font-size:8px;padding:6px 7px;border-radius:4px;border:2px solid #000;background:var(--s3);color:var(--text);line-height:1}
+.chip.rank{color:var(--rc,#fff)}
+.chip.fire{color:var(--orange)}
+.bar{height:12px;border-radius:3px;background:#07080c;border:2px solid #000;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--c,var(--gold)),var(--c2,#fff3b0));image-rendering:pixelated;transition:width .5s steps(12)}
+.bar-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+.day-sum{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:10px}
+.day-sum .big{font-family:var(--px);font-size:16px;color:var(--gold)}
+.day-sum .sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+/* квесты */
+.q{--c:#ffd24a;position:relative;padding:13px 13px 13px 15px;margin-bottom:10px;border-radius:8px;background:var(--s1);border:2px solid #000;box-shadow:0 0 0 2px var(--line),0 4px 0 #05060a;overflow:hidden}
+.q::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}
+.q.done{opacity:.55}
+.q.hl{box-shadow:0 0 0 2px var(--gold),0 4px 0 #05060a}
+.q-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.q-stat{display:flex;align-items:center;gap:7px;font-family:var(--px);font-size:9px;color:var(--c)}
+.q-xp{font-family:var(--px);font-size:11px;color:var(--gold)}
+.q-title{font-size:15px;font-weight:700;line-height:1.3}
+.q-descr{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5}
+.q-act{margin-top:12px}.q-act:empty{display:none}
+.q-ok{font-family:var(--px);font-size:9px;color:var(--green)}
+.q.boss{background:linear-gradient(135deg,#241c10,var(--s1));}
+.q-boss{font-family:var(--px);font-size:8px;color:var(--orange);margin-bottom:8px;letter-spacing:.5px}
+.enemy{border-left:5px solid var(--red)}
+.enemy .e-t{font-family:var(--px);font-size:10px;color:var(--red);margin-bottom:8px;line-height:1.5}
+.enemy .e-q{font-size:13px;color:var(--muted);font-style:italic;margin-bottom:12px;line-height:1.5}
+.pop{position:fixed;z-index:80;font-family:var(--px);font-size:12px;color:var(--gold);pointer-events:none;text-shadow:2px 2px 0 #000;animation:pop .9s ease-out forwards}
+@keyframes pop{0%{opacity:0;transform:translateY(0)}15%{opacity:1}100%{opacity:0;transform:translateY(-46px)}}
+
+/* герой */
+.stage{display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px 10px 6px}
+.stage .plat{position:relative;width:200px;height:220px;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(ellipse at 50% 92%,#2a3050 0%,transparent 68%);padding-bottom:12px}
+.stage canvas{width:150px;height:auto;animation:bob 1.2s steps(2) infinite}
+.stage .nm{font-family:var(--px);font-size:14px}
+.ladder{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:14px 0 10px}
+.ladder div{font-family:var(--px);font-size:6px;text-align:center;padding:8px 0;border-radius:3px;background:var(--s3);border:2px solid #000;color:var(--faint);line-height:1.3}
+.ladder div.on{color:#111;background:var(--rc)}
+.ladder div.cur{outline:2px solid var(--gold)}
+.stat-row{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;margin-bottom:12px}
+.stat-row .nm{font-family:var(--px);font-size:9px;color:var(--c);margin-bottom:6px}
+.stat-row .v{font-family:var(--px);font-size:10px;text-align:right;line-height:1.5}
+.stat-row .v small{display:block;font-family:'Inter';font-size:10px;color:var(--faint)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kv .c{padding:12px;border-radius:6px;background:var(--s2);border:2px solid #000;outline:1px solid var(--line);outline-offset:-3px}
+.kv .c .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.kv .c .n{font-family:var(--px);font-size:14px}
+.kv .c .s{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+/* лобби */
+.bd-row{display:grid;grid-template-columns:22px 40px 1fr auto auto;gap:9px;align-items:center;padding:9px 8px;border-radius:6px;margin-bottom:6px;background:var(--s2);border:2px solid #000}
+.bd-row.me{outline:2px solid var(--gold);background:#1c1a14}
+.bd-pos{font-family:var(--px);font-size:9px;color:var(--muted);text-align:center}
+.bd-row canvas{width:38px;height:auto}
+.bd-nick{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bd-rank{font-family:var(--px);font-size:7px;color:var(--rc,#9aa3b8)}
+.bd-days{font-family:var(--px);font-size:10px;color:var(--teal)}
+.empty{font-size:13px;color:var(--muted);line-height:1.6;text-align:center;padding:14px 6px}
+
+/* нижняя навигация */
+.tabbar{position:fixed;z-index:20;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none}
+.tabbar-in{pointer-events:auto;width:100%;max-width:460px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(0deg,#0a0b10 70%,rgba(10,11,16,0))}
+.tab{padding:11px 4px;border-radius:6px;background:var(--s2);border:2px solid #000;outline:1px solid var(--line);outline-offset:-3px;font-family:var(--px);font-size:8px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:7px}
+.tab.on{color:var(--gold);outline:2px solid var(--gold);background:#1c1a14}
+
+/* модалка, тосты */
+.modal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,6,10,.82)}
+.modal.show{display:flex}
+.modal-box{width:100%;max-width:340px;text-align:center}
+.modal-box .px{line-height:1.6}
+.toast{position:fixed;z-index:70;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translate(-50%,14px);opacity:0;pointer-events:none;background:#0f1320;border:2px solid #000;outline:1px solid var(--line2);outline-offset:-3px;padding:11px 16px;border-radius:6px;font-size:13px;font-weight:600;max-width:90vw;text-align:center;transition:all .22s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:360px){.logo{font-size:28px}.ladder div{font-size:5px}}
 </style>
 </head>
 <body>
 <div class="app" id="app"></div>
-
-<div class="overlay" id="calOverlay">
-  <div class="sheet">
-    <div class="sh-head"><div class="sh-title">🗓 Челлендж</div><button class="icobtn" id="calClose">✕</button></div>
-    <div class="grp">
-      <div class="grp-title">Период</div>
-      <div class="g2">
-        <div class="field"><label>Начало</label><input class="inp" type="date" id="calStart"></div>
-        <div class="field"><label>Конец</label><input class="inp" type="date" id="calEnd"></div>
-      </div>
-      <div class="dur-box" id="calDur">Выбери даты</div>
-    </div>
-    <div class="g2btn" style="margin-top:4px">
-      <button class="btn-s" id="calCancel">Отмена</button>
-      <button class="btn-p" id="calSave">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="setOverlay">
-  <div class="sheet">
-    <div class="sh-head"><div class="sh-title">Настройки</div><button class="icobtn" id="setClose">✕</button></div>
-    <div class="grp">
-      <div class="grp-title">Профиль</div>
-      <div class="field"><label>Название трекера</label><input class="inp" id="cfgTitle"></div>
-      <div class="field"><label>Имя персонажа</label><input class="inp" id="cfgName"></div>
-      <div class="g2">
-        <div class="field"><label>Аватар-эмодзи</label><input class="inp" id="cfgEmoji" maxlength="4"></div>
-        <div class="field"><label>Цель XP в день</label><input class="inp" type="number" min="1" id="cfgGoal"></div>
-      </div>
-      <div class="field"><label>Фото аватара</label><input class="inp" type="file" accept="image/*" id="cfgPhoto"></div>
-    </div>
-    <div class="grp">
-      <div class="grp-title">Штрафы и стрик</div>
-      <div class="g2">
-        <div class="field"><label>Штраф за пропуск</label><input class="inp" type="number" id="cfgPenalty"></div>
-        <div class="field"><label>Мин. XP для стрика</label><input class="inp" type="number" id="cfgThreshold"></div>
-      </div>
-      <div class="hint">Штраф = за каждый прошлый день с 0 XP. Стрик считается если набрано ≥ порога подряд.</div>
-    </div>
-    <div class="grp">
-      <div class="grp-title">Бонусы за стрик</div>
-      <div id="rulesUI"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-top:8px">
-        <div class="field"><label>Дней подряд</label><input class="inp" type="number" id="nrDays" value="7" min="1"></div>
-        <div class="field"><label>Бонус XP</label><input class="inp" type="number" id="nrBonus" value="15" min="1"></div>
-        <button class="mini" id="addRuleBtn" style="margin-top:22px">+</button>
-      </div>
-    </div>
-    <div class="grp">
-      <div class="grp-title">Задания <span style="color:var(--faint);font-size:10px;font-weight:400;text-transform:none">· перетащи чтобы изменить порядок</span></div>
-      <div id="tasksUI"></div>
-      <div style="display:grid;grid-template-columns:1fr 64px 48px auto auto;gap:6px;align-items:end;margin-top:10px">
-        <div class="field"><label>Название</label><input class="inp" id="ntName"></div>
-        <div class="field"><label>Тип</label><select class="inp" id="ntType"><option value="checkbox">Чек</option><option value="number">Число</option></select></div>
-        <div class="field"><label>XP</label><input class="inp" type="number" id="ntXP" value="3" min="1"></div>
-        <div class="field"><label>Стрик</label><button class="tog on" id="ntStreakTog" onclick="this.classList.toggle('on');this.classList.toggle('off');this.textContent=this.classList.contains('on')?'🔥':'—'">🔥</button></div>
-        <button class="mini" id="addTaskBtn" style="margin-top:22px">+</button>
-      </div>
-    </div>
-    <div class="grp">
-      <div class="grp-title">Уровни</div>
-      <div class="lv-auto-badge">Пороги XP считаются автоматически</div>
-      <div id="levelsUI"></div>
-      <div class="hint" id="lvHint"></div>
-    </div>
-    <div class="grp">
-      <div class="grp-title">Данные</div>
-      <button class="btn-d" id="resetBtn">Сбросить все данные</button>
-      <div class="hint" style="text-align:center;margin-top:8px">Данные синхронизируются в облаке по твоему коду активации</div>
-    </div>
-    <div class="save-bar">
-      <button class="btn-s" id="cancelSet">Отмена</button>
-      <button class="btn-p" id="saveSet">Сохранить</button>
-    </div>
-    <div class="notice" id="setNotice"></div>
-  </div>
-</div>
-
-<div class="overlay" id="worldOverlay">
-  <div class="sheet">
-    <div class="sh-head"><div class="sh-title">🌍 Мир</div><button class="icobtn" id="worldClose">✕</button></div>
-    <div id="worldBody"></div>
-  </div>
-</div>
-<div class="w-toast" id="wToast"></div>
-
+<div class="modal" id="modal"></div>
+<div class="toast" id="toast"></div>
 <script>
-// ── SUPABASE ───────────────────────────────────────────────────────────────
+// ── PIXEL HERO (16-bit) ────────────────────────────────────────────────────
+// Герой собирается из слоёв на сетке 20×28, затем добавляется контур. Вид: спереди.
+const SKIN=['#fcd7b6','#f0b48a','#cf8a5a','#a4673c','#6b4226'];
+const HAIRC=['#1d1b22','#4b2e1b','#8b5a2b','#e0b04a','#c8412f','#e9e4d4','#3f7de8','#ec7fb0'];
+const OUTC=['#e5484d','#f59e0b','#2ecc71','#38bdf8','#6366f1','#a855f7','#ecedf2','#2b3040'];
+const HAIR_NAMES=['Короткая','Шипы','Ирокез','Длинные','Каре','Хвост','Пучок','Афро'];
+const OUTFIT_NAMES=['Худи','Футболка','Бомбер','Броня','Спорт','Формал'];
+const ACC_NAMES=['Нет','Очки','Тёмные','Кепка','Повязка'];
+const AV_RANGE={g:2,sk:5,h:8,hc:8,o:6,oc:8,a:5};
+const OUTLINE='#150f1f';
+
+function shade(hex,f){
+  const h=hex.replace('#','');
+  const c=[0,2,4].map(i=>parseInt(h.slice(i,i+2),16));
+  const m=c.map(v=>Math.max(0,Math.min(255,Math.round(f<1?v*f:v+(255-v)*(f-1)))));
+  return'#'+m.map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+function makeGrid(w,h){
+  const g=Array.from({length:h},()=>Array(w).fill(null));
+  return{w,h,g,
+    px(x,y,c){if(x>=0&&y>=0&&x<w&&y<h)g[y][x]=c;},
+    rect(x,y,ww,hh,c){for(let j=0;j<hh;j++)for(let i=0;i<ww;i++)this.px(x+i,y+j,c);}};
+}
+
+function buildHero(av){
+  const G=makeGrid(20,28),girl=av.g===1;
+  const skin=SKIN[av.sk],skinD=shade(skin,.84);
+  const hair=HAIRC[av.hc],hairD=shade(hair,.72),hairL=shade(hair,1.25);
+  const col=OUTC[av.oc],colD=shade(col,.74),colL=shade(col,1.18);
+  const t0=girl?6:5,t1=girl?13:14,tw=t1-t0+1,aL=girl?4:3,aR=girl?14:15;
+  const o=av.o;
+
+  // 1. задние волосы
+  if(av.h===3){G.rect(4,5,12,15,hair);G.rect(4,17,12,3,hairD);}   // длинные
+  if(av.h===4){G.rect(4,5,12,8,hair);}                             // каре
+  if(av.h===5){G.rect(15,6,3,3,hair);G.rect(16,9,2,5,hair);G.rect(16,13,2,1,hairD);} // хвост
+  if(av.h===7){G.rect(3,2,14,9,hair);G.rect(2,4,16,5,hair);}       // афро
+
+  // 2. одежда: ноги, торс, руки
+  let pants='#2b3347',shoes='#e9ecf3',sleeveLen=5,skirt=false,armCol=col;
+  if(o===0){pants='#2f3650';shoes='#e9ecf3';}
+  if(o===1){pants='#3b5b92';shoes='#2b2230';sleeveLen=2;armCol=col;}
+  if(o===2){pants='#232733';shoes='#3a2c28';}
+  if(o===3){pants='#4b5160';shoes='#5a3b26';}
+  if(o===4){pants=colD;shoes=col;sleeveLen=0;}
+  if(o===5){pants='#1d2030';shoes='#14101e';skirt=girl;}
+  const pantsD=shade(pants,.78);
+
+  const legTop=21,legH=5;
+  if(!(o===4)&&!skirt){
+    G.rect(6,legTop,3,legH,pants);G.rect(11,legTop,3,legH,pants);
+    G.rect(8,legTop,1,legH,pantsD);G.rect(13,legTop,1,legH,pantsD);
+  }else if(o===4){ // шорты + голые ноги
+    G.rect(6,legTop,3,3,pants);G.rect(11,legTop,3,3,pants);
+    G.rect(6,legTop+3,3,2,skin);G.rect(11,legTop+3,3,2,skin);
+    G.rect(8,legTop+3,1,2,skinD);G.rect(13,legTop+3,1,2,skinD);
+  }else{ // платье: ноги телесные
+    G.rect(6,23,3,3,skin);G.rect(11,23,3,3,skin);
+    G.rect(8,23,1,3,skinD);G.rect(13,23,1,3,skinD);
+  }
+  G.rect(5,26,4,2,shoes);G.rect(11,26,4,2,shoes);
+  G.rect(5,27,4,1,shade(shoes,.7));G.rect(11,27,4,1,shade(shoes,.7));
+
+  // торс
+  const torso=(c,cD)=>{G.rect(t0,14,tw,7,c);G.rect(t1,14,1,7,cD);G.rect(t0,20,tw,1,cD);};
+  if(o===0){ // худи
+    torso(col,colD);
+    G.rect(t0+1,13,tw-2,1,colL);                       // капюшон у шеи
+    G.rect(t0+2,17,tw-4,3,colD);                       // карман
+    G.px(9,15,colL);G.px(10,15,colL);G.px(9,16,colL);G.px(10,16,colL); // шнурки
+  }else if(o===1){ // футболка
+    torso(col,colD);
+    G.rect(8,14,4,1,skinD);                            // вырез
+  }else if(o===2){ // бомбер
+    torso(col,colD);
+    G.rect(9,14,2,7,colL);G.px(9,14,'#1d1b22');G.px(10,14,'#1d1b22'); // молния
+    G.rect(t0,14,tw,1,colD);
+    G.rect(t0,19,tw,1,'#2b3040');                      // резинка
+  }else if(o===3){ // броня
+    torso('#aab4c6','#7a8499');
+    G.rect(t0,14,tw,1,'#d4dbea');
+    G.rect(8,16,4,3,col);G.px(9,17,'#fff7d1');G.px(10,17,'#fff7d1'); // эмблема
+    G.rect(t0,19,tw,2,'#6b7488');
+  }else if(o===4){ // спорт: майка
+    G.rect(t0,14,tw,5,col);G.rect(t1,14,1,5,colD);
+    G.rect(t0,19,tw,2,skin);G.rect(t0,19,tw,2,col);G.rect(t0,19,tw,1,colD);
+    G.rect(t0,14,2,2,skin);G.rect(t1-1,14,2,2,skin);  // вырез под плечи
+    G.rect(9,14,2,1,skinD);
+  }else if(o===5){ // формал
+    if(!girl){
+      torso('#262a3b','#171a27');
+      G.rect(8,14,4,4,'#f3f4f8');G.rect(9,14,2,1,skinD);   // рубашка
+      G.rect(9,15,2,5,col);G.px(9,15,shade(col,1.2));       // галстук
+    }else{
+      G.rect(t0,14,tw,4,col);G.rect(t1,14,1,4,colD);        // лиф
+      G.rect(t0-1,18,tw+2,5,col);G.rect(t1+1,18,1,5,colD);  // юбка
+      G.rect(t0-1,22,tw+2,1,colD);
+      G.rect(8,14,4,1,skinD);
+    }
+  }
+
+  // руки
+  const sleeveC=o===3?'#aab4c6':(o===5&&!girl)?'#262a3b':col;
+  const sleeveD=shade(sleeveC,.74);
+  const arm=(x)=>{
+    if(o===4){G.rect(x,14,2,5,skin);G.rect(x+(x<10?0:1),14,1,5,skinD);}
+    else{
+      G.rect(x,14,2,sleeveLen,sleeveC);
+      G.rect(x+(x<10?0:1),14,1,sleeveLen,sleeveD);
+      if(sleeveLen<5){G.rect(x,14+sleeveLen,2,5-sleeveLen,skin);G.rect(x+(x<10?0:1),14+sleeveLen,1,5-sleeveLen,skinD);}
+    }
+    G.rect(x,19,2,2,skin);G.rect(x+(x<10?0:1),19,1,2,skinD);
+  };
+  arm(aL);arm(aR);
+  if(o===3){G.rect(aL-1,13,3,2,col);G.rect(aR,13,3,2,col);}      // наплечники
+
+  // 3. шея и голова
+  G.rect(9,13,2,1,skinD);
+  G.rect(5,4,10,9,skin);
+  G.px(5,4,null);G.px(14,4,null);G.px(5,12,null);G.px(14,12,null);
+  G.rect(14,5,1,7,skinD);G.rect(6,12,8,1,skinD);
+  G.rect(4,8,1,2,skin);G.rect(15,8,1,2,skinD);                    // уши
+
+  // лицо
+  const eye='#1d1b2e';
+  G.rect(7,8,1,2,eye);G.rect(12,8,1,2,eye);
+  G.px(7,8,'#3a3358');G.px(12,8,'#3a3358');
+  if(girl){G.px(6,8,eye);G.px(13,8,eye);G.px(6,10,'#f29ab0');G.px(13,10,'#f29ab0');}
+  G.rect(9,11,2,1,girl?'#d9546a':'#9b4a3a');
+
+  // 4. волосы поверх головы
+  const h=av.h;
+  if(h===0){ // короткая
+    G.rect(5,3,10,3,hair);G.rect(4,4,1,4,hair);G.rect(15,4,1,4,hair);
+    G.rect(5,6,3,1,hair);G.rect(12,6,3,1,hair);G.rect(5,3,10,1,hairL);
+  }else if(h===1){ // шипы
+    G.rect(5,3,10,3,hair);G.rect(4,4,1,4,hair);G.rect(15,4,1,4,hair);
+    G.rect(5,6,2,1,hair);G.rect(13,6,2,1,hair);
+    [5,8,11,14].forEach((x,i)=>{G.rect(x-(i%2?0:0),1+(i%2),2,2,hair);});
+    G.rect(7,2,2,2,hair);G.rect(10,2,2,2,hair);G.rect(5,3,10,1,hairL);
+  }else if(h===2){ // ирокез
+    G.rect(5,5,10,1,hairD);G.rect(4,6,1,2,hairD);G.rect(15,6,1,2,hairD);
+    G.rect(8,0,4,6,hair);G.rect(9,0,2,1,hairL);
+  }else if(h===3){ // длинные
+    G.rect(5,3,10,3,hair);G.rect(4,4,1,9,hair);G.rect(15,4,1,9,hair);
+    G.rect(5,6,10,1,hair);G.px(9,6,null);G.px(10,6,null);G.rect(5,3,10,1,hairL);
+    G.rect(5,13,2,7,hair);G.rect(13,13,2,7,hair);
+  }else if(h===4){ // каре
+    G.rect(5,3,10,3,hair);G.rect(4,4,1,9,hair);G.rect(15,4,1,9,hair);
+    G.rect(5,6,10,1,hair);G.rect(5,7,2,1,hair);G.rect(13,7,2,1,hair);G.rect(5,3,10,1,hairL);
+  }else if(h===5){ // хвост
+    G.rect(5,3,10,3,hair);G.rect(4,4,1,5,hair);G.rect(15,4,1,3,hair);
+    G.rect(5,6,3,1,hair);G.rect(12,6,3,1,hair);G.rect(5,3,10,1,hairL);
+    G.rect(15,5,2,2,hairD);
+  }else if(h===6){ // пучок
+    G.rect(5,3,10,3,hair);G.rect(4,4,1,4,hair);G.rect(15,4,1,4,hair);
+    G.rect(5,6,3,1,hair);G.rect(12,6,3,1,hair);G.rect(5,3,10,1,hairL);
+    G.rect(8,0,4,3,hair);G.rect(9,0,2,1,hairL);G.rect(7,2,6,1,hairD);
+  }else if(h===7){ // афро
+    G.rect(4,2,12,5,hair);G.rect(3,3,14,5,hair);G.rect(4,6,2,3,hair);G.rect(14,6,2,3,hair);
+    G.rect(4,1,12,1,hairL);G.rect(6,0,8,1,hairL);G.rect(5,6,10,1,hair);G.px(9,6,null);G.px(10,6,null);
+  }
+
+  // 5. аксессуары
+  const a=av.a;
+  if(a===1){ // очки
+    const fr='#14101e';
+    [6,11].forEach(x=>{G.rect(x,7,3,1,fr);G.rect(x,10,3,1,fr);G.px(x,8,fr);G.px(x,9,fr);G.px(x+2,8,fr);G.px(x+2,9,fr);});
+    G.px(9,8,fr);G.px(10,8,fr);G.px(7,8,eye);G.px(7,9,eye);G.px(12,8,eye);G.px(12,9,eye);
+  }else if(a===2){ // тёмные
+    G.rect(6,8,3,2,'#0b0b10');G.rect(11,8,3,2,'#0b0b10');G.rect(9,8,2,1,'#0b0b10');
+    G.px(6,8,'#6b7280');G.px(11,8,'#6b7280');
+  }else if(a===3){ // кепка
+    G.rect(5,2,10,4,col);G.px(5,2,null);G.px(14,2,null);G.rect(4,6,12,1,colD);G.rect(5,2,10,1,colL);
+    G.rect(14,3,1,3,colD);
+  }else if(a===4){ // повязка
+    G.rect(4,5,12,1,col);G.rect(4,5,1,2,col);G.rect(15,5,2,2,colD);
+  }
+
+  return G;
+}
+
+// контур вокруг непрозрачных пикселей; возвращает сетку (w+2)×(h+2)
+function outlineGrid(G){
+  const w=G.w+2,h=G.h+2,O=makeGrid(w,h);
+  for(let y=0;y<G.h;y++)for(let x=0;x<G.w;x++)if(G.g[y][x])O.g[y+1][x+1]=G.g[y][x];
+  const src=O.g.map(r=>r.slice());
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    if(src[y][x])continue;
+    const nb=[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>{const yy=y+dy,xx=x+dx;return yy>=0&&xx>=0&&yy<h&&xx<w&&src[yy][xx];});
+    if(nb)O.g[y][x]=OUTLINE;
+  }
+  return O;
+}
+
+// рисует героя в canvas; crop='head' — только голова (для списков)
+function drawHero(cv,av,crop){
+  const O=outlineGrid(buildHero(av));
+  const x0=0,y0=0,x1=O.w,y1=crop==='head'?15:O.h;
+  const w=x1-x0,h=y1-y0;
+  cv.width=w;cv.height=h;
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,w,h);
+  for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const c=O.g[y][x];if(c){ctx.fillStyle=c;ctx.fillRect(x-x0,y-y0,1,1);}}
+  cv.style.imageRendering='pixelated';
+}
+
+function heroCanvas(av,cls,crop){
+  const cv=document.createElement('canvas');
+  if(cls)cv.className=cls;
+  drawHero(cv,av,crop);
+  return cv;
+}
+
+function randomAvatar(){
+  const r=n=>Math.floor(Math.random()*n);
+  return{g:r(2),sk:r(5),h:r(8),hc:r(8),o:r(6),oc:r(8),a:r(5)};
+}
+function validAvatar(a){
+  return !!a&&Object.keys(AV_RANGE).every(k=>Number.isInteger(a[k])&&a[k]>=0&&a[k]<AV_RANGE[k]);
+}
+
+// ── ПИКСЕЛЬНЫЕ ИКОНКИ СТАТОВ (8×8) ─────────────────────────────────────────
+const ICONS={
+  VIGOR:['.##..##.','########','########','########','.######.','..####..','...##...','........'],
+  MIND:['..####..','.#++++#.','########','.######.','..####..','...##...','........','........'],
+  WILL:['########','#++++++#','#++++++#','#++++++#','.#++++#.','..#++#..','...##...','........'],
+  AURA:['...##...','...##...','########','.######.','..####..','.##..##.','.#....#.','........'],
+  GOLD:['..####..','.######.','##+##+##','##+##+##','##+##+##','.######.','..####..','........'],
+};
+function iconSVG(stat,color,size){
+  const m=ICONS[stat];if(!m)return'';
+  let r='';
+  m.forEach((row,y)=>{for(let x=0;x<8;x++){const ch=row[x];if(ch==='#')r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>`;else if(ch==='+')r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${shade(color,.62)}"/>`;}});
+  return`<svg width="${size}" height="${size}" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
+}
+
+// ── КОНФИГ ─────────────────────────────────────────────────────────────────
 const SUPA_URL='https://ivmdbkukjvxzoazcicet.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2bWRia3VranZ4em9hemNpY2V0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMTk5OTgsImV4cCI6MjA5MjU5NTk5OH0.0--m60cy6Ppz3_TC1-aX8sBG1ibyqHWE-ozR4y0zZM8';
+const SESSION_URL='https://habit-bot-nu.vercel.app/api/session';
+const BOT_URL='https://t.me/stabilityhabits_bot';
+const ACT_KEY='habit-rpg-code';
+const LS_KEY='nonpc-v2';
 
-function supaHeaders(){return{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'};}
+const STATS=['VIGOR','MIND','WILL','AURA','GOLD'];
+const STAT_META={
+  VIGOR:{c:'#ff6b6b',ru:'Тело',hint:'сон, вода, движение, еда'},
+  MIND:{c:'#5bd9d0',ru:'Разум',hint:'чтение, учёба, глубокая работа'},
+  WILL:{c:'#a78bfa',ru:'Воля',hint:'отказ от импульсов, дисциплина'},
+  AURA:{c:'#f472b6',ru:'Влияние',hint:'контент, общение, видимость'},
+  GOLD:{c:'#f3c55a',ru:'Деньги',hint:'доход, учёт, работа на результат'},
+};
+const RANKS=['NPC','ROOKIE','PLAYER','VETERAN','ELITE','LEGEND'];
+const RANK_AT=[0,1,7,21,45,90];
+const RANK_C={NPC:'#8a93a8',ROOKIE:'#6fe28b',PLAYER:'#5bd9d0',VETERAN:'#a78bfa',ELITE:'#ffd24a',LEGEND:'#ff6b9a'};
+const DAILY_CAP=150;
 
-// все обращения к базе идут через серверные функции: таблицы напрямую недоступны
+const PROGRAMS=[
+  {days:7,name:'РАЗВЕДКА',d:'Неделя, чтобы понять, твоё ли это. Без обязательств.'},
+  {days:21,name:'ПРИВЫЧКА',d:'Три недели подряд. Достаточно, чтобы начать чувствовать разницу.'},
+  {days:30,name:'СЕЗОН',d:'Месяц. Полноценный сезон: ранг, серия, результат.'},
+  {days:66,name:'ЛЕГЕНДА',d:'66 дней: в среднем столько нужно, чтобы действие стало привычкой.'},
+];
+const ENEMIES=[
+  {id:'SCROLL',name:'Бесконечная лента',q:'Сколько раз сегодня палец сам открыл ленту?'},
+  {id:'SMOKE',name:'Никотин',q:'Тяга придёт. Она проходит за несколько минут.'},
+  {id:'BOOZE',name:'Алкоголь',q:'Сегодня без. Это и есть победа.'},
+  {id:'SUGAR',name:'Сахар и фастфуд',q:'Еда по расписанию, а не по настроению.'},
+  {id:'LAZY',name:'Диван и откладывание',q:'Начать на пять минут. Остальное сделает инерция.'},
+  {id:'SLEEP',name:'Сбитый режим',q:'Ночь решает, каким будет завтрашний день.'},
+  {id:'ALONE',name:'Одиночество',q:'Один живой разговор в день. Без экрана между вами.'},
+];
+const NICKS=['Рысь','Волк','Ворон','Тень','Кай','Нова','Феникс','Гром','Лис','Искра','Орион','Мираж'];
+const CAST=[
+  {g:0,sk:1,h:0,hc:1,o:0,oc:3,a:0},{g:1,sk:0,h:5,hc:3,o:1,oc:0,a:0},{g:0,sk:3,h:2,hc:0,o:2,oc:4,a:2},
+  {g:1,sk:2,h:3,hc:7,o:5,oc:5,a:1},{g:0,sk:4,h:7,hc:0,o:4,oc:2,a:3},
+];
+const NICK_RE=/^[A-Za-zА-Яа-яЁё0-9_ .-]{3,16}$/;
+
+// ── УТИЛИТЫ ────────────────────────────────────────────────────────────────
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const n=v=>Number(v)||0;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const plural=(k,f)=>{const a=Math.abs(k)%100,b=a%10;return a>10&&a<20?f[2]:b>1&&b<5?f[1]:b===1?f[0]:f[2];};
+const dayNum=iso=>Math.floor(Date.UTC(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10))/86400000);
+const dayIso=num=>new Date(num*86400000).toISOString().slice(0,10);
+const rankColor=r=>RANK_C[r]||'#8a93a8';
+const rankIdx=r=>Math.max(0,RANKS.indexOf(r));
+const levelOf=xp=>Math.floor(Math.sqrt(Math.max(0,xp)/30))+1;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function hap(kind){try{const H=TGW&&TGW.HapticFeedback;if(!H)return;if(kind==='ok')H.notificationOccurred('success');else if(kind==='err')H.notificationOccurred('error');else H.impactOccurred('light');}catch{}}
+const safeAv=a=>validAvatar(a)?a:{g:0,sk:1,h:0,hc:1,o:0,oc:3,a:0};
+const avAttr=a=>{a=safeAv(a);return`${a.g},${a.sk},${a.h},${a.hc},${a.o},${a.oc},${a.a}`;};
+const parseAv=s=>{const p=String(s).split(',').map(Number);return safeAv({g:p[0],sk:p[1],h:p[2],hc:p[3],o:p[4],oc:p[5],a:p[6]});};
+const heroTag=(a,crop,cls)=>`<canvas class="${cls||''}" data-av="${avAttr(a)}"${crop?` data-crop="${crop}"`:''}></canvas>`;
+function paintHeroes(root){(root||document).querySelectorAll('canvas[data-av]').forEach(cv=>drawHero(cv,parseAv(cv.dataset.av),cv.dataset.crop||undefined));}
+
+let toastTimer=null;
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2400);}
+function modal(html,onclose){const m=$('modal');m.innerHTML=`<div class="panel modal-box">${html}</div>`;m.classList.add('show');m.onclick=e=>{if(e.target===m||e.target.closest('[data-x]')){m.classList.remove('show');if(onclose)onclose();}};}
+function popXP(txt,el){const r=el.getBoundingClientRect();const p=document.createElement('div');p.className='pop';p.textContent=txt;p.style.left=(r.left+r.width/2-30)+'px';p.style.top=(r.top-6)+'px';document.body.appendChild(p);setTimeout(()=>p.remove(),950);}
+
+// ── БАЗА ───────────────────────────────────────────────────────────────────
 async function rpc(fn,args){
-  const r=await fetch(`${SUPA_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:supaHeaders(),body:JSON.stringify(args)});
+  const r=await fetch(`${SUPA_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'},body:JSON.stringify(args)});
   if(!r.ok)throw new Error('http '+r.status);
   return r.json();
 }
 
-async function supaUpsert(code,data){
-  try{
-    const res=await rpc('save_data',{p_code:code,p_data:data});
-    return !!(res&&res.ok);
-  }catch{return false;}
-}
-
-// debounced cloud sync
-let syncTimer=null;
-function scheduleSync(){
-  setSyncDot('syncing');
-  clearTimeout(syncTimer);
-  syncTimer=setTimeout(async()=>{
-    const ok=await supaUpsert(userCode,S);
-    setSyncDot(ok?'ok':'err');
-  },1500);
-}
-function setSyncDot(state){
-  const d=document.getElementById('syncDot');
-  if(d){d.className='sync-dot '+state;}
-}
-
-// ── ACTIVATION ─────────────────────────────────────────────────────────────
-const ACT_KEY='habit-rpg-code';
+// ── СОСТОЯНИЕ ──────────────────────────────────────────────────────────────
+const DEF=()=>({v:2,program:null,enemy:null,enemyLog:{},taken:{},perfect:''});
+let S=DEF();
 let userCode=null;
 try{userCode=localStorage.getItem(ACT_KEY);}catch{}
+const W={data:null,loading:false,at:0,error:false,busy:false};
+const ui={tab:'quests',step:null,hl:null,edit:false,reprogram:false,reenemy:false};
+const C={av:null,nick:''};
 
-function showActivation(){
-  document.getElementById('app').innerHTML=`
-    <div class="act-screen">
-      <div class="act-logo">⚔️</div>
-      <div class="act-title">HABIT RPG</div>
-      <div class="act-sub">Введи код активации,<br>чтобы начать</div>
-      <input class="act-input" id="actInput" placeholder="HRPG-XXXX-XXXX-XXXX" maxlength="19" autocomplete="off" autocorrect="off" spellcheck="false">
-      <div class="act-error" id="actError"></div>
-      <button class="act-btn" id="actBtn">Активировать</button>
-      <div class="act-loading" id="actLoading"></div>
-      <a class="act-link" href="https://t.me/stabilityhabits_bot">Открыть в Telegram</a>
-    </div>`;
-  const inp=document.getElementById('actInput'),btn=document.getElementById('actBtn'),err=document.getElementById('actError'),loading=document.getElementById('actLoading');
-  inp.oninput=()=>{
-    const raw=inp.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
-    let f=raw.slice(0,4);
-    if(raw.length>4)f+='-'+raw.slice(4,8);
-    if(raw.length>8)f+='-'+raw.slice(8,12);
-    if(raw.length>12)f+='-'+raw.slice(12,16);
-    inp.value=f;err.textContent='';inp.classList.remove('error');
-  };
-  inp.onkeydown=e=>{if(e.key==='Enter')btn.click();};
-  btn.onclick=async()=>{
-    const code=inp.value.trim().toUpperCase();
-    btn.disabled=true;loading.textContent='Проверяю код...';
-    let res=null;
-    try{res=await rpc('activate_code',{p_code:code});}
-    catch{loading.textContent='';btn.disabled=false;err.textContent='Нет связи с сервером. Попробуй ещё раз.';return;}
-    if(!res||!res.ok){
-      loading.textContent='';btn.disabled=false;
-      err.textContent='Неверный код. Проверь и попробуй снова.';
-      inp.classList.add('error');setTimeout(()=>inp.classList.remove('error'),400);
-      return;
-    }
-    try{localStorage.setItem(ACT_KEY,code);}catch{}
-    userCode=code;
-    // облачные данные приходят вместе с подтверждением кода
-    applyCloud(res.data,false);
-    saveLocal();
-    pruneEntries();
-    render();
-  };
-}
-
-function applyCloud(cloud,reset){
-  if(cloud){
-    S={...DEFAULTS(),...cloud};
-    S.tasks=S.tasks.map(t=>({streak:true,...t}));
-    if(S.levels&&!S.levelNames){S.levelNames=S.levels.map(l=>({id:l.id,name:l.name,color:l.color}));delete S.levels;}
-    if(!S.levelNames)S.levelNames=DEFAULTS().levelNames;
-  }else if(reset){S=DEFAULTS();}
-}
-
-// ── UTILS ──────────────────────────────────────────────────────────────────
-const DAY=86400000;
-const toISO=d=>d.toISOString().split('T')[0];
-const today=()=>toISO(new Date());
-const uid=()=>Math.random().toString(36).slice(2,9);
-const n=v=>Number(v)||0;
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const esc=s=>String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-function dRange(from,to){const out=[],s=new Date(from+'T12:00:00'),e=new Date(to+'T12:00:00');for(let d=new Date(s);d<=e;d=new Date(d.getTime()+DAY))out.push(toISO(d));return out;}
-const wdShort=iso=>new Date(iso+'T12:00:00').toLocaleDateString('ru-RU',{weekday:'short'}).slice(0,2).toUpperCase();
-const dtShort=iso=>new Date(iso+'T12:00:00').toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
-function hexAlpha(hex,a){const h=hex.replace('#','');const hh=h.length===3?h.split('').map(x=>x+x).join(''):h;return`rgba(${parseInt(hh.slice(0,2),16)},${parseInt(hh.slice(2,4),16)},${parseInt(hh.slice(4,6),16)},${a})`;}
-function ring(pct,color,sz=44){const r=16,c=2*Math.PI*r,off=c-(c*clamp(pct,0,100)/100);return`<svg width="${sz}" height="${sz}" viewBox="0 0 40 40"><circle cx="20" cy="20" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="5"/><circle cx="20" cy="20" r="${r}" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 20 20)"/><text x="20" y="24" text-anchor="middle" fill="${color}" font-size="10" font-weight="700" font-family="Exo 2,sans-serif">${pct}</text></svg>`;}
-
-// ── AUTO LEVELS ────────────────────────────────────────────────────────────
-function calcMaxDailyXP(tasks){return tasks.reduce((s,t)=>s+n(t.xp),0)||20;}
-function autoLevelThresholds(tasks){const m=calcMaxDailyXP(tasks);return[0,7,14,21,30].map(d=>Math.round(d*m*0.7));}
-
-// ── DEFAULTS ───────────────────────────────────────────────────────────────
-const DEFAULTS=()=>({
-  title:'HABIT RPG',name:'PLAYER',emoji:'⚔️',photo:'',
-  goal:20,penalty:10,threshold:15,challenge:null,
-  streakRules:[{id:uid(),days:3,bonus:5},{id:uid(),days:7,bonus:15},{id:uid(),days:14,bonus:30},{id:uid(),days:21,bonus:50}],
-  levelNames:[
-    {id:uid(),name:'Уровень 1',color:'#8cb4ff'},
-    {id:uid(),name:'Уровень 2',color:'#68e1d0'},
-    {id:uid(),name:'Уровень 3',color:'#8fe388'},
-    {id:uid(),name:'Уровень 4',color:'#ffad6b'},
-    {id:uid(),name:'Уровень 5',color:'#f3c55a'}
-  ],
-  tasks:[
-    {id:uid(),name:'Подъём до 8:00',type:'checkbox',xp:2,streak:true},
-    {id:uid(),name:'No Reels',type:'checkbox',xp:3,streak:true},
-    {id:uid(),name:'Тренировка',type:'checkbox',xp:5,streak:true},
-    {id:uid(),name:'Планировка дня',type:'checkbox',xp:2,streak:false},
-    {id:uid(),name:'Творчество',type:'number',xp:2,streak:false},
-    {id:uid(),name:'Работа',type:'number',xp:2,streak:false}
-  ],
-  entries:{}
-});
-
-// ── STATE ──────────────────────────────────────────────────────────────────
-let S;
-const LS_KEY='habit-rpg-v5';
-try{const raw=localStorage.getItem(LS_KEY);S=raw?{...DEFAULTS(),...JSON.parse(raw)}:DEFAULTS();}catch{S=DEFAULTS();}
-if(S.levels&&!S.levelNames){S.levelNames=S.levels.map(l=>({id:l.id,name:l.name,color:l.color}));delete S.levels;}
-if(!S.levelNames)S.levelNames=DEFAULTS().levelNames;
-S.tasks=S.tasks.map(t=>({streak:true,...t}));
-
+function loadLocal(){try{const r=localStorage.getItem(LS_KEY);if(r){const o=JSON.parse(r);if(o&&o.v===2)S={...DEF(),...o};}}catch{}}
 function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(S));}catch{}}
-function save(){saveLocal();if(userCode)scheduleSync();}
-
-let draft=null;
-function openDraft(){draft=JSON.parse(JSON.stringify({title:S.title,name:S.name,emoji:S.emoji,goal:S.goal,penalty:S.penalty,threshold:S.threshold,streakRules:S.streakRules,levelNames:S.levelNames,tasks:S.tasks}));}
-function applyDraft(){Object.assign(S,draft);draft=null;pruneEntries();save();render();}
-function discardDraft(){draft=null;}
-
-function ensureEntry(iso){
-  if(!S.entries[iso])S.entries[iso]={};
-  S.tasks.forEach(t=>{if(S.entries[iso][t.id]===undefined)S.entries[iso][t.id]=t.type==='checkbox'?false:0;});
+let syncTimer=null;
+function setSync(st){const d=$('syncDot');if(d)d.className='sync-dot '+st;}
+function save(){
+  saveLocal();
+  if(!userCode)return;
+  setSync('syncing');clearTimeout(syncTimer);
+  syncTimer=setTimeout(async()=>{let ok=false;try{const r=await rpc('save_data',{p_code:userCode,p_data:S});ok=!!(r&&r.ok);}catch{}setSync(ok?'ok':'err');},1500);
 }
-function pruneEntries(){
-  Object.keys(S.entries).forEach(iso=>{
-    S.tasks.forEach(t=>{if(S.entries[iso][t.id]===undefined)S.entries[iso][t.id]=t.type==='checkbox'?false:0;});
-    Object.keys(S.entries[iso]).forEach(tid=>{if(!S.tasks.find(t=>t.id===tid))delete S.entries[iso][tid];});
-  });
-  ensureEntry(today());
-}
+function applyCloud(cloud){S=(cloud&&cloud.v===2)?{...DEF(),...cloud}:DEF();saveLocal();}
 
-// ── XP & STATS ─────────────────────────────────────────────────────────────
-function dayXP(iso){const e=S.entries[iso];if(!e)return 0;return S.tasks.reduce((sum,t)=>{const v=e[t.id];if(t.type==='checkbox')return sum+(v?n(t.xp):0);return sum+n(v)*n(t.xp);},0);}
-function calcStreak(taskId=null){
-  const start=S.challenge?.start||today();const endDay=S.challenge?.end&&S.challenge.end<today()?S.challenge.end:today();
-  if(start>endDay)return 0;const days=dRange(start,endDay).reverse();let s=0;
-  for(const d of days){if(taskId){ensureEntry(d);const task=S.tasks.find(t=>t.id===taskId);if(!task)break;const val=S.entries[d]?.[taskId];const ok=task.type==='checkbox'?Boolean(val):n(val)>0;if(ok)s++;else break;}else{if(dayXP(d)>=n(S.threshold))s++;else break;}}
-  return s;
-}
-function totalStats(){
-  const start=S.challenge?.start||today();const endDay=S.challenge?.end&&S.challenge.end<today()?S.challenge.end:today();
-  const days=start<=endDay?dRange(start,endDay):[today()];let base=0,filled=0,missed=0;
-  days.forEach(d=>{const x=dayXP(d);if(x>0){base+=x;filled++;}else if(d<today())missed++;});
-  const streak=calcStreak();const bonus=[...S.streakRules].filter(r=>streak>=n(r.days)).sort((a,b)=>b.days-a.days)[0]?.bonus||0;
-  return{base,filled,missed,penalty:missed*n(S.penalty),streak,bonus,total:Math.max(0,base+bonus-missed*n(S.penalty))};
-}
-function buildLevels(){const t=autoLevelThresholds(S.tasks);return S.levelNames.map((ln,i)=>({...ln,min:t[i]||0}));}
-function currentLevel(total){const sorted=buildLevels();let cur=sorted[0];for(const l of sorted)if(total>=n(l.min))cur=l;const idx=sorted.findIndex(l=>l.id===cur.id);return{cur,next:sorted[idx+1]||null,all:sorted};}
-function historyDays(){const start=S.challenge?.start||today();const endDay=S.challenge?.end&&S.challenge.end<today()?S.challenge.end:today();if(start>endDay)return[today()];return dRange(start,endDay);}
-
-// ── DRAG ───────────────────────────────────────────────────────────────────
-let dragSrc=null;
-function initDrag(container,arr,onDrop){
-  container.querySelectorAll('[data-drag-id]').forEach(row=>{
-    row.draggable=true;
-    row.addEventListener('dragstart',e=>{dragSrc=row;row.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
-    row.addEventListener('dragend',()=>{dragSrc=null;container.querySelectorAll('[data-drag-id]').forEach(r=>r.classList.remove('dragging'));});
-    row.addEventListener('dragover',e=>{e.preventDefault();if(dragSrc&&dragSrc!==row){const si=arr.findIndex(x=>x.id===dragSrc.dataset.dragId),ti=arr.findIndex(x=>x.id===row.dataset.dragId);if(si>-1&&ti>-1){const item=arr.splice(si,1)[0];arr.splice(ti,0,item);onDrop();}}});
-  });
-}
-
-// ── RENDER ─────────────────────────────────────────────────────────────────
-let daysOpen=false;
-function render(){
-  pruneEntries();const td=today();
-  if(!S.challenge){
-    document.getElementById('app').innerHTML=`
-      <div class="topbar"><div class="brand">${esc(S.title)}</div><div class="tbr"><button class="icobtn" id="setBtn">⚙️</button></div></div>
-      <div id="worldBanner"></div>
-      <div class="start-screen">
-        <div style="font-size:56px;margin-bottom:16px">⚔️</div>
-        <div class="start-title">${esc(S.name)}</div>
-        <div class="start-sub">Настрой задания в ⚙️ и запусти челлендж.<br>Прогресс считается с сегодняшнего дня.</div>
-        <div class="start-dur"><label>Длительность (дней)</label><input type="number" id="durInput" value="21" min="1" max="365"></div>
-        <button class="btn-start" id="startBtn">🚀 СТАРТ</button>
-      </div>
-      <footer>Данные синхронизируются в облаке</footer>`;
-    document.getElementById('setBtn').onclick=openSet;
-    document.getElementById('startBtn').onclick=()=>{const dur=Math.max(1,n(document.getElementById('durInput').value));const start=today();const end=toISO(new Date(new Date(start+'T12:00:00').getTime()+(dur-1)*DAY));S.challenge={start,end};save();render();};
-    renderWorldBanner();worldLoad();
-    return;
-  }
-  const entry=S.entries[td],st=totalStats(),{cur,next,all}=currentLevel(st.total);
-  const prog=next?clamp(Math.round(((st.total-n(cur.min))/(n(next.min)-n(cur.min)))*100),0,100):100;
-  const todayBase=dayXP(td),todayStreakBonus=[...S.streakRules].filter(r=>st.streak>=n(r.days)).sort((a,b)=>b.days-a.days)[0]?.bonus||0;
-  const todayEarned=todayBase+todayStreakBonus,todayPct=clamp(Math.round((todayBase/Math.max(1,n(S.goal)))*100),0,100);
-  const todayColor=todayPct>=100?'var(--gold)':todayPct>0?'var(--teal)':'rgba(255,255,255,.2)';
-  const s=new Date(S.challenge.start+'T12:00:00'),e=new Date(S.challenge.end+'T12:00:00'),t2=new Date(td+'T12:00:00');
-  const chalTotal=Math.round((e-s)/DAY)+1,chalPassed=clamp(Math.round((t2-s)/DAY)+1,0,chalTotal),chalPct=Math.round(chalPassed/chalTotal*100),chalRemain=Math.max(0,Math.round((e-t2)/DAY));
-  const hDays=historyDays();
-  const daysHTML=hDays.map(d=>{const x=dayXP(d);const pct=clamp(Math.round((x/Math.max(1,n(S.goal)))*100),0,100);const col=pct>=100?'var(--gold)':pct>0?'var(--teal)':'rgba(255,255,255,.15)';return`<div class="day-cell${d===td?' is-today':''}"><div class="dc-wd">${wdShort(d)}</div>${ring(pct,col,42)}<div class="dc-dt">${dtShort(d)}</div><div class="dc-xp">${x} XP</div></div>`;}).join('');
-
-  document.getElementById('app').innerHTML=`
-    <div class="topbar">
-      <div class="brand">${esc(S.title)}<div class="sync-dot" id="syncDot"></div></div>
-      <div class="tbr"><button class="icobtn" id="calBtn">🗓</button><button class="icobtn" id="setBtn">⚙️</button></div>
-    </div>
-    <div id="worldBanner"></div>
-    <div class="chal-bar">
-      <div class="chal-top"><span class="chal-title">🎯 Челлендж</span><span class="chal-dates">${S.challenge.start} → ${S.challenge.end}</span></div>
-      <div class="prog-track"><div class="prog-fill" style="width:${chalPct}%"></div></div>
-      <div class="chal-foot"><span>День ${chalPassed} из ${chalTotal}</span><span>Осталось ${chalRemain} дн. · <button class="chal-reset" id="resetChal">сбросить</button></span></div>
-    </div>
-    <div class="hero">
-      <div class="av-wrap"><div class="av">${S.photo?`<img src="${S.photo}" alt="">`:esc(S.emoji||'⚔️')}</div><div class="av-sub">профиль</div></div>
-      <div class="hero-r">
-        <div class="hname">${esc(S.name)}</div>
-        <div class="rank-row"><div class="rank" style="background:${hexAlpha(cur.color,.14)};border-color:${hexAlpha(cur.color,.3)};color:${cur.color}">${esc(cur.name)}</div><div class="xp-total">${st.total} XP</div></div>
-        <div class="bar-track"><div class="bar-fill" style="width:${prog}%;background:linear-gradient(90deg,${cur.color},#ffe89b)"></div></div>
-        <div class="next-row"><span>${next?`До ${esc(next.name)}`:'🏆 Максимальный уровень'}</span><span>${next?(n(next.min)-st.total)+' XP':''}</span></div>
-      </div>
-    </div>
-    <div class="stats4">
-      <div class="scard"><div class="sv">${st.filled}</div><div class="sl">дней заполнено</div></div>
-      <div class="scard"><div class="sv" style="${st.streak>0?'color:var(--orange)':''}">${st.streak}🔥</div><div class="sl">стрик</div></div>
-      <div class="scard"><div class="sv" style="color:var(--red)">-${st.penalty}</div><div class="sl">штрафы XP</div></div>
-      <div class="scard"><div class="sv" style="color:var(--green)">+${st.bonus}</div><div class="sl">бонус стрика</div></div>
-    </div>
-    <div class="sec">
-      <div class="sec-head"><div class="sec-title">Сегодня</div><div class="sec-sub">${new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'})}</div></div>
-      <div class="task-list">
-        ${S.tasks.map(t=>{const val=entry[t.id];const ts=t.streak?calcStreak(t.id):null;const badge=t.streak?`<span class="task-streak-badge${ts>0?' on':''}">${ts}🔥</span>`:'';
-          if(t.type==='checkbox')return`<div class="task-item${val?' done':''}"><button class="task-cb" data-toggle="${t.id}"><div class="check">${val?'✓':''}</div><div class="task-txt"><div class="task-name">${esc(t.name)}</div><div class="task-meta">+${t.xp} XP ${badge}</div></div></button></div>`;
-          return`<div class="task-item"><div class="task-txt" style="flex:1"><div class="task-name">${esc(t.name)}</div><div class="task-meta">${t.xp} XP за ед. ${badge}</div></div><input class="num-inp" type="number" min="0" value="${val||''}" placeholder="0" data-number="${t.id}"></div>`;
-        }).join('')}
-        <div class="xp-box"><div><div style="font-size:11px;color:var(--muted);margin-bottom:3px">Сегодня заработано</div><div class="xp-earned">+${todayEarned} XP</div></div><div class="chips"><div class="chip">база +${todayBase}</div><div class="chip">стрик +${todayStreakBonus}</div></div></div>
-      </div>
-    </div>
-    <div class="sec">
-      <div class="sec-head"><div class="sec-title">Стрики</div><div class="sec-sub">порог ${S.threshold} XP/день</div></div>
-      <div class="streak-grid">
-        <div class="streak-card"><div class="sc-label">Общий стрик</div><div class="sc-val" style="${st.streak>0?'color:var(--orange)':''}">${st.streak} дней</div><div class="sc-sub">${st.streak>0?`Бонус +${st.bonus} XP`:'Начни сегодня!'}</div></div>
-        <div class="streak-card"><div class="sc-label">Штраф за пропуск</div><div class="sc-val" style="color:var(--red)">-${S.penalty} XP</div><div class="sc-sub">${st.missed} пропущено · -${st.penalty*st.missed} XP</div></div>
-        ${[...S.streakRules].sort((a,b)=>a.days-b.days).map(r=>`<div class="streak-card" style="${st.streak>=n(r.days)?'border-color:rgba(111,226,139,.3);background:rgba(111,226,139,.06)':''}"><div class="sc-label">${r.days} дней подряд</div><div class="sc-val" style="color:var(--green)">+${r.bonus} XP</div><div class="sc-sub">${st.streak>=n(r.days)?'✅ Активен':st.streak+' / '+r.days}</div></div>`).join('')}
-      </div>
-    </div>
-    <div class="sec">
-      <div class="sec-head"><div class="sec-title">Уровни</div></div>
-      <div class="level-list">
-        ${all.map((l,i)=>{const nx=all[i+1];const range=nx?`${l.min}–${n(nx.min)-1} XP`:`${l.min}+ XP`;const remain=st.total<n(l.min)?`${n(l.min)-st.total} XP`:(nx&&st.total<n(nx.min)?`${n(nx.min)-st.total} XP`:'✅');return`<div class="level-row${l.id===cur.id?' active-lv':''}"><div><div class="lv-name" style="color:${l.color}">${esc(l.name)}</div><div class="lv-range">${range}</div></div><div class="lv-remain">${remain}</div></div>`;}).join('')}
-      </div>
-    </div>
-    <div class="sec">
-      <div class="sec-head"><div class="sec-title">История</div><div class="sec-sub">с ${S.challenge.start} · ${hDays.length} дн.</div></div>
-      <button class="days-toggle" id="daysToggle">
-        <div class="dt-left"><div class="dt-title">Статистика по дням</div><div class="dt-sub">Сегодня ${todayBase} XP · ${todayPct}% от цели (${n(S.goal)} XP)</div></div>
-        <div class="dt-right">${ring(todayPct,todayColor,46)}<span class="arrow${daysOpen?' open':''}" id="daysArrow">▼</span></div>
-      </button>
-      <div class="days-wrap" id="daysWrap" style="display:${daysOpen?'block':'none'}"><div class="days-grid">${daysHTML}</div></div>
-    </div>
-    <footer>Данные синхронизируются в облаке по коду активации</footer>`;
-
-  document.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>{S.entries[td][b.dataset.toggle]=!S.entries[td][b.dataset.toggle];save();render();});
-  document.querySelectorAll('[data-number]').forEach(inp=>inp.oninput=e=>{S.entries[td][inp.dataset.number]=n(e.target.value);save();render();});
-  document.getElementById('daysToggle').onclick=()=>{daysOpen=!daysOpen;document.getElementById('daysWrap').style.display=daysOpen?'block':'none';document.getElementById('daysArrow').className='arrow'+(daysOpen?' open':'');};
-  document.getElementById('calBtn').onclick=openCal;
-  document.getElementById('setBtn').onclick=openSet;
-  document.getElementById('resetChal').onclick=()=>{if(confirm('Сбросить челлендж?')){S.challenge=null;S.entries={};save();render();}};
-  renderWorldBanner();worldLoad();
-}
-
-// ── CALENDAR ───────────────────────────────────────────────────────────────
-function openCal(){const td=today();document.getElementById('calStart').value=S.challenge?.start||td;if(!S.challenge){const d=new Date(td+'T12:00:00');d.setDate(d.getDate()+21);document.getElementById('calEnd').value=toISO(d);}else document.getElementById('calEnd').value=S.challenge.end;updCalDur();document.getElementById('calOverlay').classList.add('show');}
-function updCalDur(){const s=document.getElementById('calStart').value,e=document.getElementById('calEnd').value,el=document.getElementById('calDur');if(!s||!e){el.textContent='Выбери даты';return;}const days=Math.round((new Date(e+'T12:00:00')-new Date(s+'T12:00:00'))/DAY)+1;if(days<=0){el.textContent='⚠️ Конец раньше начала';return;}el.textContent=`📅 ${days} дней  ·  ${s} → ${e}`;}
-document.getElementById('calStart').oninput=updCalDur;
-document.getElementById('calEnd').oninput=updCalDur;
-function closeCal(){document.getElementById('calOverlay').classList.remove('show');}
-document.getElementById('calClose').onclick=closeCal;
-document.getElementById('calCancel').onclick=closeCal;
-document.getElementById('calOverlay').onclick=e=>{if(e.target.id==='calOverlay')closeCal();};
-document.getElementById('calSave').onclick=()=>{const s=document.getElementById('calStart').value,e=document.getElementById('calEnd').value;if(!s||!e)return;if(Math.round((new Date(e+'T12:00:00')-new Date(s+'T12:00:00'))/DAY)<0)return;S.challenge={start:s,end:e};Object.keys(S.entries).forEach(k=>{if(k<s)delete S.entries[k];});save();closeCal();render();};
-
-// ── SETTINGS ───────────────────────────────────────────────────────────────
-function openSet(){openDraft();document.getElementById('cfgTitle').value=draft.title;document.getElementById('cfgName').value=draft.name;document.getElementById('cfgEmoji').value=draft.emoji||'';document.getElementById('cfgGoal').value=draft.goal;document.getElementById('cfgPenalty').value=draft.penalty;document.getElementById('cfgThreshold').value=draft.threshold;rebuildRules();rebuildTasks();rebuildLevels();document.getElementById('setOverlay').classList.add('show');}
-function closeSet(){document.getElementById('setOverlay').classList.remove('show');}
-document.getElementById('setClose').onclick=()=>{discardDraft();closeSet();};
-document.getElementById('cancelSet').onclick=()=>{discardDraft();closeSet();};
-document.getElementById('saveSet').onclick=()=>{draft.title=document.getElementById('cfgTitle').value;draft.name=document.getElementById('cfgName').value;draft.emoji=document.getElementById('cfgEmoji').value;draft.goal=Math.max(1,n(document.getElementById('cfgGoal').value));draft.penalty=n(document.getElementById('cfgPenalty').value);draft.threshold=n(document.getElementById('cfgThreshold').value);applyDraft();closeSet();};
-document.getElementById('setOverlay').onclick=e=>{if(e.target.id==='setOverlay'){discardDraft();closeSet();}};
-function note(msg){const el=document.getElementById('setNotice');el.textContent=msg;setTimeout(()=>{if(el.textContent===msg)el.textContent='';},2200);}
-document.getElementById('cfgPhoto').onchange=e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=ev=>{S.photo=ev.target.result;save();render();note('Фото обновлено');};r.readAsDataURL(f);};
-
-function rebuildRules(){const ui=document.getElementById('rulesUI');ui.innerHTML=[...draft.streakRules].sort((a,b)=>a.days-b.days).map(r=>`<div class="rule-row"><input class="inp" type="number" value="${r.days}" data-rd="${r.id}"><input class="inp" type="number" value="${r.bonus}" data-rb="${r.id}"><button class="del" data-rr="${r.id}">✕</button></div>`).join('');ui.querySelectorAll('[data-rd]').forEach(el=>el.oninput=e=>{draft.streakRules.find(r=>r.id===el.dataset.rd).days=n(e.target.value);});ui.querySelectorAll('[data-rb]').forEach(el=>el.oninput=e=>{draft.streakRules.find(r=>r.id===el.dataset.rb).bonus=n(e.target.value);});ui.querySelectorAll('[data-rr]').forEach(el=>el.onclick=()=>{draft.streakRules=draft.streakRules.filter(r=>r.id!==el.dataset.rr);rebuildRules();});}
-document.getElementById('addRuleBtn').onclick=()=>{const d=n(document.getElementById('nrDays').value),b=n(document.getElementById('nrBonus').value);if(!d||!b)return note('Заполни поля');draft.streakRules.push({id:uid(),days:d,bonus:b});rebuildRules();};
-
-function rebuildTasks(){
-  const ui=document.getElementById('tasksUI');
-  ui.innerHTML=draft.tasks.map(t=>`<div class="task-edit-row" data-drag-id="${t.id}"><div class="drag-handle">⠿</div><input class="inp" value="${esc(t.name)}" data-tn="${t.id}"><select class="inp" data-tt="${t.id}"><option value="checkbox"${t.type==='checkbox'?' selected':''}>Чек</option><option value="number"${t.type==='number'?' selected':''}>Число</option></select><input class="inp" type="number" value="${t.xp}" min="1" data-tx="${t.id}"><button class="tog ${t.streak?'on':'off'}" data-ts="${t.id}">${t.streak?'🔥':'—'}</button><button class="del" data-tr="${t.id}">✕</button></div>`).join('');
-  ui.querySelectorAll('[data-tn]').forEach(el=>el.oninput=e=>{draft.tasks.find(t=>t.id===el.dataset.tn).name=e.target.value;rebuildLevels();});
-  ui.querySelectorAll('[data-tt]').forEach(el=>el.onchange=e=>{draft.tasks.find(t=>t.id===el.dataset.tt).type=e.target.value;});
-  ui.querySelectorAll('[data-tx]').forEach(el=>el.oninput=e=>{draft.tasks.find(t=>t.id===el.dataset.tx).xp=n(e.target.value);rebuildLevels();});
-  ui.querySelectorAll('[data-ts]').forEach(el=>el.onclick=()=>{const t=draft.tasks.find(t=>t.id===el.dataset.ts);t.streak=!t.streak;el.classList.toggle('on');el.classList.toggle('off');el.textContent=t.streak?'🔥':'—';});
-  ui.querySelectorAll('[data-tr]').forEach(el=>el.onclick=()=>{draft.tasks=draft.tasks.filter(t=>t.id!==el.dataset.tr);rebuildTasks();rebuildLevels();});
-  initDrag(ui,draft.tasks,()=>{rebuildTasks();});
-}
-document.getElementById('addTaskBtn').onclick=()=>{const name=document.getElementById('ntName').value.trim();const type=document.getElementById('ntType').value;const xp=n(document.getElementById('ntXP').value)||1;const streak=document.getElementById('ntStreakTog').classList.contains('on');if(!name)return note('Введи название');draft.tasks.push({id:uid(),name,type,xp,streak});document.getElementById('ntName').value='';rebuildTasks();rebuildLevels();};
-
-function rebuildLevels(){const thresholds=autoLevelThresholds(draft.tasks);const maxDay=calcMaxDailyXP(draft.tasks);const ui=document.getElementById('levelsUI');ui.innerHTML=draft.levelNames.map((l,i)=>`<div class="lv-edit-row"><input class="inp" value="${esc(l.name)}" data-ln="${l.id}"><input class="inp" type="color" value="${l.color}" data-lc="${l.id}"><div style="font-size:11px;color:var(--teal);white-space:nowrap">${thresholds[i]} XP</div></div>`).join('');ui.querySelectorAll('[data-ln]').forEach(el=>el.oninput=e=>{draft.levelNames.find(l=>l.id===el.dataset.ln).name=e.target.value;});ui.querySelectorAll('[data-lc]').forEach(el=>el.oninput=e=>{draft.levelNames.find(l=>l.id===el.dataset.lc).color=e.target.value;});document.getElementById('lvHint').textContent=`Макс. XP в день: ${maxDay}. Пороги пересчитываются автоматически.`;}
-
-document.getElementById('resetBtn').onclick=()=>{if(!confirm('Сбросить все данные?'))return;S=DEFAULTS();pruneEntries();save();render();closeSet();};
-
-// ── WORLD ──────────────────────────────────────────────────────────────────
-// Общий слой: квесты с фиксированным XP назначает сервер, клиент только отправляет «выполнено».
-const W={loading:false,error:false,data:null,at:0,busy:false,taken:{}};
-const WT_KEY='habit-rpg-world-taken';
-try{W.taken=JSON.parse(localStorage.getItem(WT_KEY)||'{}')||{};}catch{W.taken={};}
-const STAT_META={FAME:{c:'#f3c55a',i:'📣'},GOLD:{c:'#ff9966',i:'💰'},STAMINA:{c:'#6fe28b',i:'⚡'},HP:{c:'#ff6b6b',i:'❤️'},INT:{c:'#5bd9d0',i:'🧠'}};
-const STAT_ORDER=['FAME','GOLD','STAMINA','HP','INT'];
-const plural=(k,f)=>{const a=Math.abs(k)%100,b=a%10;return a>10&&a<20?f[2]:b>1&&b<5?f[1]:b===1?f[0]:f[2];};
-function saveTaken(){try{localStorage.setItem(WT_KEY,JSON.stringify(W.taken));}catch{}}
-let toastTimer=null;
-function worldToast(msg){const el=document.getElementById('wToast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2400);}
-
+// ── МИР ────────────────────────────────────────────────────────────────────
 async function worldLoad(force){
-  if(!userCode||W.loading)return;
-  if(!force&&Date.now()-W.at<120000)return;
-  W.loading=true;W.at=Date.now();
+  if(!userCode)return false;
+  if(W.loading){for(let i=0;i<80&&W.loading;i++)await sleep(100);return !!W.data;}
+  if(!force&&W.data&&Date.now()-W.at<90000)return true;
+  W.loading=true;
   try{
     const r=await rpc('get_world',{p_code:userCode});
     if(r&&r.ok){
-      W.data=r;W.error=false;
+      W.data=r;W.error=false;W.at=Date.now();
       const ids=new Set((r.quests||[]).map(q=>String(q.id)));
-      Object.keys(W.taken).forEach(k=>{if(!ids.has(k))delete W.taken[k];});
-      saveTaken();
+      let ch=false;Object.keys(S.taken).forEach(k=>{if(!ids.has(k)){delete S.taken[k];ch=true;}});
+      if(ch)saveLocal();
     }else W.error=true;
   }catch{W.error=true;}
   W.loading=false;
-  renderWorldBanner();
-  if(document.getElementById('worldOverlay').classList.contains('show'))renderWorld();
+  return !W.error;
 }
 
-function renderWorldBanner(){
-  const el=document.getElementById('worldBanner');if(!el||!userCode)return;
-  const d=W.data;let sub='Общие квесты и рейтинг';
-  if(d&&d.joined){
-    const left=(d.quests||[]).filter(q=>!q.done).length;
-    sub=left?`${left} ${plural(left,['квест','квеста','квестов'])} на сегодня · ${esc(d.me.rank)}`:`Квесты дня закрыты · ${esc(d.me.rank)}`;
-  }else if(d){sub='Войти: общие квесты и рейтинг';}
-  const online=d&&n(d.online_today)>0?`<span class="wb-online">сегодня закрыли: ${n(d.online_today)}</span>`:'';
-  el.innerHTML=`<button class="world-banner" id="worldBtn"><div><div class="wb-title">🌍 Мир</div><div class="wb-sub">${sub}</div></div>${online}</button>`;
-  document.getElementById('worldBtn').onclick=openWorld;
+// ── ЭКРАНЫ-ЗАГЛУШКИ ────────────────────────────────────────────────────────
+function setApp(html,nopad){const a=$('app');a.className='app'+(nopad?' nopad':'');a.innerHTML=html;paintHeroes(a);}
+function msgScreen(inner){setApp(`<div class="screen"><div class="logo sm">NO NPC</div><div style="height:18px"></div>${inner}</div>`,true);}
+
+function showActivation(){
+  msgScreen(`<div class="lead" style="margin-top:0">Введи код доступа,<br>или открой игру через Telegram-бота.</div>
+    <input class="inp act-input" id="actInput" placeholder="HRPG-XXXX-XXXX-XXXX" maxlength="19" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="err" id="actErr"></div>
+    <button class="btn" id="actBtn">ВОЙТИ</button>
+    <a class="link" href="${BOT_URL}">Открыть бота</a>`);
+  const inp=$('actInput'),btn=$('actBtn'),err=$('actErr');
+  inp.oninput=()=>{const raw=inp.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();let f=raw.slice(0,4);if(raw.length>4)f+='-'+raw.slice(4,8);if(raw.length>8)f+='-'+raw.slice(8,12);if(raw.length>12)f+='-'+raw.slice(12,16);inp.value=f;err.textContent='';};
+  inp.onkeydown=e=>{if(e.key==='Enter')btn.click();};
+  btn.onclick=async()=>{
+    const code=inp.value.trim().toUpperCase();btn.disabled=true;err.textContent='';
+    let res=null;try{res=await rpc('activate_code',{p_code:code});}catch{err.textContent='Нет связи. Попробуй ещё раз.';btn.disabled=false;return;}
+    if(!res||!res.ok){err.textContent='Код не подходит.';btn.disabled=false;return;}
+    try{localStorage.setItem(ACT_KEY,code);}catch{}
+    userCode=code;applyCloud(res.data);start();
+  };
 }
 
-function radarSVG(stats){
-  const vals=STAT_ORDER.map(k=>n(stats[k]));const mx=Math.max(60,...vals);
-  const cx=120,cy=120,R=78;
-  const pt=(i,f)=>{const a=(-90+i*72)*Math.PI/180;return[cx+Math.cos(a)*R*f,cy+Math.sin(a)*R*f];};
-  const fmt=p=>p.map(v=>v.toFixed(1)).join(',');
-  const poly=f=>STAT_ORDER.map((_,i)=>fmt(pt(i,f))).join(' ');
-  const shape=vals.map((v,i)=>fmt(pt(i,v/mx))).join(' ');
-  const axes=STAT_ORDER.map((_,i)=>{const[x,y]=pt(i,1);return`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,.08)"/>`;}).join('');
-  const dots=vals.map((v,i)=>{const[x,y]=pt(i,v/mx);return`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${STAT_META[STAT_ORDER[i]].c}"/>`;}).join('');
-  const labels=STAT_ORDER.map((k,i)=>{const[x,y]=pt(i,1.24);return`<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="${STAT_META[k].c}" font-family="Exo 2,sans-serif">${k} ${vals[i]}</text>`;}).join('');
-  return`<svg viewBox="-16 0 272 240" width="100%" style="max-width:280px;display:block;margin:0 auto" role="img" aria-label="Статы"><polygon points="${poly(1)}" fill="none" stroke="rgba(255,255,255,.1)"/><polygon points="${poly(.66)}" fill="none" stroke="rgba(255,255,255,.07)"/><polygon points="${poly(.33)}" fill="none" stroke="rgba(255,255,255,.05)"/>${axes}<polygon points="${shape}" fill="rgba(243,197,90,.22)" stroke="#f3c55a" stroke-width="2" stroke-linejoin="round"/>${dots}${labels}</svg>`;
+function errorScreen(){
+  msgScreen(`<div class="lead" style="margin-top:0">Нет связи с сервером.</div><button class="btn" id="retry">ПОВТОРИТЬ</button>`);
+  $('retry').onclick=()=>start();
 }
+
+// ── ВХОД: СПЛЭШ ────────────────────────────────────────────────────────────
+function renderSplash(){
+  const d=W.data,total=n(d.players_total),online=n(d.online_today);
+  const stat=total>0?`В лобби: <b>${total}</b> ${plural(total,['игрок','игрока','игроков'])} · сегодня в деле: <b>${online}</b>`:'Лобби только открылось. Ты можешь быть среди первых.';
+  setApp(`<div class="screen">
+    <div class="tag">МУЛЬТИПЛЕЕР · ЛОББИ ОТКРЫТО</div>
+    <div class="logo">NO<br>NPC</div>
+    <div class="cast">${CAST.map(a=>heroTag(a,'','')).join('')}</div>
+    <div class="lead"><b>С этого дня ты не фон.</b><br>Каждый день пять квестов на тело, разум, волю, влияние и деньги. Закрыл — получил XP и поднялся в рейтинге. Пропустил — остался NPC.<br><br>${stat}</div>
+    <button class="btn" id="enter">ВОЙТИ В ЛОББИ</button>
+    <div class="foot-note">Главный конкурент — ты вчерашний.</div>
+  </div>`,true);
+  $('enter').onclick=()=>{hap();ui.step='creator';ui.edit=false;C.av=randomAvatar();C.nick='';route();};
+}
+
+// ── СОЗДАНИЕ ГЕРОЯ ─────────────────────────────────────────────────────────
+function renderCreator(){
+  if(!C.av)C.av=randomAvatar();
+  const sw=(k,arr,label)=>`<div class="cr-sec"><div class="cr-h">${label}</div><div class="cr-row">${arr.map((c,i)=>`<button class="sw" data-k="${k}" data-v="${i}" style="background:${c}" aria-label="${label} ${i+1}"></button>`).join('')}</div></div>`;
+  const tl=(k,names,label,crop)=>`<div class="cr-sec"><div class="cr-h">${label}</div><div class="cr-row">${names.map((nm,i)=>`<button class="tile${crop?'':' wide'}" data-k="${k}" data-v="${i}"><canvas data-tile="1" data-k="${k}" data-v="${i}"${crop?` data-crop="${crop}"`:''}></canvas>${esc(nm)}</button>`).join('')}</div></div>`;
+  const nickBlock=ui.edit?'':`<div class="cr-sec"><div class="cr-h">ПОЗЫВНОЙ</div><input class="inp" id="nick" maxlength="16" placeholder="Как тебя называть" autocomplete="off" value="${esc(C.nick)}"><div class="row2" style="margin-top:8px"><button class="btn ghost sm" id="nickRnd">СЛУЧАЙНЫЙ</button><div class="faint" style="font-size:11px;align-self:center">3–16 символов: буквы, цифры, пробел, _ . -</div></div><div class="err" id="crErr"></div></div>`;
+  setApp(`<div style="padding-top:6px">
+    <div class="topbar"><div class="brand">${ui.edit?'ИЗМЕНИТЬ ГЕРОЯ':'ВЫБЕРИ ГЕРОЯ'}</div>${ui.edit||ui.step==='creator'?'<button class="ico" id="crBack" aria-label="Назад">←</button>':''}</div>
+    <div class="cr-prev"><div class="cr-stage"><canvas id="crMain"></canvas></div><button class="btn ghost sm dice" id="dice">СЛУЧАЙНЫЙ ГЕРОЙ</button></div>
+    ${tl('g',['Парень','Девушка'],'ПЕРСОНАЖ','')}
+    ${sw('sk',SKIN,'КОЖА')}
+    ${tl('h',HAIR_NAMES,'ПРИЧЁСКА','head')}
+    ${sw('hc',HAIRC,'ЦВЕТ ВОЛОС')}
+    ${tl('o',OUTFIT_NAMES,'ОДЕЖДА','')}
+    ${sw('oc',OUTC,'ЦВЕТ ОДЕЖДЫ')}
+    ${tl('a',ACC_NAMES,'АКСЕССУАР','head')}
+    ${nickBlock}
+    <button class="btn" id="crGo">${ui.edit?'СОХРАНИТЬ':'ВОЙТИ В ИГРУ'}</button>
+    <div style="height:30px"></div>
+  </div>`,true);
+  refreshCreator();
+  const app=$('app');
+  app.onclick=e=>{
+    const t=e.target.closest('.tile,.sw');
+    if(t){C.av[t.dataset.k]=Number(t.dataset.v);hap();refreshCreator();return;}
+  };
+  $('dice').onclick=()=>{C.av=randomAvatar();hap();refreshCreator();};
+  const back=$('crBack');if(back)back.onclick=()=>{ui.step=null;ui.edit=false;route();};
+  const ni=$('nick');
+  if(ni){ni.oninput=()=>{C.nick=ni.value;$('crErr').textContent='';};ni.onkeydown=e=>{if(e.key==='Enter')$('crGo').click();};}
+  const nr=$('nickRnd');if(nr)nr.onclick=()=>{const v=NICKS[Math.floor(Math.random()*NICKS.length)]+(Math.floor(Math.random()*90)+10);C.nick=v;ni.value=v;hap();};
+  $('crGo').onclick=creatorSubmit;
+}
+
+function refreshCreator(){
+  const main=$('crMain');if(main)drawHero(main,C.av);
+  document.querySelectorAll('canvas[data-tile]').forEach(cv=>{const k=cv.dataset.k;drawHero(cv,{...C.av,[k]:Number(cv.dataset.v)},cv.dataset.crop||undefined);});
+  document.querySelectorAll('.tile[data-k],.sw[data-k]').forEach(el=>el.classList.toggle('sel',C.av[el.dataset.k]===Number(el.dataset.v)));
+}
+
+async function creatorSubmit(){
+  const btn=$('crGo'),err=$('crErr');
+  if(!validAvatar(C.av))return;
+  if(ui.edit){
+    btn.disabled=true;let res=null;
+    try{res=await rpc('set_avatar',{p_code:userCode,p_avatar:C.av});}catch{}
+    if(!res||!res.ok){toast('Не удалось сохранить');btn.disabled=false;return;}
+    await worldLoad(true);ui.edit=false;ui.step=null;ui.tab='hero';toast('Герой обновлён');route();return;
+  }
+  const nick=C.nick.trim();
+  if(!NICK_RE.test(nick)){err.textContent='Позывной: 3–16 символов, буквы, цифры, пробел, _ . -';$('nick').focus();return;}
+  btn.disabled=true;err.textContent='';
+  let res=null;try{res=await rpc('join_world',{p_code:userCode,p_nick:nick,p_avatar:C.av});}catch{}
+  if(!res){err.textContent='Нет связи. Попробуй ещё раз.';btn.disabled=false;return;}
+  if(!res.ok){err.textContent=res.error==='nick_taken'?'Этот позывной занят.':res.error==='bad_nick'?'Недопустимый позывной.':'Не получилось войти.';btn.disabled=false;return;}
+  hap('ok');
+  await worldLoad(true);ui.step=null;route();
+}
+
+// ── ВЫБОР СРОКА ────────────────────────────────────────────────────────────
+function renderProgram(){
+  setApp(`<div style="padding-top:6px">
+    <div class="topbar"><div class="brand">ВЫБЕРИ <b>СЕЗОН</b></div>${ui.reprogram?'<button class="ico" id="pgBack" aria-label="Назад">←</button>':''}</div>
+    <div class="lead" style="margin:6px 0 18px;max-width:none;text-align:left">Сезон — срок, на который ты записываешься. Рейтинг и квесты идут каждый день, сезон задаёт твою личную цель и счётчик.</div>
+    ${PROGRAMS.map(p=>`<button class="card-pick" data-days="${p.days}"><div class="t"><span>${p.name}</span><em>${p.days} ДНЕЙ</em></div><div class="d">${esc(p.d)}</div></button>`).join('')}
+    <div class="panel"><div class="cr-h">СВОЙ СРОК</div><div class="row2"><input class="inp" id="pgDays" type="number" inputmode="numeric" min="3" max="365" placeholder="3–365 дней"><button class="btn sm" id="pgOk">НАЧАТЬ</button></div><div class="err" id="pgErr"></div></div>
+  </div>`,true);
+  document.querySelectorAll('[data-days]').forEach(b=>b.onclick=()=>chooseProgram(Number(b.dataset.days)));
+  $('pgOk').onclick=()=>{const v=Number($('pgDays').value);if(!Number.isInteger(v)||v<3||v>365){$('pgErr').textContent='От 3 до 365 дней.';return;}chooseProgram(v);};
+  const bk=$('pgBack');if(bk)bk.onclick=()=>{ui.reprogram=false;route();};
+}
+function chooseProgram(days){
+  hap('ok');S.program={days,start:W.data.today};ui.reprogram=false;save();route();
+}
+
+// ── ВРАГ ───────────────────────────────────────────────────────────────────
+function renderEnemy(){
+  setApp(`<div style="padding-top:6px">
+    <div class="topbar"><div class="brand">ВЫБЕРИ <b>ВРАГА</b></div>${ui.reenemy?'<button class="ico" id="enBack" aria-label="Назад">←</button>':''}</div>
+    <div class="lead" style="margin:6px 0 18px;max-width:none;text-align:left">У каждого есть одна вещь, которая тянет назад. Назови её. Каждый день будешь отмечать: победил или сорвался. Серия побед считается отдельно.</div>
+    ${ENEMIES.map(e=>`<button class="card-pick" data-en="${e.id}"><div class="t"><span>${esc(e.name)}</span></div><div class="d">${esc(e.q)}</div></button>`).join('')}
+    <div class="panel"><div class="cr-h">СВОЙ ВРАГ</div><div class="row2"><input class="inp" id="enName" maxlength="24" placeholder="Название"><button class="btn sm" id="enOk">ВЫБРАТЬ</button></div><div class="err" id="enErr"></div></div>
+    <button class="btn ghost" id="enSkip">ПОКА БЕЗ ВРАГА</button>
+    <div class="note-sm">Приложение — не лечение. Если зависимость серьёзная, это повод обратиться к специалисту. Здесь ты укрепляешь привычку, а не заменяешь помощь.</div>
+  </div>`,true);
+  document.querySelectorAll('[data-en]').forEach(b=>b.onclick=()=>{const e=ENEMIES.find(x=>x.id===b.dataset.en);setEnemy({id:e.id,name:e.name});});
+  $('enOk').onclick=()=>{const v=$('enName').value.trim();if(v.length<3||v.length>24||/[<>]/.test(v)){$('enErr').textContent='От 3 до 24 символов.';return;}setEnemy({id:'CUSTOM',name:v});};
+  $('enSkip').onclick=()=>setEnemy(false);
+  const bk=$('enBack');if(bk)bk.onclick=()=>{ui.reenemy=false;route();};
+}
+function setEnemy(e){hap('ok');S.enemy=e;if(e)S.enemyLog={};ui.reenemy=false;save();route();}
+function enemyQuote(){const e=ENEMIES.find(x=>S.enemy&&x.id===S.enemy.id);return e?e.q:'Один день за раз.';}
+function enemyStreak(today){
+  let d=dayNum(today);if(S.enemyLog[dayIso(d)]===undefined)d--;
+  let k=0;while(S.enemyLog[dayIso(d)]===1){k++;d--;}return k;
+}
+function enemyAnswer(win){
+  const today=W.data.today;if(S.enemyLog[today]!==undefined)return;
+  S.enemyLog[today]=win?1:0;save();hap(win?'ok':'err');
+  if(win){const k=enemyStreak(today);toast(k>1?`Победа. Серия: ${k}`:'Победа. Первый раунд за тобой');}
+  else toast('Срыв — не конец. Завтра новый раунд.');
+  renderHome();
+}
+
+// ── ГЛАВНЫЙ ЭКРАН ──────────────────────────────────────────────────────────
+function totalXP(me){return Object.values(me.stats||{}).reduce((s,v)=>s+n(v),0);}
 
 function questCard(q,joined){
-  const M=STAT_META[q.stat]||STAT_META.FAME,boss=q.kind==='weekly',id=n(q.id);
+  const M=STAT_META[q.stat]||STAT_META.WILL,boss=q.kind==='weekly',id=n(q.id);
   let act='';
-  if(q.done)act='<div class="wq-done">✓ Выполнено</div>';
-  else if(joined&&W.taken[id])act=`<button class="wq-btn go" data-wclaim="${id}">Готово</button>`;
-  else if(joined)act=`<button class="wq-btn" data-wtake="${id}">Взять</button>`;
+  if(q.done)act='<div class="q-ok">ВЫПОЛНЕНО</div>';
+  else if(joined&&S.taken[id])act=`<button class="btn green sm" data-claim="${id}">СДЕЛАНО</button>`;
+  else if(joined)act=`<button class="btn ghost sm" data-take="${id}">ВЗЯТЬ</button>`;
   const left=n(q.days_left)+1;
-  return`<div class="wq${q.done?' done':''}${boss?' boss':''}" data-qid="${id}" style="--sc:${M.c}"><div class="wq-top"><span class="wq-stat">${M.i} ${esc(q.stat)}</span><span class="wq-xp">+${n(q.xp)} XP</span></div>${boss?`<div class="wq-boss">БОСС НЕДЕЛИ · ${left} ${plural(left,['день','дня','дней'])}</div>`:''}<div class="wq-title">${esc(q.title)}</div>${q.descr?`<div class="wq-descr">${esc(q.descr)}</div>`:''}<div class="wq-act">${act}</div></div>`;
+  return`<div class="q${q.done?' done':''}${boss?' boss':''}${ui.hl===String(id)?' hl':''}" data-qid="${id}" style="--c:${M.c}">
+    <div class="q-top"><span class="q-stat">${iconSVG(q.stat,M.c,16)}${esc(q.stat)}</span><span class="q-xp">+${n(q.xp)} XP</span></div>
+    ${boss?`<div class="q-boss">БОСС НЕДЕЛИ · ещё ${left} ${plural(left,['день','дня','дней'])}</div>`:''}
+    <div class="q-title">${esc(q.title)}</div>${q.descr?`<div class="q-descr">${esc(q.descr)}</div>`:''}
+    <div class="q-act">${act}</div></div>`;
 }
 
-function renderWorld(){
-  const body=document.getElementById('worldBody');if(!body)return;
-  const d=W.data;
-  if(!d){
-    body.innerHTML=`<div class="grp"><div class="hint" style="text-align:center">${W.loading?'Загружаю…':'Мир недоступен. Проверь интернет.'}</div>${W.loading?'':'<button class="btn-s" id="wRetry" style="margin-top:10px">Повторить</button>'}</div>`;
-    const b=document.getElementById('wRetry');if(b)b.onclick=()=>worldLoad(true);
-    return;
-  }
-  let html='';
-  if(!d.joined){
-    html+=`<div class="grp"><div class="grp-title">Вход в Мир</div><div class="field"><label>Ник (виден другим игрокам)</label><input class="inp" id="wNick" maxlength="16" placeholder="Например: Рысь" autocomplete="off"></div><div class="act-error" id="wErr" style="text-align:left;margin:0 0 8px"></div><button class="btn-p" id="wJoin">Войти в Мир</button><div class="hint">3–16 символов: буквы, цифры, пробел, _ . -<br>Код активации другим игрокам не показывается.</div></div>`;
+function programPanel(){
+  if(!S.program)return'';
+  const today=dayNum(W.data.today),start=dayNum(S.program.start),total=S.program.days;
+  const cur=today-start+1;
+  if(cur>total)return`<div class="panel"><div class="day-sum"><div><div class="cr-h" style="margin:0 0 8px">СЕЗОН ПРОЙДЕН</div><div class="big">${total}/${total}</div></div></div><div class="bar" style="--c:#6fe28b;--c2:#c9f7d5"><i style="width:100%"></i></div><div class="sub muted" style="font-size:12px;margin:10px 0 12px;line-height:1.5">Ты закрыл сезон из ${total} ${plural(total,['дня','дней','дней'])}. Бери новый.</div><button class="btn green sm" id="newSeason">НОВЫЙ СЕЗОН</button></div>`;
+  return`<div class="panel"><div class="day-sum"><div><div class="cr-h" style="margin:0 0 8px">СЕЗОН · ДЕНЬ</div><div class="big">${cur}<span class="muted" style="font-size:10px"> / ${total}</span></div></div><div class="muted" style="font-size:12px">осталось ${total-cur}</div></div><div class="bar"><i style="width:${Math.round(cur/total*100)}%"></i></div></div>`;
+}
+
+function enemyPanel(){
+  if(!S.enemy)return'';
+  const today=W.data.today,ans=S.enemyLog[today],k=enemyStreak(today);
+  let body;
+  if(ans===undefined)body=`<div class="e-q">${esc(enemyQuote())}</div><div class="row2"><button class="btn green sm" data-win="1">ДЕРЖАЛСЯ</button><button class="btn ghost sm" data-win="0">СОРВАЛСЯ</button></div>`;
+  else body=`<div class="q-ok" style="color:${ans?'var(--green)':'var(--muted)'}">${ans?'РАУНД ВЫИГРАН':'РАУНД ПРОПУЩЕН'}</div><div class="e-q" style="margin:10px 0 0">${ans?'Заходи завтра: серия растёт.':'Срыв не сбрасывает прогресс в лобби. Завтра новый раунд.'}</div>`;
+  return`<div class="q enemy" style="--c:#ff6b6b"><div class="e-t">ВРАГ: ${esc(S.enemy.name).toUpperCase()}</div><div class="faint" style="font-size:11px;margin:-4px 0 10px">Серия побед: ${k}</div>${body}</div>`;
+}
+
+function renderHome(){
+  const y=window.scrollY;
+  const d=W.data,me=d.me,xp=totalXP(me),lvl=levelOf(xp);
+  const quests=d.quests||[],dailies=quests.filter(q=>q.kind!=='weekly'),boss=quests.filter(q=>q.kind==='weekly');
+  const doneN=dailies.filter(q=>q.done).length;
+  let body='';
+  if(ui.tab==='quests'){
+    const pct=Math.min(100,Math.round(n(me.today_xp)/DAILY_CAP*100));
+    body=`
+    <div class="panel"><div class="day-sum"><div><div class="cr-h" style="margin:0 0 8px">СЕГОДНЯ</div><div class="big">${n(me.today_xp)}<span class="muted" style="font-size:10px"> / ${DAILY_CAP} XP</span></div></div><div class="sub" style="text-align:right">${doneN}/${dailies.length} квестов<br><span class="faint">${doneN===dailies.length&&dailies.length?'идеальный день':'осталось '+(dailies.length-doneN)}</span></div></div><div class="bar"><i style="width:${pct}%"></i></div></div>
+    ${programPanel()}
+    <div class="h-sec">КВЕСТЫ ДНЯ<span>в лобби закрыли: ${n(d.online_today)}</span></div>
+    ${dailies.length?dailies.map(q=>questCard(q,true)).join(''):'<div class="empty">Квестов на сегодня нет. Загляни позже.</div>'}
+    ${boss.length?`<div class="h-sec">БОСС НЕДЕЛИ</div>${boss.map(q=>questCard(q,true)).join('')}`:''}
+    ${S.enemy?`<div class="h-sec">ЛИЧНЫЙ ВРАГ</div>${enemyPanel()}`:''}
+    <div class="note-sm">XP за квесты назначает сервер. В сутки не больше ${DAILY_CAP} XP.</div>`;
+  }else if(ui.tab==='hero'){
+    body=heroTab(me,xp,lvl);
   }else{
-    const m=d.me,nxt=m.next_rank_at,pct=nxt?clamp(Math.round(n(m.days)/nxt*100),0,100):100;
-    html+=`<div class="grp"><div class="w-hero"><div><div class="hname">${esc(m.nick)}</div><div class="sec-sub">${n(m.days)} ${plural(n(m.days),['день','дня','дней'])} в Мире · серия ${n(m.streak)}🔥</div></div><div class="rank" style="background:rgba(243,197,90,.14);border-color:rgba(243,197,90,.3);color:var(--gold)">${esc(m.rank)}</div></div><div class="bar-track" style="margin-top:10px"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--gold),#ffe89b)"></div></div><div class="next-row" style="margin-top:6px"><span>${nxt?`До следующего ранга: ${nxt-n(m.days)} дн.`:'Максимальный ранг'}</span><span>Сегодня ${n(m.today_xp)}/${n(m.daily_cap)} XP</span></div></div>`;
-    html+=`<div class="grp"><div class="grp-title">Статы</div>${radarSVG(m.stats||{})}</div>`;
+    body=lobbyTab(d);
   }
-  const quests=d.quests||[];
-  html+=`<div class="grp"><div class="grp-title">Квесты дня${n(d.online_today)>0?` · закрыли сегодня: ${n(d.online_today)}`:''}</div>${quests.length?quests.map(q=>questCard(q,d.joined)).join(''):'<div class="hint">На сегодня квестов нет. Новые появятся позже.</div>'}${d.joined?'<div class="hint">XP за общие квесты назначает сервер, в сутки не больше '+n(d.me.daily_cap)+' XP.</div>':''}</div>`;
-  const board=d.board||[];
-  html+=`<div class="grp"><div class="grp-title">Топ недели · по дням активности</div>${board.length?board.map((b,i)=>`<div class="bd-row${b.me?' me':''}"><span class="bd-pos">${i+1}</span><span class="bd-nick">${esc(b.nick)}</span><span class="bd-rank">${esc(b.rank)}</span><span class="bd-days">${n(b.days)} дн.</span></div>`).join(''):'<div class="hint">На этой неделе никто ещё не закрыл квест.</div>'}<div class="hint">В рейтинге считаются дни, в которые закрыт хотя бы один общий квест. Очки за личные задания в него не входят.</div></div>`;
-  body.innerHTML=html;
-  body.querySelectorAll('[data-wtake]').forEach(b=>b.onclick=()=>{W.taken[b.dataset.wtake]=true;saveTaken();renderWorld();});
-  body.querySelectorAll('[data-wclaim]').forEach(b=>b.onclick=()=>worldClaim(b.dataset.wclaim,b));
-  const j=document.getElementById('wJoin');if(j)j.onclick=worldJoin;
-  const ni=document.getElementById('wNick');if(ni)ni.onkeydown=e=>{if(e.key==='Enter')worldJoin();};
+  setApp(`
+    <div class="topbar"><div class="brand">NO <b>NPC</b><span class="sync-dot" id="syncDot"></span></div><div class="chip" style="font-size:9px;padding:9px">LV ${lvl}</div></div>
+    ${ui.tab==='quests'?`<div class="panel"><div class="me-strip">${heroTag(me.avatar,'head')}<div style="min-width:0"><div class="me-name">${esc(me.nick)}</div><div class="chips"><span class="chip rank" style="--rc:${rankColor(me.rank)}">${esc(me.rank)}</span><span class="chip fire">СЕРИЯ ${n(me.streak)}</span><span class="chip">${n(me.days)} ${plural(n(me.days),['ДЕНЬ','ДНЯ','ДНЕЙ'])}</span></div></div></div></div>`:''}
+    ${body}
+    <div class="tabbar"><div class="tabbar-in">
+      ${[['quests','КВЕСТЫ','VIGOR'],['hero','ГЕРОЙ','WILL'],['lobby','ЛОББИ','AURA']].map(([k,l,s])=>`<button class="tab${ui.tab===k?' on':''}" data-tab="${k}">${iconSVG(s,ui.tab===k?'#ffd24a':'#9aa3b8',18)}${l}</button>`).join('')}
+    </div></div>`);
+  setSync('ok');
+  bindHome();
+  if(ui.hl){const el=document.querySelector(`.q[data-qid="${ui.hl}"]`);if(el)el.scrollIntoView({block:'center'});ui.hl=null;}
+  else window.scrollTo(0,y);
 }
 
-async function worldClaim(id,btn){
-  if(W.busy)return;W.busy=true;btn.disabled=true;btn.textContent='…';
-  let res=null;
-  try{res=await rpc('claim_quest',{p_code:userCode,p_quest_id:Number(id)});}catch{}
+function heroTab(me,xp,lvl){
+  const ri=rankIdx(me.rank),nxt=me.next_rank_at;
+  const mx=Math.max(60,...STATS.map(k=>n((me.stats||{})[k])));
+  return`
+  <div class="panel"><div class="stage"><div class="plat">${heroTag(me.avatar,'')}</div><div class="nm">${esc(me.nick)}</div>
+    <div class="chips"><span class="chip rank" style="--rc:${rankColor(me.rank)}">${esc(me.rank)}</span><span class="chip">LV ${lvl}</span><span class="chip">${xp} XP</span></div></div>
+    <div class="ladder">${RANKS.map((r,i)=>`<div class="${i<=ri?'on':''}${i===ri?' cur':''}" style="--rc:${RANK_C[r]}">${r}</div>`).join('')}</div>
+    <div class="bar-meta"><span>${nxt?`до ранга ${RANKS[ri+1]}: ${Math.max(0,nxt-n(me.days))} ${plural(Math.max(0,nxt-n(me.days)),['день','дня','дней'])}`:'максимальный ранг'}</span><span>${n(me.days)} дн. в игре</span></div></div>
+  <div class="h-sec">ХАРАКТЕРИСТИКИ</div>
+  <div class="panel">${STATS.map(k=>{const M=STAT_META[k],v=n((me.stats||{})[k]);return`<div class="stat-row" style="--c:${M.c}"><div>${iconSVG(k,M.c,28)}</div><div><div class="nm">${k} · ${M.ru}</div><div class="bar" style="--c:${M.c};--c2:${M.c}"><i style="width:${Math.round(v/mx*100)}%"></i></div></div><div class="v">${v}<small>XP</small></div></div>`;}).join('')}
+    <div class="faint" style="font-size:11px;line-height:1.5">Каждый квест качает одну характеристику. Тянешь все пять — растёшь ровно.</div></div>
+  <div class="kv">
+    <div class="c"><div class="l">Серия</div><div class="n">${n(me.streak)}</div><div class="s">дней подряд</div></div>
+    <div class="c"><div class="l">Щит</div><div class="n" style="color:${me.shield_ready?'var(--teal)':'var(--faint)'}">${me.shield_ready?'ГОТОВ':'ИСПОЛЬЗОВАН'}</div><div class="s">${me.shield_ready?'один пропуск не сломает серию':'вернётся, когда серия окрепнет'}</div></div>
+  </div>
+  <div class="h-sec">НАСТРОЙКИ</div>
+  <button class="btn ghost sm" id="editHero" style="margin-bottom:10px">ИЗМЕНИТЬ ГЕРОЯ</button>
+  <button class="btn ghost sm" id="editEnemy" style="margin-bottom:10px">${S.enemy?'СМЕНИТЬ ВРАГА':'ВЫБРАТЬ ВРАГА'}</button>
+  <button class="btn ghost sm" id="editSeason">${S.program?'НОВЫЙ СЕЗОН':'ВЫБРАТЬ СЕЗОН'}</button>
+  <div class="note-sm">Приложение — инструмент привычек, а не лечение. При серьёзной зависимости обратись к специалисту.</div>`;
+}
+
+function lobbyTab(d){
+  const board=d.board||[],total=n(d.players_total),online=n(d.online_today);
+  const myPos=board.findIndex(b=>b.me)+1;
+  return`
+  <div class="panel"><div class="kv"><div class="c"><div class="l">В лобби</div><div class="n">${total}</div><div class="s">${plural(total,['игрок','игрока','игроков'])}</div></div><div class="c"><div class="l">Сегодня в деле</div><div class="n" style="color:var(--green)">${online}</div><div class="s">закрыли квест</div></div></div></div>
+  <div class="h-sec">ТОП НЕДЕЛИ<span>по дням активности</span></div>
+  ${board.length?board.map((b,i)=>`<div class="bd-row${b.me?' me':''}"><span class="bd-pos">${i+1}</span>${heroTag(b.avatar,'head')}<div style="min-width:0"><div class="bd-nick">${esc(b.nick)}</div><div class="bd-rank" style="--rc:${rankColor(b.rank)}">${esc(b.rank)}</div></div><span></span><span class="bd-days">${n(b.days)} дн.</span></div>`).join(''):'<div class="empty">На этой неделе никто ещё не закрыл квест. Первое место свободно.</div>'}
+  ${myPos?`<div class="note-sm">Ты на ${myPos} месте.</div>`:'<div class="note-sm">Закрой квест — и ты появишься в рейтинге.</div>'}
+  <div class="h-sec">ПОЗОВИ СВОИХ</div>
+  <div class="panel"><div class="muted" style="font-size:13px;line-height:1.6;margin-bottom:12px">Лобби живёт, пока в нём есть люди. Один в лобби — это тренировка. Вдвоём — уже игра.</div><button class="btn sm" id="invite">ПОЗВАТЬ ДРУГА</button></div>
+  <div class="note-sm">В рейтинге считаются дни, в которые закрыт хотя бы один квест. Дни, а не очки: выиграть можно только постоянством.</div>`;
+}
+
+function bindHome(){
+  const app=$('app');
+  app.onclick=async e=>{
+    const t=e.target.closest('button');if(!t)return;
+    if(t.dataset.tab){ui.tab=t.dataset.tab;hap();renderHome();window.scrollTo(0,0);return;}
+    if(t.dataset.take){S.taken[t.dataset.take]=true;save();hap();renderHome();return;}
+    if(t.dataset.claim){claim(t.dataset.claim,t);return;}
+    if(t.dataset.win!==undefined){enemyAnswer(t.dataset.win==='1');return;}
+    if(t.id==='editHero'){ui.edit=true;C.av={...safeAv(W.data.me.avatar)};ui.step='creator';route();return;}
+    if(t.id==='editEnemy'){ui.reenemy=true;route();return;}
+    if(t.id==='editSeason'||t.id==='newSeason'){ui.reprogram=true;route();return;}
+    if(t.id==='invite'){invite();return;}
+  };
+}
+
+function invite(){
+  const text='Захожу в лобби NO NPC: ежедневные квесты, ранги и рейтинг недели. Заходи, посмотрим, кто кого.';
+  const url='https://t.me/share/url?url='+encodeURIComponent(BOT_URL)+'&text='+encodeURIComponent(text);
+  try{if(TGW&&TGW.openTelegramLink){TGW.openTelegramLink(url);return;}}catch{}
+  window.open(url,'_blank','noopener');
+}
+
+async function claim(id,btn){
+  if(W.busy)return;
+  W.busy=true;btn.disabled=true;btn.textContent='…';
+  const prevRank=W.data.me.rank;
+  let res=null;try{res=await rpc('claim_quest',{p_code:userCode,p_quest_id:Number(id)});}catch{}
   W.busy=false;
-  if(!res){worldToast('Нет связи. Попробуй ещё раз.');renderWorld();return;}
-  if(res.ok){worldToast(`+${n(res.xp)} ${res.stat}`);delete W.taken[id];}
-  else if(res.error==='already'){worldToast('Уже выполнено');delete W.taken[id];}
-  else if(res.error==='cap')worldToast('Лимит XP на сегодня исчерпан');
-  else if(res.error==='closed'){worldToast('Квест уже закрыт');delete W.taken[id];}
-  else if(res.error==='not_joined')worldToast('Сначала войди в Мир');
-  else worldToast('Не получилось');
-  saveTaken();
+  if(!res){toast('Нет связи. Попробуй ещё раз.');renderHome();return;}
+  if(res.ok){popXP(`+${n(res.xp)} ${res.stat}`,btn);hap('ok');delete S.taken[id];}
+  else if(res.error==='already'){toast('Уже выполнено');delete S.taken[id];}
+  else if(res.error==='cap')toast('Лимит XP на сегодня исчерпан');
+  else if(res.error==='closed'){toast('Квест уже закрыт');delete S.taken[id];}
+  else toast('Не получилось');
+  saveLocal();
   await worldLoad(true);
+  if(!W.data)return;
+  renderHome();
+  const me=W.data.me,ds=(W.data.quests||[]).filter(q=>q.kind!=='weekly');
+  if(res.ok&&me.rank!==prevRank&&rankIdx(me.rank)>rankIdx(prevRank)){
+    modal(`<div class="tag">НОВЫЙ РАНГ</div><div class="px" style="font-size:20px;color:${rankColor(me.rank)};margin:14px 0">${esc(me.rank)}</div><div class="lead" style="margin:0 0 18px">Ты поднялся. Теперь на тебя смотрят другие игроки.</div><button class="btn" data-x="1">ДАЛЬШЕ</button>`);
+  }else if(res.ok&&ds.length&&ds.every(q=>q.done)&&S.perfect!==W.data.today){
+    S.perfect=W.data.today;save();toast('Идеальный день: все квесты закрыты');
+  }
 }
 
-async function worldJoin(){
-  const inp=document.getElementById('wNick'),err=document.getElementById('wErr'),btn=document.getElementById('wJoin');
-  if(!inp||!err||!btn)return;
-  const nick=inp.value.trim();
-  if(!/^[A-Za-zА-Яа-яЁё0-9_ .-]{3,16}$/.test(nick)){err.textContent='3–16 символов: буквы, цифры, пробел, _ . -';return;}
-  btn.disabled=true;err.textContent='';
-  let res=null;
-  try{res=await rpc('join_world',{p_code:userCode,p_nick:nick});}catch{}
-  if(!res){err.textContent='Нет связи. Попробуй ещё раз.';btn.disabled=false;return;}
-  if(!res.ok){err.textContent=res.error==='nick_taken'?'Ник занят':res.error==='bad_nick'?'Недопустимый ник':'Не получилось войти';btn.disabled=false;return;}
-  worldToast('Добро пожаловать в Мир');
-  await worldLoad(true);
+// ── МАРШРУТ ────────────────────────────────────────────────────────────────
+function route(){
+  $('app').onclick=null;
+  const d=W.data;
+  if(!d){errorScreen();return;}
+  if(!d.joined){if(ui.step==='creator')renderCreator();else renderSplash();return;}
+  if(ui.step==='creator'){renderCreator();return;}
+  if(!S.program||ui.reprogram){renderProgram();return;}
+  if(S.enemy===null||ui.reenemy){renderEnemy();return;}
+  renderHome();
 }
 
-function openWorld(){document.getElementById('worldOverlay').classList.add('show');renderWorld();worldLoad(true);}
-function closeWorld(){document.getElementById('worldOverlay').classList.remove('show');}
-document.getElementById('worldClose').onclick=closeWorld;
-document.getElementById('worldOverlay').onclick=e=>{if(e.target.id==='worldOverlay')closeWorld();};
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)worldLoad();});
+async function start(){
+  msgScreen('<div class="lead" style="margin:0">Вхожу в лобби…</div>');
+  await worldLoad(true);
+  if(!W.data){errorScreen();return;}
+  route();
+  deepLink();
+}
 
-// ── TELEGRAM MINI APP ──────────────────────────────────────────────────────
+// ── TELEGRAM ───────────────────────────────────────────────────────────────
 const TGW=window.Telegram&&window.Telegram.WebApp;
 const IN_TG=!!(TGW&&TGW.initData);
-const SESSION_URL='https://habit-bot-nu.vercel.app/api/session';
-
 function tgSetup(){
   if(!TGW)return;
   try{TGW.ready();TGW.expand();}catch{}
-  try{TGW.setHeaderColor('#0b0d12');TGW.setBackgroundColor('#0b0d12');}catch{}
+  try{TGW.setHeaderColor('#0a0b10');TGW.setBackgroundColor('#0a0b10');}catch{}
   try{if(TGW.disableVerticalSwipes)TGW.disableVerticalSwipes();}catch{}
 }
-
 async function tgSession(){
   const r=await fetch(SESSION_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:TGW.initData})});
   if(r.status>=500)throw new Error('http '+r.status);
   return r.json();
 }
-
-function tgScreen(inner){document.getElementById('app').innerHTML=`<div class="act-screen"><div class="act-logo">⚔️</div><div class="act-title">HABIT RPG</div>${inner}</div>`;}
-
-function tgNoAccess(){
-  tgScreen('<div class="act-sub">Доступ ещё не открыт.<br>Отправь боту команду /buy,<br>после подтверждения оплаты<br>вход откроется сам.</div><button class="act-btn" id="tgClose">Закрыть</button>');
-  document.getElementById('tgClose').onclick=()=>{try{TGW.close();}catch{}};
-}
-
-function tgError(){
-  tgScreen('<div class="act-sub">Нет связи с сервером.</div><button class="act-btn" id="tgRetry">Повторить</button>');
-  document.getElementById('tgRetry').onclick=tgBoot;
-}
-
 async function tgBoot(){
-  tgScreen('<div class="act-loading">Вхожу в Мир…</div>');
-  let res=null;
-  try{res=await tgSession();}catch{}
+  msgScreen('<div class="lead" style="margin:0">Вхожу в лобби…</div>');
+  let res=null;try{res=await tgSession();}catch{}
   if(res&&res.ok&&res.code){
     if(res.code!==userCode){
-      let act=null;
-      try{act=await rpc('activate_code',{p_code:res.code});}catch{}
-      if(!act||!act.ok){tgError();return;}
-      const hadOther=!!userCode;
+      let act=null;try{act=await rpc('activate_code',{p_code:res.code});}catch{}
+      if(!act||!act.ok){errorScreen();return;}
       try{localStorage.setItem(ACT_KEY,res.code);}catch{}
-      userCode=res.code;
-      applyCloud(act.data,hadOther);
-      saveLocal();
+      userCode=res.code;applyCloud(act.data);
     }
-    pruneEntries();render();tgDeepLink();return;
+    start();return;
   }
-  if(res&&res.error==='no_access'){tgNoAccess();return;}
-  if(!res&&userCode){pruneEntries();render();return;}   // нет сети: работаем с локальными данными
-  tgError();
+  if(res&&res.error==='no_access'){
+    msgScreen(`<div class="tag">ЛОББИ ЗАКРЫТО</div><div class="lead" style="margin-top:0">Вход только для игроков.<br>Отправь боту команду <b>/buy</b>. После подтверждения оплаты вход откроется сам.</div><button class="btn" id="tgClose">ЗАКРЫТЬ</button>`);
+    $('tgClose').onclick=()=>{try{TGW.close();}catch{}};return;
+  }
+  if(!res&&userCode){start();return;}
+  errorScreen();
 }
 
 // ссылка на квест: ?q=ID в адресе кнопки или start_param вида q123
-async function tgDeepLink(){
+function deepLink(){
   let q=null;
   try{
     const sp=(TGW&&TGW.initDataUnsafe&&TGW.initDataUnsafe.start_param)||'';
@@ -810,22 +896,24 @@ async function tgDeepLink(){
     if(u&&/^\d{1,9}$/.test(u))q=u;
     if(u!==null)history.replaceState(null,'',location.pathname);
   }catch{}
-  if(!q)return;
-  document.getElementById('worldOverlay').classList.add('show');
-  renderWorld();
-  for(let i=0;i<60&&W.loading;i++)await new Promise(r=>setTimeout(r,100));
-  if(!W.data)await worldLoad(true);
-  renderWorld();
-  const el=document.querySelector('#worldBody .wq[data-qid="'+q+'"]');
-  if(el){el.classList.add('hl');el.scrollIntoView({block:'center'});}
+  if(!q||!W.data||!W.data.joined||!S.program||S.enemy===null)return;
+  ui.tab='quests';ui.hl=q;renderHome();
 }
 
-// ── INIT ───────────────────────────────────────────────────────────────────
-tgSetup();
-pruneEntries();
-if(IN_TG){tgBoot();}
-else if(!userCode){showActivation();}
-else{render();}
+document.addEventListener('visibilitychange',async()=>{
+  if(document.hidden||!userCode||!W.data||$('modal').classList.contains('show'))return;
+  const was=W.data.today;
+  await worldLoad(false);
+  if(W.data&&!ui.step&&!ui.reprogram&&!ui.reenemy&&W.data.joined&&S.program&&S.enemy!==null)renderHome();
+  else if(W.data&&W.data.today!==was)route();
+});
+
+// ── СТАРТ ──────────────────────────────────────────────────────────────────
+tgSetup();loadLocal();
+if(IN_TG)tgBoot();
+else if(!userCode)showActivation();
+else start();
+
 </script>
 </body>
 </html>
