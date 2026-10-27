@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Habit RPG">
 <meta name="theme-color" content="#0b0d12">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
 const _m={name:'Habit RPG',short_name:'Habit RPG',start_url:'.',display:'standalone',background_color:'#0b0d12',theme_color:'#0b0d12',icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230b0d12'/><text y='.9em' font-size='72' x='50%' dominant-baseline='middle' text-anchor='middle'>⚔️</text></svg>",sizes:'192x192',type:'image/svg+xml'}]};
 const _mb=new Blob([JSON.stringify(_m)],{type:'application/json'});
@@ -164,6 +165,9 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}input,selec
 footer{padding:20px 0 4px;text-align:center;color:var(--faint);font-size:11px}
 @media(max-width:380px){.stats4{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:76px 1fr}.av{width:72px;height:72px;font-size:34px}.days-grid{grid-template-columns:repeat(4,1fr)}.task-edit-row{grid-template-columns:24px 1fr 56px 40px auto auto}}
 /* world */
+.act-link{display:inline-block;margin-top:18px;font-size:13px;color:var(--teal);text-decoration:none}
+.act-ghost{width:100%;margin-top:10px;padding:13px;border-radius:13px;border:1px solid var(--border2);background:var(--s2);font-size:14px;font-weight:700}
+.wq.hl{box-shadow:0 0 0 2px var(--gold)}
 .world-banner{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;margin-bottom:12px;border:1px solid rgba(91,217,208,.28);border-radius:16px;background:linear-gradient(135deg,rgba(91,217,208,.1),rgba(243,197,90,.06));text-align:left}
 .wb-title{font-family:'Exo 2',sans-serif;font-size:15px;font-weight:800}
 .wb-sub{font-size:12px;color:var(--muted);margin-top:2px}
@@ -334,6 +338,7 @@ function showActivation(){
       <div class="act-error" id="actError"></div>
       <button class="act-btn" id="actBtn">Активировать</button>
       <div class="act-loading" id="actLoading"></div>
+      <a class="act-link" href="https://t.me/stabilityhabits_bot">Открыть в Telegram</a>
     </div>`;
   const inp=document.getElementById('actInput'),btn=document.getElementById('actBtn'),err=document.getElementById('actError'),loading=document.getElementById('actLoading');
   inp.oninput=()=>{
@@ -360,17 +365,20 @@ function showActivation(){
     try{localStorage.setItem(ACT_KEY,code);}catch{}
     userCode=code;
     // облачные данные приходят вместе с подтверждением кода
-    const cloud=res.data;
-    if(cloud){
-      S={...DEFAULTS(),...cloud};
-      S.tasks=S.tasks.map(t=>({streak:true,...t}));
-      if(S.levels&&!S.levelNames){S.levelNames=S.levels.map(l=>({id:l.id,name:l.name,color:l.color}));delete S.levels;}
-      if(!S.levelNames)S.levelNames=DEFAULTS().levelNames;
-    }
+    applyCloud(res.data,false);
     saveLocal();
     pruneEntries();
     render();
   };
+}
+
+function applyCloud(cloud,reset){
+  if(cloud){
+    S={...DEFAULTS(),...cloud};
+    S.tasks=S.tasks.map(t=>({streak:true,...t}));
+    if(S.levels&&!S.levelNames){S.levelNames=S.levels.map(l=>({id:l.id,name:l.name,color:l.color}));delete S.levels;}
+    if(!S.levelNames)S.levelNames=DEFAULTS().levelNames;
+  }else if(reset){S=DEFAULTS();}
 }
 
 // ── UTILS ──────────────────────────────────────────────────────────────────
@@ -674,7 +682,7 @@ function questCard(q,joined){
   else if(joined&&W.taken[id])act=`<button class="wq-btn go" data-wclaim="${id}">Готово</button>`;
   else if(joined)act=`<button class="wq-btn" data-wtake="${id}">Взять</button>`;
   const left=n(q.days_left)+1;
-  return`<div class="wq${q.done?' done':''}${boss?' boss':''}" style="--sc:${M.c}"><div class="wq-top"><span class="wq-stat">${M.i} ${esc(q.stat)}</span><span class="wq-xp">+${n(q.xp)} XP</span></div>${boss?`<div class="wq-boss">БОСС НЕДЕЛИ · ${left} ${plural(left,['день','дня','дней'])}</div>`:''}<div class="wq-title">${esc(q.title)}</div>${q.descr?`<div class="wq-descr">${esc(q.descr)}</div>`:''}<div class="wq-act">${act}</div></div>`;
+  return`<div class="wq${q.done?' done':''}${boss?' boss':''}" data-qid="${id}" style="--sc:${M.c}"><div class="wq-top"><span class="wq-stat">${M.i} ${esc(q.stat)}</span><span class="wq-xp">+${n(q.xp)} XP</span></div>${boss?`<div class="wq-boss">БОСС НЕДЕЛИ · ${left} ${plural(left,['день','дня','дней'])}</div>`:''}<div class="wq-title">${esc(q.title)}</div>${q.descr?`<div class="wq-descr">${esc(q.descr)}</div>`:''}<div class="wq-act">${act}</div></div>`;
 }
 
 function renderWorld(){
@@ -740,9 +748,84 @@ document.getElementById('worldClose').onclick=closeWorld;
 document.getElementById('worldOverlay').onclick=e=>{if(e.target.id==='worldOverlay')closeWorld();};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)worldLoad();});
 
+// ── TELEGRAM MINI APP ──────────────────────────────────────────────────────
+const TGW=window.Telegram&&window.Telegram.WebApp;
+const IN_TG=!!(TGW&&TGW.initData);
+const SESSION_URL='https://habit-bot-nu.vercel.app/api/session';
+
+function tgSetup(){
+  if(!TGW)return;
+  try{TGW.ready();TGW.expand();}catch{}
+  try{TGW.setHeaderColor('#0b0d12');TGW.setBackgroundColor('#0b0d12');}catch{}
+  try{if(TGW.disableVerticalSwipes)TGW.disableVerticalSwipes();}catch{}
+}
+
+async function tgSession(){
+  const r=await fetch(SESSION_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:TGW.initData})});
+  if(r.status>=500)throw new Error('http '+r.status);
+  return r.json();
+}
+
+function tgScreen(inner){document.getElementById('app').innerHTML=`<div class="act-screen"><div class="act-logo">⚔️</div><div class="act-title">HABIT RPG</div>${inner}</div>`;}
+
+function tgNoAccess(){
+  tgScreen('<div class="act-sub">Доступ ещё не открыт.<br>Отправь боту команду /buy,<br>после подтверждения оплаты<br>вход откроется сам.</div><button class="act-btn" id="tgClose">Закрыть</button>');
+  document.getElementById('tgClose').onclick=()=>{try{TGW.close();}catch{}};
+}
+
+function tgError(){
+  tgScreen('<div class="act-sub">Нет связи с сервером.</div><button class="act-btn" id="tgRetry">Повторить</button>');
+  document.getElementById('tgRetry').onclick=tgBoot;
+}
+
+async function tgBoot(){
+  tgScreen('<div class="act-loading">Вхожу в Мир…</div>');
+  let res=null;
+  try{res=await tgSession();}catch{}
+  if(res&&res.ok&&res.code){
+    if(res.code!==userCode){
+      let act=null;
+      try{act=await rpc('activate_code',{p_code:res.code});}catch{}
+      if(!act||!act.ok){tgError();return;}
+      const hadOther=!!userCode;
+      try{localStorage.setItem(ACT_KEY,res.code);}catch{}
+      userCode=res.code;
+      applyCloud(act.data,hadOther);
+      saveLocal();
+    }
+    pruneEntries();render();tgDeepLink();return;
+  }
+  if(res&&res.error==='no_access'){tgNoAccess();return;}
+  if(!res&&userCode){pruneEntries();render();return;}   // нет сети: работаем с локальными данными
+  tgError();
+}
+
+// ссылка на квест: ?q=ID в адресе кнопки или start_param вида q123
+async function tgDeepLink(){
+  let q=null;
+  try{
+    const sp=(TGW&&TGW.initDataUnsafe&&TGW.initDataUnsafe.start_param)||'';
+    const m=/^q(\d{1,9})$/.exec(sp);if(m)q=m[1];
+    const u=new URLSearchParams(location.search).get('q');
+    if(u&&/^\d{1,9}$/.test(u))q=u;
+    if(u!==null)history.replaceState(null,'',location.pathname);
+  }catch{}
+  if(!q)return;
+  document.getElementById('worldOverlay').classList.add('show');
+  renderWorld();
+  for(let i=0;i<60&&W.loading;i++)await new Promise(r=>setTimeout(r,100));
+  if(!W.data)await worldLoad(true);
+  renderWorld();
+  const el=document.querySelector('#worldBody .wq[data-qid="'+q+'"]');
+  if(el){el.classList.add('hl');el.scrollIntoView({block:'center'});}
+}
+
 // ── INIT ───────────────────────────────────────────────────────────────────
+tgSetup();
 pruneEntries();
-if(!userCode){showActivation();}else{render();}
+if(IN_TG){tgBoot();}
+else if(!userCode){showActivation();}
+else{render();}
 </script>
 </body>
 </html>
