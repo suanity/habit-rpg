@@ -163,6 +163,35 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}input,selec
 .rule-row{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:center;margin-bottom:6px}
 footer{padding:20px 0 4px;text-align:center;color:var(--faint);font-size:11px}
 @media(max-width:380px){.stats4{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:76px 1fr}.av{width:72px;height:72px;font-size:34px}.days-grid{grid-template-columns:repeat(4,1fr)}.task-edit-row{grid-template-columns:24px 1fr 56px 40px auto auto}}
+/* world */
+.world-banner{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;margin-bottom:12px;border:1px solid rgba(91,217,208,.28);border-radius:16px;background:linear-gradient(135deg,rgba(91,217,208,.1),rgba(243,197,90,.06));text-align:left}
+.wb-title{font-family:'Exo 2',sans-serif;font-size:15px;font-weight:800}
+.wb-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.wb-online{font-size:11px;color:var(--teal);white-space:nowrap}
+.w-hero{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.wq{--sc:#f3c55a;padding:13px;border:1px solid var(--border);border-left:3px solid var(--sc);border-radius:14px;background:var(--s2);margin-bottom:8px}
+.wq.done{opacity:.6}
+.wq.boss{background:linear-gradient(135deg,rgba(243,197,90,.1),var(--s2));border-color:rgba(243,197,90,.3);border-left-color:var(--sc)}
+.wq-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.wq-stat{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--sc)}
+.wq-xp{font-family:'Exo 2',sans-serif;font-size:14px;font-weight:800;color:var(--gold)}
+.wq-boss{font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--orange);margin-bottom:4px}
+.wq-title{font-size:14px;font-weight:700}
+.wq-descr{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+.wq-act{margin-top:10px}
+.wq-act:empty{display:none}
+.wq-btn{width:100%;padding:10px;border-radius:11px;border:1px solid var(--border2);background:var(--s3);font-weight:700;font-size:13px}
+.wq-btn.go{background:var(--gold);border-color:var(--gold);color:#111}
+.wq-btn:disabled{opacity:.6}
+.wq-done{font-size:12px;font-weight:700;color:var(--green)}
+.bd-row{display:grid;grid-template-columns:24px 1fr auto auto;gap:8px;align-items:center;padding:9px 10px;border-radius:11px;font-size:13px;border:1px solid transparent}
+.bd-row.me{background:rgba(243,197,90,.1);border-color:rgba(243,197,90,.25)}
+.bd-pos{color:var(--muted);font-weight:700}
+.bd-nick{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bd-rank{font-size:11px;color:var(--muted)}
+.bd-days{font-weight:700;color:var(--teal)}
+.w-toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#0f1320;border:1px solid var(--border2);padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;z-index:70;transition:all .25s;max-width:90vw;text-align:center}
+.w-toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
@@ -245,6 +274,14 @@ footer{padding:20px 0 4px;text-align:center;color:var(--faint);font-size:11px}
     <div class="notice" id="setNotice"></div>
   </div>
 </div>
+
+<div class="overlay" id="worldOverlay">
+  <div class="sheet">
+    <div class="sh-head"><div class="sh-title">🌍 Мир</div><button class="icobtn" id="worldClose">✕</button></div>
+    <div id="worldBody"></div>
+  </div>
+</div>
+<div class="w-toast" id="wToast"></div>
 
 <script>
 // ── SUPABASE ───────────────────────────────────────────────────────────────
@@ -442,6 +479,7 @@ function render(){
   if(!S.challenge){
     document.getElementById('app').innerHTML=`
       <div class="topbar"><div class="brand">${esc(S.title)}</div><div class="tbr"><button class="icobtn" id="setBtn">⚙️</button></div></div>
+      <div id="worldBanner"></div>
       <div class="start-screen">
         <div style="font-size:56px;margin-bottom:16px">⚔️</div>
         <div class="start-title">${esc(S.name)}</div>
@@ -452,6 +490,7 @@ function render(){
       <footer>Данные синхронизируются в облаке</footer>`;
     document.getElementById('setBtn').onclick=openSet;
     document.getElementById('startBtn').onclick=()=>{const dur=Math.max(1,n(document.getElementById('durInput').value));const start=today();const end=toISO(new Date(new Date(start+'T12:00:00').getTime()+(dur-1)*DAY));S.challenge={start,end};save();render();};
+    renderWorldBanner();worldLoad();
     return;
   }
   const entry=S.entries[td],st=totalStats(),{cur,next,all}=currentLevel(st.total);
@@ -469,6 +508,7 @@ function render(){
       <div class="brand">${esc(S.title)}<div class="sync-dot" id="syncDot"></div></div>
       <div class="tbr"><button class="icobtn" id="calBtn">🗓</button><button class="icobtn" id="setBtn">⚙️</button></div>
     </div>
+    <div id="worldBanner"></div>
     <div class="chal-bar">
       <div class="chal-top"><span class="chal-title">🎯 Челлендж</span><span class="chal-dates">${S.challenge.start} → ${S.challenge.end}</span></div>
       <div class="prog-track"><div class="prog-fill" style="width:${chalPct}%"></div></div>
@@ -529,6 +569,7 @@ function render(){
   document.getElementById('calBtn').onclick=openCal;
   document.getElementById('setBtn').onclick=openSet;
   document.getElementById('resetChal').onclick=()=>{if(confirm('Сбросить челлендж?')){S.challenge=null;S.entries={};save();render();}};
+  renderWorldBanner();worldLoad();
 }
 
 // ── CALENDAR ───────────────────────────────────────────────────────────────
@@ -570,6 +611,134 @@ document.getElementById('addTaskBtn').onclick=()=>{const name=document.getElemen
 function rebuildLevels(){const thresholds=autoLevelThresholds(draft.tasks);const maxDay=calcMaxDailyXP(draft.tasks);const ui=document.getElementById('levelsUI');ui.innerHTML=draft.levelNames.map((l,i)=>`<div class="lv-edit-row"><input class="inp" value="${esc(l.name)}" data-ln="${l.id}"><input class="inp" type="color" value="${l.color}" data-lc="${l.id}"><div style="font-size:11px;color:var(--teal);white-space:nowrap">${thresholds[i]} XP</div></div>`).join('');ui.querySelectorAll('[data-ln]').forEach(el=>el.oninput=e=>{draft.levelNames.find(l=>l.id===el.dataset.ln).name=e.target.value;});ui.querySelectorAll('[data-lc]').forEach(el=>el.oninput=e=>{draft.levelNames.find(l=>l.id===el.dataset.lc).color=e.target.value;});document.getElementById('lvHint').textContent=`Макс. XP в день: ${maxDay}. Пороги пересчитываются автоматически.`;}
 
 document.getElementById('resetBtn').onclick=()=>{if(!confirm('Сбросить все данные?'))return;S=DEFAULTS();pruneEntries();save();render();closeSet();};
+
+// ── WORLD ──────────────────────────────────────────────────────────────────
+// Общий слой: квесты с фиксированным XP назначает сервер, клиент только отправляет «выполнено».
+const W={loading:false,error:false,data:null,at:0,busy:false,taken:{}};
+const WT_KEY='habit-rpg-world-taken';
+try{W.taken=JSON.parse(localStorage.getItem(WT_KEY)||'{}')||{};}catch{W.taken={};}
+const STAT_META={FAME:{c:'#f3c55a',i:'📣'},GOLD:{c:'#ff9966',i:'💰'},STAMINA:{c:'#6fe28b',i:'⚡'},HP:{c:'#ff6b6b',i:'❤️'},INT:{c:'#5bd9d0',i:'🧠'}};
+const STAT_ORDER=['FAME','GOLD','STAMINA','HP','INT'];
+const plural=(k,f)=>{const a=Math.abs(k)%100,b=a%10;return a>10&&a<20?f[2]:b>1&&b<5?f[1]:b===1?f[0]:f[2];};
+function saveTaken(){try{localStorage.setItem(WT_KEY,JSON.stringify(W.taken));}catch{}}
+let toastTimer=null;
+function worldToast(msg){const el=document.getElementById('wToast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2400);}
+
+async function worldLoad(force){
+  if(!userCode||W.loading)return;
+  if(!force&&Date.now()-W.at<120000)return;
+  W.loading=true;W.at=Date.now();
+  try{
+    const r=await rpc('get_world',{p_code:userCode});
+    if(r&&r.ok){
+      W.data=r;W.error=false;
+      const ids=new Set((r.quests||[]).map(q=>String(q.id)));
+      Object.keys(W.taken).forEach(k=>{if(!ids.has(k))delete W.taken[k];});
+      saveTaken();
+    }else W.error=true;
+  }catch{W.error=true;}
+  W.loading=false;
+  renderWorldBanner();
+  if(document.getElementById('worldOverlay').classList.contains('show'))renderWorld();
+}
+
+function renderWorldBanner(){
+  const el=document.getElementById('worldBanner');if(!el||!userCode)return;
+  const d=W.data;let sub='Общие квесты и рейтинг';
+  if(d&&d.joined){
+    const left=(d.quests||[]).filter(q=>!q.done).length;
+    sub=left?`${left} ${plural(left,['квест','квеста','квестов'])} на сегодня · ${esc(d.me.rank)}`:`Квесты дня закрыты · ${esc(d.me.rank)}`;
+  }else if(d){sub='Войти: общие квесты и рейтинг';}
+  const online=d&&n(d.online_today)>0?`<span class="wb-online">сегодня закрыли: ${n(d.online_today)}</span>`:'';
+  el.innerHTML=`<button class="world-banner" id="worldBtn"><div><div class="wb-title">🌍 Мир</div><div class="wb-sub">${sub}</div></div>${online}</button>`;
+  document.getElementById('worldBtn').onclick=openWorld;
+}
+
+function radarSVG(stats){
+  const vals=STAT_ORDER.map(k=>n(stats[k]));const mx=Math.max(60,...vals);
+  const cx=120,cy=120,R=78;
+  const pt=(i,f)=>{const a=(-90+i*72)*Math.PI/180;return[cx+Math.cos(a)*R*f,cy+Math.sin(a)*R*f];};
+  const fmt=p=>p.map(v=>v.toFixed(1)).join(',');
+  const poly=f=>STAT_ORDER.map((_,i)=>fmt(pt(i,f))).join(' ');
+  const shape=vals.map((v,i)=>fmt(pt(i,v/mx))).join(' ');
+  const axes=STAT_ORDER.map((_,i)=>{const[x,y]=pt(i,1);return`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,.08)"/>`;}).join('');
+  const dots=vals.map((v,i)=>{const[x,y]=pt(i,v/mx);return`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${STAT_META[STAT_ORDER[i]].c}"/>`;}).join('');
+  const labels=STAT_ORDER.map((k,i)=>{const[x,y]=pt(i,1.24);return`<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="${STAT_META[k].c}" font-family="Exo 2,sans-serif">${k} ${vals[i]}</text>`;}).join('');
+  return`<svg viewBox="-16 0 272 240" width="100%" style="max-width:280px;display:block;margin:0 auto" role="img" aria-label="Статы"><polygon points="${poly(1)}" fill="none" stroke="rgba(255,255,255,.1)"/><polygon points="${poly(.66)}" fill="none" stroke="rgba(255,255,255,.07)"/><polygon points="${poly(.33)}" fill="none" stroke="rgba(255,255,255,.05)"/>${axes}<polygon points="${shape}" fill="rgba(243,197,90,.22)" stroke="#f3c55a" stroke-width="2" stroke-linejoin="round"/>${dots}${labels}</svg>`;
+}
+
+function questCard(q,joined){
+  const M=STAT_META[q.stat]||STAT_META.FAME,boss=q.kind==='weekly',id=n(q.id);
+  let act='';
+  if(q.done)act='<div class="wq-done">✓ Выполнено</div>';
+  else if(joined&&W.taken[id])act=`<button class="wq-btn go" data-wclaim="${id}">Готово</button>`;
+  else if(joined)act=`<button class="wq-btn" data-wtake="${id}">Взять</button>`;
+  const left=n(q.days_left)+1;
+  return`<div class="wq${q.done?' done':''}${boss?' boss':''}" style="--sc:${M.c}"><div class="wq-top"><span class="wq-stat">${M.i} ${esc(q.stat)}</span><span class="wq-xp">+${n(q.xp)} XP</span></div>${boss?`<div class="wq-boss">БОСС НЕДЕЛИ · ${left} ${plural(left,['день','дня','дней'])}</div>`:''}<div class="wq-title">${esc(q.title)}</div>${q.descr?`<div class="wq-descr">${esc(q.descr)}</div>`:''}<div class="wq-act">${act}</div></div>`;
+}
+
+function renderWorld(){
+  const body=document.getElementById('worldBody');if(!body)return;
+  const d=W.data;
+  if(!d){
+    body.innerHTML=`<div class="grp"><div class="hint" style="text-align:center">${W.loading?'Загружаю…':'Мир недоступен. Проверь интернет.'}</div>${W.loading?'':'<button class="btn-s" id="wRetry" style="margin-top:10px">Повторить</button>'}</div>`;
+    const b=document.getElementById('wRetry');if(b)b.onclick=()=>worldLoad(true);
+    return;
+  }
+  let html='';
+  if(!d.joined){
+    html+=`<div class="grp"><div class="grp-title">Вход в Мир</div><div class="field"><label>Ник (виден другим игрокам)</label><input class="inp" id="wNick" maxlength="16" placeholder="Например: Рысь" autocomplete="off"></div><div class="act-error" id="wErr" style="text-align:left;margin:0 0 8px"></div><button class="btn-p" id="wJoin">Войти в Мир</button><div class="hint">3–16 символов: буквы, цифры, пробел, _ . -<br>Код активации другим игрокам не показывается.</div></div>`;
+  }else{
+    const m=d.me,nxt=m.next_rank_at,pct=nxt?clamp(Math.round(n(m.days)/nxt*100),0,100):100;
+    html+=`<div class="grp"><div class="w-hero"><div><div class="hname">${esc(m.nick)}</div><div class="sec-sub">${n(m.days)} ${plural(n(m.days),['день','дня','дней'])} в Мире · серия ${n(m.streak)}🔥</div></div><div class="rank" style="background:rgba(243,197,90,.14);border-color:rgba(243,197,90,.3);color:var(--gold)">${esc(m.rank)}</div></div><div class="bar-track" style="margin-top:10px"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--gold),#ffe89b)"></div></div><div class="next-row" style="margin-top:6px"><span>${nxt?`До следующего ранга: ${nxt-n(m.days)} дн.`:'Максимальный ранг'}</span><span>Сегодня ${n(m.today_xp)}/${n(m.daily_cap)} XP</span></div></div>`;
+    html+=`<div class="grp"><div class="grp-title">Статы</div>${radarSVG(m.stats||{})}</div>`;
+  }
+  const quests=d.quests||[];
+  html+=`<div class="grp"><div class="grp-title">Квесты дня${n(d.online_today)>0?` · закрыли сегодня: ${n(d.online_today)}`:''}</div>${quests.length?quests.map(q=>questCard(q,d.joined)).join(''):'<div class="hint">На сегодня квестов нет. Новые появятся позже.</div>'}${d.joined?'<div class="hint">XP за общие квесты назначает сервер, в сутки не больше '+n(d.me.daily_cap)+' XP.</div>':''}</div>`;
+  const board=d.board||[];
+  html+=`<div class="grp"><div class="grp-title">Топ недели · по дням активности</div>${board.length?board.map((b,i)=>`<div class="bd-row${b.me?' me':''}"><span class="bd-pos">${i+1}</span><span class="bd-nick">${esc(b.nick)}</span><span class="bd-rank">${esc(b.rank)}</span><span class="bd-days">${n(b.days)} дн.</span></div>`).join(''):'<div class="hint">На этой неделе никто ещё не закрыл квест.</div>'}<div class="hint">В рейтинге считаются дни, в которые закрыт хотя бы один общий квест. Очки за личные задания в него не входят.</div></div>`;
+  body.innerHTML=html;
+  body.querySelectorAll('[data-wtake]').forEach(b=>b.onclick=()=>{W.taken[b.dataset.wtake]=true;saveTaken();renderWorld();});
+  body.querySelectorAll('[data-wclaim]').forEach(b=>b.onclick=()=>worldClaim(b.dataset.wclaim,b));
+  const j=document.getElementById('wJoin');if(j)j.onclick=worldJoin;
+  const ni=document.getElementById('wNick');if(ni)ni.onkeydown=e=>{if(e.key==='Enter')worldJoin();};
+}
+
+async function worldClaim(id,btn){
+  if(W.busy)return;W.busy=true;btn.disabled=true;btn.textContent='…';
+  let res=null;
+  try{res=await rpc('claim_quest',{p_code:userCode,p_quest_id:Number(id)});}catch{}
+  W.busy=false;
+  if(!res){worldToast('Нет связи. Попробуй ещё раз.');renderWorld();return;}
+  if(res.ok){worldToast(`+${n(res.xp)} ${res.stat}`);delete W.taken[id];}
+  else if(res.error==='already'){worldToast('Уже выполнено');delete W.taken[id];}
+  else if(res.error==='cap')worldToast('Лимит XP на сегодня исчерпан');
+  else if(res.error==='closed'){worldToast('Квест уже закрыт');delete W.taken[id];}
+  else if(res.error==='not_joined')worldToast('Сначала войди в Мир');
+  else worldToast('Не получилось');
+  saveTaken();
+  await worldLoad(true);
+}
+
+async function worldJoin(){
+  const inp=document.getElementById('wNick'),err=document.getElementById('wErr'),btn=document.getElementById('wJoin');
+  if(!inp||!err||!btn)return;
+  const nick=inp.value.trim();
+  if(!/^[A-Za-zА-Яа-яЁё0-9_ .-]{3,16}$/.test(nick)){err.textContent='3–16 символов: буквы, цифры, пробел, _ . -';return;}
+  btn.disabled=true;err.textContent='';
+  let res=null;
+  try{res=await rpc('join_world',{p_code:userCode,p_nick:nick});}catch{}
+  if(!res){err.textContent='Нет связи. Попробуй ещё раз.';btn.disabled=false;return;}
+  if(!res.ok){err.textContent=res.error==='nick_taken'?'Ник занят':res.error==='bad_nick'?'Недопустимый ник':'Не получилось войти';btn.disabled=false;return;}
+  worldToast('Добро пожаловать в Мир');
+  await worldLoad(true);
+}
+
+function openWorld(){document.getElementById('worldOverlay').classList.add('show');renderWorld();worldLoad(true);}
+function closeWorld(){document.getElementById('worldOverlay').classList.remove('show');}
+document.getElementById('worldClose').onclick=closeWorld;
+document.getElementById('worldOverlay').onclick=e=>{if(e.target.id==='worldOverlay')closeWorld();};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)worldLoad();});
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 pruneEntries();
