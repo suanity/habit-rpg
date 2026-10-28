@@ -88,6 +88,12 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 .tile.sel{outline:2px solid var(--gold);color:var(--gold);background:#1c1a14}
 .tile canvas{width:100px;height:auto}
 .tile canvas[data-crop=face]{width:60px}
+.tile.lock canvas{filter:grayscale(1) brightness(.5)}
+.tile.lock{color:var(--faint)}
+.tile .sk-n{font-family:var(--px);font-size:8px}
+.tile .sk-e{font-size:9px;color:var(--muted)}
+.skin-note{font-size:11px;color:var(--faint);line-height:1.5;margin:-2px 2px 8px}
+.ed{font-family:var(--px);font-size:6px;margin-left:4px}
 .tile canvas[data-crop=top]{width:92px}
 .tile canvas[data-crop=legs]{width:76px}
 .sw{flex:0 0 auto;width:36px;height:36px;border-radius:6px;border:2px solid #000;outline:1px solid var(--line2);outline-offset:-3px}
@@ -95,8 +101,8 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 .cr-sticky{position:sticky;top:0;z-index:8;margin:0 -14px 12px;padding:6px 14px 8px;background:linear-gradient(180deg,#0a0b10 82%,rgba(10,11,16,0))}
 .cr-sticky .cr-stage{margin:0 auto 10px}
 .dice-btn{position:absolute;right:6px;top:6px;font-family:var(--px);font-size:7px;padding:7px 6px;border-radius:4px;background:var(--s3);border:2px solid #000;color:var(--text)}
-.cr-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.cr-tab{padding:10px 2px;border-radius:5px;background:var(--s2);border:2px solid #000;outline:1px solid var(--line);outline-offset:-3px;font-family:var(--px);font-size:7px;color:var(--muted)}
+.cr-tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.cr-tab{padding:10px 1px;border-radius:5px;background:var(--s2);border:2px solid #000;outline:1px solid var(--line);outline-offset:-3px;font-family:var(--px);font-size:7px;color:var(--muted)}
 .cr-tab.on{color:var(--gold);outline:2px solid var(--gold);background:#1c1a14}
 .cr-pane[hidden]{display:none}
 .cr-gender{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 auto 8px;max-width:300px}
@@ -162,6 +168,20 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 .stage .plat{position:relative;width:250px;height:290px;display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(ellipse at 50% 92%,#2a3050 0%,transparent 68%);padding-bottom:12px}
 .stage canvas{width:200px;height:auto}
 .stage .nm{font-family:var(--px);font-size:14px}
+.hs{display:grid;grid-template-columns:48% 1fr;gap:10px;align-items:stretch;padding:10px}
+.hs-l{display:flex;align-items:flex-end;justify-content:center;background:radial-gradient(ellipse at 50% 94%,#2a3050 0%,transparent 70%)}
+.hs-l .plat{width:100%;display:flex;justify-content:center;align-items:flex-end}
+.hs-l canvas{width:100%;height:auto}
+.hs-r{display:flex;flex-direction:column;gap:9px;min-width:0;justify-content:center}
+.hs-r .nm{font-family:var(--px);font-size:12px;overflow-wrap:anywhere}
+.hs-xp{font-family:var(--px);font-size:9px;color:var(--faint)}
+.hs-st{--c:#fff}
+.hs-h i{font-style:normal;font-family:'Inter';font-size:10px;color:var(--faint)}
+.hs-h{display:flex;justify-content:space-between;align-items:center;font-family:var(--px);font-size:8px;color:var(--c);margin-bottom:5px}
+.hs-h span{display:flex;gap:6px;align-items:center}
+.hs-h b{font-weight:400;color:var(--text,#e8ebf5)}
+html{--tg-top:0px}
+.topbar{padding-top:var(--tg-top)}
 .ladder{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:14px 0 10px}
 .ladder div{font-family:var(--px);font-size:6px;text-align:center;padding:8px 0;border-radius:3px;background:var(--s3);border:2px solid #000;color:var(--faint);line-height:1.3}
 .ladder div.on{color:#111;background:var(--rc)}
@@ -207,34 +227,32 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 <div class="modal" id="modal"></div>
 <div class="toast" id="toast"></div>
 <script>
-// ── PIXEL ENGINE v3 (64-bit look) ──────────────────────────────────────────
-// Герой рисуется процедурно на сетке 50×66: фигуры с цилиндрическим затенением (4 тона),
-// внутренние контуры, цветная внешняя обводка, анимация покоя (дыхание, моргание).
-const PW=50,PH=66;
-const clamp01=(v,a,b)=>Math.max(a,Math.min(b,v));
+// ── PIXEL ENGINE v4 ────────────────────────────────────────────────────────
+// Сетка 72×96. Рисовка «уличный комикс» (плоские 3 тона, толстый контур) +
+// угловая анатомия (широкие плечи, гранёная челюсть, длинные ноги, серьёзные лица).
+const PW=72,PH=96,CX=36;
 const hex2=h=>{const v=parseInt(h.slice(1),16);return[v>>16&255,v>>8&255,v&255];};
-const pk=a=>(clamp01(a[0]|0,0,255)<<16)|(clamp01(a[1]|0,0,255)<<8)|clamp01(a[2]|0,0,255);
 const unpk=v=>[v>>16&255,v>>8&255,v&255];
+const cl8=v=>v<0?0:v>255?255:v|0;
+const pk=a=>(cl8(a[0])<<16)|(cl8(a[1])<<8)|cl8(a[2]);
 const mixc=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
-const _rampCache={};
-function ramp(hex){
-  if(_rampCache[hex])return _rampCache[hex];
-  const c=hex2(hex);
-  const hi=mixc(c.map(v=>v*1.1+10),[255,238,205],.22);
-  const sh=mixc(c.map(v=>v*.72),[70,45,120],.16);
-  const dk=mixc(c.map(v=>v*.5),[35,22,80],.28);
-  return _rampCache[hex]=[pk(hi),pk(c),pk(sh),pk(dk)];
-}
-const _skc={};
-function skinRamp(hex){
-  if(_skc[hex])return _skc[hex];
-  const c=hex2(hex);
-  return _skc[hex]=[pk(mixc(c.map(v=>v*1.04+6),[255,242,228],.28)),pk(c),pk(mixc(c.map(v=>v*.86),[170,70,70],.14)),pk(mixc(c.map(v=>v*.62),[100,30,40],.25))];
-}
-const rampOf=(col)=>ramp('#'+col.toString(16).padStart(6,'0'));
 const mixp=(p,q,t)=>pk(mixc(unpk(p),unpk(q),t));
+const _rc={};
+// 4 тона: [свет, база, тень, глубокая тень]
+function ramp(hx){
+  if(_rc[hx])return _rc[hx];
+  const b=hex2(hx);
+  return _rc[hx]=[pk(mixc(b,[255,250,230],.36)),pk(b),pk(mixc(b,[50,20,90],.4)),pk(mixc(b,[25,12,55],.62))];
+}
+const _sc={};
+function skinRamp(hx){
+  if(_sc[hx])return _sc[hx];
+  const b=hex2(hx);
+  return _sc[hx]=[pk(mixc(b.map(v=>v*1.03+6),[255,243,228],.34)),pk(b),pk(mixc(b.map(v=>v*.82),[150,55,75],.2)),pk(mixc(b.map(v=>v*.6),[90,28,50],.3))];
+}
+const rampN=n=>ramp('#'+n.toString(16).padStart(6,'0'));
 
-// ── ПАЛИТРЫ ───────────────────────────────────────────────────────────────
+// ── ПАЛИТРЫ И ИМЕНА ───────────────────────────────────────────────────────
 const SKIN=['#fde6d2','#f7d0ae','#eebc92','#d9a070','#b97d4e','#94603a','#6e432a','#4a2c1b'];
 const HAIRC=['#1b1a20','#3a2415','#6b4423','#8b5a2b','#d9b45a','#e8e2cf','#b8452a','#c22d3a','#3f7de8','#27b5a8','#ec7fb0','#8b5cf6'];
 const OUTC=['#e5484d','#f59e0b','#facc15','#2ecc71','#14b8a6','#38bdf8','#3b6fe0','#6366f1','#a855f7','#ec4899','#e9ecf3','#2b3040'];
@@ -243,6 +261,7 @@ const EYEC=['#6b3f1d','#2a2230','#3f8fe0','#3fa86a','#8a97a8','#d49a2a'];
 const BODY_NAMES=['Худой','Обычный','Атлет','Крупный'];
 const GENDER_NAMES=['Парень','Девушка'];
 const HAIR_NAMES=['Короткая','Шипы','Ирокез','Длинные','Каре','Хвост','Пучок','Афро','Ёжик','Назад','Кудри','Косы','Андеркат','Пробор','Хвостики','Лысый','Кудрявый фейд','Длинные кудри','Шторки','Маллет'];
+const FACE_NAMES=['Классика','Квадратное','Узкое','Скулы','Мягкое','Тяжёлый лоб','Острое','Усталое'];
 const EYE_NAMES=['Обычные','Острые','Большие','Сонные','Точки'];
 const BROW_NAMES=['Обычные','Густые','Тонкие','Хмурые'];
 const MOUTH_NAMES=['Ровный','Улыбка','Ухмылка','Оскал'];
@@ -253,97 +272,110 @@ const SHOE_NAMES=['Белые','Чёрные','Ботинки','Хай-топы'
 const ACC_NAMES=['Нет','Очки','Тёмные','Кепка','Повязка','Наушники','Шапка','Серьга','Шрам','Круглые очки','Большие очки','Цепочка'];
 const ITEM_NAMES=['Нет','Камера','Кофе','Книга','Меч','Гантель'];
 const CAPE_NAMES=['Нет','Красный','Чёрный','Синий'];
-const AV_RANGE={g:2,b:4,sk:8,h:20,hc:12,e:5,ec:6,br:4,m:4,fh:6,o:15,oc:12,p:8,pc:8,s:6,a:12,it:6,cp:4};
+// x — эксклюзивный скин (0 = нет). Допустимость проверяет сервер по инвентарю игрока.
+const AV_RANGE={g:2,b:4,sk:8,h:20,hc:12,e:5,ec:6,br:4,m:4,fh:6,o:15,oc:12,p:8,pc:8,s:6,a:12,it:6,cp:4,fc:8,x:16};
 const AV_KEYS=Object.keys(AV_RANGE);
 const AV_CORE=['g','sk','h','hc','o','oc','a'];
-const OUTLINE_RGB=[20,10,30];
+const DG={'0':['111','101','101','101','111'],'1':['010','110','010','010','111'],'2':['111','001','111','100','111'],'3':['111','001','111','001','111'],'4':['101','101','111','001','001'],'5':['111','100','111','001','111'],'6':['111','100','111','101','111'],'7':['111','001','010','010','010'],'8':['111','101','111','101','111'],'9':['111','101','111','001','111']};
+const INK=0x1c1220;       // тёмный контур
+const OUT_RGB=[18,8,30];
 
 // ── ФИГУРЫ ────────────────────────────────────────────────────────────────
 const fl=Math.floor,ce=Math.ceil;
-function shp(b,n){return{b,n};}
-function ell(cx,cy,rx,ry){return shp([fl(cx-rx),fl(cy-ry),ce(cx+rx),ce(cy+ry)],(x,y)=>{const dx=(x-cx)/rx,dy=(y-cy)/ry;return dx*dx+dy*dy<=1?[dx,dy]:null;});}
+const shp=(b,f)=>({b,f});
+function ell(cx,cy,rx,ry){return shp([cx-rx,cy-ry,cx+rx,cy+ry],(x,y)=>{const dx=(x-cx)/rx,dy=(y-cy)/ry;return dx*dx+dy*dy<=1?[dx,dy]:null;});}
 function cap(x1,y1,x2,y2,r1,r2){
   if(r2===undefined)r2=r1;
-  const vx=x2-x1,vy=y2-y1,L2=vx*vx+vy*vy||1,R=Math.max(r1,r2);
-  return shp([fl(Math.min(x1,x2)-R),fl(Math.min(y1,y2)-R),ce(Math.max(x1,x2)+R),ce(Math.max(y1,y2)+R)],(x,y)=>{
-    let t=((x-x1)*vx+(y-y1)*vy)/L2;t=t<0?0:t>1?1:t;
-    const cx=x1+vx*t,cy=y1+vy*t,r=r1+(r2-r1)*t,dx=x-cx,dy=y-cy;
-    return dx*dx+dy*dy<=r*r?[dx/r,dy/r]:null;});
+  const dx=x2-x1,dy=y2-y1,L2=dx*dx+dy*dy||1,m=Math.max(r1,r2);
+  return shp([Math.min(x1,x2)-m,Math.min(y1,y2)-m,Math.max(x1,x2)+m,Math.max(y1,y2)+m],(x,y)=>{
+    let t=((x-x1)*dx+(y-y1)*dy)/L2;t=t<0?0:t>1?1:t;
+    const ax=x1+dx*t,ay=y1+dy*t,r=r1+(r2-r1)*t,ex=(x-ax)/r,ey=(y-ay)/r;
+    return ex*ex+ey*ey<=1?[ex,ey]:null;});
 }
-function rect(x0,y0,x1,y1){const cx=(x0+x1)/2,cy=(y0+y1)/2,hw=(x1-x0)/2,hh=(y1-y0)/2;return shp([fl(x0),fl(y0),ce(x1),ce(y1)],(x,y)=>x>=x0&&x<=x1&&y>=y0&&y<=y1?[(x-cx)/hw*.9,(y-cy)/hh*.5]:null);}
+function rr(x0,y0,x1,y1,r){
+  const mx=(x0+x1)/2,my=(y0+y1)/2,hw=(x1-x0)/2,hh=(y1-y0)/2;
+  return shp([x0,y0,x1,y1],(x,y)=>{
+    if(x<x0||x>x1||y<y0||y>y1)return null;
+    const qx=Math.abs(x-mx)-(hw-r),qy=Math.abs(y-my)-(hh-r);
+    if(qx>0&&qy>0&&qx*qx+qy*qy>r*r)return null;
+    return[(x-mx)/hw*.9,(y-my)/hh*.7];});
+}
+function rect(x0,y0,x1,y1){return rr(x0,y0,x1,y1,0);}
 function poly(pts){
   const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
-  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),cx=(x0+x1)/2,cy=(y0+y1)/2,hw=(x1-x0)/2||1,hh=(y1-y0)/2||1;
-  return shp([fl(x0),fl(y0),ce(x1),ce(y1)],(x,y)=>{
-    let ins=false;
-    for(let i=0,j=pts.length-1;i<pts.length;j=i++){
-      const xi=pts[i][0],yi=pts[i][1],xj=pts[j][0],yj=pts[j][1];
-      if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)ins=!ins;
-    }
-    return ins?[(x-cx)/hw*.9,(y-cy)/hh*.4]:null;});
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const mx=(x0+x1)/2,my=(y0+y1)/2,hw=(x1-x0)/2||1,hh=(y1-y0)/2||1;
+  return shp([x0,y0,x1,y1],(x,y)=>{
+    let c=false;
+    for(let i=0,j=pts.length-1;i<pts.length;j=i++){const xi=pts[i][0],yi=pts[i][1],xj=pts[j][0],yj=pts[j][1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}
+    return c?[(x-mx)/hw,(y-my)/hh]:null;});
 }
-// фигура по строкам: fn(y)->[xl,xr] или null
-function rows(y0,y1,fn){
-  let xl=99,xr=-99;for(let y=y0;y<=y1;y+=.5){const r=fn(y);if(r){xl=Math.min(xl,r[0]);xr=Math.max(xr,r[1]);}}
-  return shp([fl(xl),fl(y0),ce(xr),ce(y1)],(x,y)=>{const r=fn(y);if(!r||x<r[0]||x>r[1])return null;const m=(r[0]+r[1])/2,h=(r[1]-r[0])/2||1;return[(x-m)/h,0];});
+// симметричный контур по строкам: pts=[[y,halfwidth],...], cx — ось
+function sym(pts,cx,step=1){
+  const L=[],R=[];
+  const y0=pts[0][0],y1=pts[pts.length-1][0];
+  for(let y=y0;y<y1;y+=step){const h=lerpPts(pts,y);L.push([cx-h,y]);R.push([cx+h,y]);}
+  const h=lerpPts(pts,y1);L.push([cx-h,y1]);R.push([cx+h,y1]);
+  return poly(L.concat(R.reverse()));
 }
-function uni(...a){return shp([Math.min(...a.map(s=>s.b[0])),Math.min(...a.map(s=>s.b[1])),Math.max(...a.map(s=>s.b[2])),Math.max(...a.map(s=>s.b[3]))],(x,y)=>{for(const s of a){const n=s.n(x,y);if(n)return n;}return null;});}
-function inter(a,b){return shp(a.b,(x,y)=>b.n(x,y)?a.n(x,y):null);}
-function sub(a,b){return shp(a.b,(x,y)=>b.n(x,y)?null:a.n(x,y));}
 function lerpPts(pts,y){
-  if(y<pts[0][0]||y>pts[pts.length-1][0])return null;
-  for(let i=1;i<pts.length;i++)if(y<=pts[i][0]){const a=pts[i-1],b=pts[i],t=(y-a[0])/(b[0]-a[0]||1);return a[1]+(b[1]-a[1])*t;}
+  if(y<=pts[0][0])return pts[0][1];
+  for(let i=1;i<pts.length;i++)if(y<=pts[i][0]){const a=pts[i-1],b=pts[i];return a[1]+(b[1]-a[1])*(y-a[0])/(b[0]-a[0]||1);}
   return pts[pts.length-1][1];
 }
-function symRows(pts,cx=25){const y0=pts[0][0],y1=pts[pts.length-1][0];return rows(y0,y1,y=>{const h=lerpPts(pts,y);return h==null?null:[cx-h,cx+h];});}
+function uni(...a){return shp([Math.min(...a.map(s=>s.b[0])),Math.min(...a.map(s=>s.b[1])),Math.max(...a.map(s=>s.b[2])),Math.max(...a.map(s=>s.b[3]))],(x,y)=>{for(const s of a){const n=s.f(x,y);if(n)return n;}return null;});}
+function inter(a,b){return shp(a.b,(x,y)=>b.f(x,y)?a.f(x,y):null);}
+function sub(a,b){return shp(a.b,(x,y)=>b.f(x,y)?null:a.f(x,y));}
+const clip=(s,fn)=>shp(s.b,(x,y)=>fn(x,y)?s.f(x,y):null);
+// нормали головы относительно её центра
+const renorm=(s,cx,cy,rx,ry)=>shp(s.b,(x,y)=>s.f(x,y)?[(x-cx)/rx,(y-cy)/ry]:null);
 
 // ── ХОЛСТ ─────────────────────────────────────────────────────────────────
 class Painter{
-  constructor(){this.buf=new Int32Array(PW*PH).fill(-1);this.oy=0;this.ox=0;}
+  constructor(){this.buf=new Int32Array(PW*PH).fill(-1);this.ox=0;this.oy=0;}
   set(x,y,c){x=Math.round(x)+this.ox;y=Math.round(y)+this.oy;if(x>=0&&y>=0&&x<PW&&y<PH)this.buf[y*PW+x]=c;}
   get(x,y){x=Math.round(x)+this.ox;y=Math.round(y)+this.oy;return x>=0&&y>=0&&x<PW&&y<PH?this.buf[y*PW+x]:-1;}
-  px(x,y,c){this.set(x,y,c);}
-  rectf(x0,y0,x1,y1,c){for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)this.set(x,y,c);}
-  hl(x0,x1,y,c){for(let x=x0;x<=x1;x++)this.set(x,y,c);}
-  vl(x,y0,y1,c){for(let y=y0;y<=y1;y++)this.set(x,y,c);}
+  hl(x0,x1,y,c){x0=Math.round(x0);x1=Math.round(x1);for(let x=x0;x<=x1;x++)this.set(x,y,c);}
+  vl(x,y0,y1,c){y0=Math.round(y0);y1=Math.round(y1);for(let y=y0;y<=y1;y++)this.set(x,y,c);}
+  rectf(x0,y0,x1,y1,c){for(let y=Math.round(y0);y<=Math.round(y1);y++)for(let x=Math.round(x0);x<=Math.round(x1);x++)this.set(x,y,c);}
   line(x0,y0,x1,y1,c){x0=Math.round(x0);y0=Math.round(y0);x1=Math.round(x1);y1=Math.round(y1);const dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let e=dx+dy;for(;;){this.set(x0,y0,c);if(x0===x1&&y0===y1)break;const e2=2*e;if(e2>=dy){e+=dy;x0+=sx;}if(e2<=dx){e+=dx;y0+=sy;}}}
-  // заливка фигуры с затенением; o.edge — внутренний контур, o.tex(x,y)->сдвиг тона, o.dith — сглаживание
-  fill(sh,R,o={}){
-    const[x0,y0,x1,y1]=sh.b,w=x1-x0+3,h=y1-y0+3;
-    const m=new Array(w*h).fill(null);
-    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)m[(y-y0+1)*w+(x-x0+1)]=sh.n(x+.5,y+.5);
-    const dm=o.dark===undefined?0:o.dark;
-    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
-      const i=(y-y0+1)*w+(x-x0+1),n=m[i];if(!n)continue;
+  // R=[свет,база,тень,глубокая]; o.flat — одна база; o.dark сдвиг тона; o.edge — внутренний контур
+  // o.tex(x,y)->сдвиг тона; o.k — сила объёма
+  paint(sh,R,o={}){
+    const[x0,y0,x1,y1]=sh.b,k=o.k||1,dk=o.dark||0;
+    const LV=[R[3],R[2],R[1],R[0]];
+    const edgeOn=o.edge===undefined?true:o.edge;
+    const edgeC=typeof o.edge==='number'?o.edge:mixp(R[2],0x08040f,.55);
+    for(let y=fl(y0);y<=ce(y1);y++)for(let x=fl(x0);x<=ce(x1);x++){
+      const n=sh.f(x+.5,y+.5);if(!n)continue;
       let t;
-      const d=(n[0]*.62+n[1]*.5)*(o.k||1);
-      if(o.flat)t=1;
-      else{
-        t=d<-.5?0:d<.12?1:d<.6?2:3;
-        if(o.dith!==false&&((x+y)&1)){const th=[-.5,.12,.6];for(let k=0;k<3;k++)if(Math.abs(d-th[k])<.09){t=d<th[k]?k:k+1;break;}}
-      }
+      if(o.flat)t=2;
+      else{const L=-(n[0]*.62+n[1]*.55)*k;t=L<-.25?1:L>.72?3:2;}
       if(o.tex)t+=o.tex(x,y);
-      t=Math.max(0,Math.min(3,t+dm));
-      let c=R[t];
-      if(o.edge){
-        if(!m[i-1]||!m[i+1]||!m[i-w]||!m[i+w])c=typeof o.edge==='number'?o.edge:R[3];
-      }
+      t=t+dk;t=t<0?0:t>3?3:t;
+      let c=LV[t];
+      if(edgeOn&&(!sh.f(x-.5,y+.5)||!sh.f(x+1.5,y+.5)||!sh.f(x+.5,y-.5)||!sh.f(x+.5,y+1.5)))c=edgeC;
       this.set(x,y,c);
     }
   }
 }
-
-// внешний контур: цвет соседнего пикселя, затемнённый
+// внешний контур в 2 пикселя, цвет — тёмный фиолетовый
 function outlinePass(buf){
-  const out=new Int32Array(buf);
-  const N=[[1,0],[-1,0],[0,1],[0,-1]];
-  for(let y=0;y<PH;y++)for(let x=0;x<PW;x++){
-    if(buf[y*PW+x]>=0)continue;
-    let best=-1,bl=999;
-    for(const[dx,dy]of N){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=PW||yy>=PH)continue;const v=buf[yy*PW+xx];if(v<0)continue;const u=unpk(v),l=u[0]+u[1]+u[2];if(l<bl){bl=l;best=v;}}
-    if(best>=0)out[y*PW+x]=pk(mixc(unpk(best).map(v=>v*.4),OUTLINE_RGB,.45));
+  let cur=buf;
+  for(let p=0;p<2;p++){
+    const out=new Int32Array(cur);
+    for(let y=0;y<PH;y++)for(let x=0;x<PW;x++){
+      if(cur[y*PW+x]>=0)continue;
+      let hit=false;
+      if(x>0&&cur[y*PW+x-1]>=0)hit=true;
+      else if(x<PW-1&&cur[y*PW+x+1]>=0)hit=true;
+      else if(y>0&&cur[(y-1)*PW+x]>=0)hit=true;
+      else if(y<PH-1&&cur[(y+1)*PW+x]>=0)hit=true;
+      if(hit)out[y*PW+x]=pk(OUT_RGB);
+    }
+    cur=out;
   }
-  return out;
+  return cur;
 }
 
 // ── АВАТАР: нормализация/валидация ─────────────────────────────────────────
@@ -356,6 +388,7 @@ function validAvatar(a){
 function randomAvatar(g){
   const r=n=>Math.floor(Math.random()*n),o={};
   for(const k of AV_KEYS)o[k]=r(AV_RANGE[k]);
+  o.x=0;
   if(g===0||g===1)o.g=g;
   const pick=a=>a[r(a.length)];
   if(o.g===0){o.h=pick([0,1,2,5,6,7,8,9,10,12,13,15,16,18,19]);o.p=pick([0,1,2,3,5,6,7]);}
@@ -368,878 +401,858 @@ function randomAvatar(g){
   return o;
 }
 
-// ── ТЕЛО ──────────────────────────────────────────────────────────────────
-function dims(av){
+// ── ТЕЛО: каркас, ноги, обувь, верх ────────────────────────────────────────
+// pose: {dx — смещение веса (px), bob — вдох (0/1), blink}
+function mkRig(av,pose){
   const f=av.g===1;
-  const T=[{sh:6.8,ch:6.9,wa:5.4,hp:5.9,ar:2.7},{sh:7.9,ch:8.1,wa:6.3,hp:6.6,ar:3.0},{sh:9.4,ch:9.8,wa:6.9,hp:7.2,ar:3.5},{sh:9.9,ch:10.6,wa:9.2,hp:8.8,ar:3.6}][av.b];
-  const d={...T,nk:f?2.3:2.8};
-  if(f){d.sh-=1.5;d.ch-=.7;d.wa-=.9;d.hp+=.9;d.ar-=.25;}
-  d.ar=Math.max(2.3,d.ar);
-  return d;
+  const T=[[11.8,11.4,8.8,9.6,3.3,5.0],[13.2,12.8,10,10.8,3.7,5.5],[15.2,14.8,10.4,11.4,4.3,6],[14.6,15.2,13.4,13.6,4.6,6.6]][av.b];
+  const r={sh:T[0],ch:T[1],wa:T[2],hp:T[3],ar:T[4],lg:T[5],f};
+  if(f){r.sh-=2.2;r.ch-=1.2;r.wa-=1.5;r.hp+=.4;r.ar-=.4;r.lg-=.2;}
+  r.sy=36;r.tb=60;r.lt=57;r.lb=82;r.shoeY=86.5;r.hy=19.5;r.nk=f?3.1:3.7;
+  r.lo=r.hp*.55+.4;                       // смещение ног от оси
+  r.dx=pose.dx||0;r.ts=r.dx*.7;r.hs=r.dx*.45;
+  r.cx=CX+r.ts;
+  return r;
 }
-function torsoShape(d,y1=48){
-  const pts=[[29,d.nk+.4],[30,d.sh-2.4],[31.5,d.sh-.4],[34,d.ch],[39,d.ch-.3],[43,d.wa],[y1,d.hp]];
-  return symRows(pts);
-}
-function headShape(av){
-  const f=av.g===1;
-  const jw=f?6.2:7.4;
-  const u=uni(ell(25,15.9,8.4,9.1),ell(25,19.8,jw,6.8));
-  return shp(u.b,(x,y)=>u.n(x,y)?[(x-25)/8.6,(y-16.6)/10.5]:null);
-}
+const white=0xf1f3f9,whiteD=0xc9ccd6;
 
-const LIP=(S)=>mixp(S[2],0xc0394a,.5);
-
-// ── РИСОВАНИЕ ─────────────────────────────────────────────────────────────
-function renderAvatar(av,bob,blink){
-  av=normAv(av);
-  const P=new Painter(),d=dims(av),f=av.g===1;
-  const S=skinRamp(SKIN[av.sk]),HR=ramp(HAIRC[av.hc]),OR=ramp(OUTC[av.oc]),PR=ramp(PANTC[av.pc]);
-  const sway=bob?1:0;
-  const ctx={P,av,d,f,S,HR,OR,PR,bob,blink,sway,head:headShape(av)};
-
-  // 1. плащ и задние волосы
-  P.oy=0;P.ox=0;
-  drawCape(ctx);
-  P.oy=bob;P.ox=0;
-  drawHairBack(ctx);
-  // 2. ноги и обувь (не двигаются)
-  P.oy=0;P.ox=0;
-  drawLegs(ctx);
-  // 3. верх тела
-  P.oy=bob;
-  drawTop(ctx);
-  drawItem(ctx);
-  // 4. голова
-  drawHead(ctx);
-  drawHairFront(ctx);
-  drawAccessory(ctx);
-  return P.buf;
-}
-
-function drawCape(c){
-  const{P,av,d}=c;if(!av.cp)return;
-  const base=['#c0392b','#22232e','#2f5fb8'][av.cp-1],R=ramp(base),sw=c.sway;
-  const sh=rows(30,57,y=>{const h=lerpPts([[30,d.sh+.5],[36,d.sh+3],[46,d.sh+5],[57,d.sh+6.5]],y);if(h==null)return null;const hem=56+Math.sin((y+sw*3)*.1)*0;return y<=hem+1?[25-h+(y>40?-sw*.8:0),25+h+(y>40?sw*.8:0)]:null;});
-  P.fill(sh,R,{edge:true});
-  // складки
-  for(let y=34;y<=56;y++){const k=(y-34)/22;P.set(25-4-k*3,y,R[2]);P.set(25+4+k*3,y,R[2]);}
-  // подкладка внизу
-  P.hl(25-d.sh-4,25+d.sh+4,57,R[3]);
+// ── ОБУВЬ ─────────────────────────────────────────────────────────────────
+const SHOES=[
+  {col:'#e9ecf3',sole:'#9aa3b8',acc:'#e5484d',k:'snk'},
+  {col:'#2a2d3a',sole:'#e0e3ec',acc:'#5a6070',k:'snk'},
+  {col:'#6a4426',sole:'#2a1a10',acc:'#a8743f',k:'boot'},
+  {col:'#d63b3b',sole:'#e9ecf3',acc:'#ffffff',k:'hi'},
+  {col:'#3a2f2a',sole:'#c8a46a',acc:'#e0b060',k:'cboot'},
+  {col:'#eceff6',sole:'#cfd5e4',acc:'#ff7a2f',k:'csnk'},
+];
+function drawShoes(c){
+  const{P,av,r}=c;
+  const sd=SHOES[av.s],R=ramp(sd.col),SO=ramp(sd.sole),AC=hex2(sd.acc),acc=pk(AC);
+  const chunky=sd.k==='cboot'||sd.k==='csnk';
+  const srx=chunky?9.2:8.2,sry=chunky?5.4:4.4,sy0=r.shoeY+(chunky?.4:0);
+  for(const s of[-1,1]){
+    const fx=CX+s*(r.lo*1.12+1.5);
+    // подошва (толстая у chunky)
+    const soleTop=sy0+sry-(chunky?3.4:2.2),soleBot=sy0+sry+(chunky?1.8:1);
+    P.paint(ell(fx,sy0,srx,sry),R,{});
+    P.paint(rr(fx-srx+.5,soleTop,fx+srx-.5,soleBot,1.2),SO,{});
+    if(chunky){ // протектор
+      for(let x=Math.round(fx-srx+2);x<=Math.round(fx+srx-2);x+=2)P.set(x,Math.round(soleBot)-0,SO[2]);
+      P.hl(fx-srx+1,fx+srx-1,soleTop+.6,SO[0]);
+    }
+    // акцентная полоса и носок
+    P.hl(fx-srx*.55,fx+srx*.35,soleTop-1,acc);
+    P.paint(ell(fx-s*.6,sy0-.8,srx*.5,sry*.5),R,{dark:1,edge:false,flat:true});
+    P.hl(fx-2.5,fx+1.5,sy0-sry+1.4,R[0]);
+    // шнуровка
+    for(let k=0;k<3;k++)P.hl(fx-1.5-s*0,fx+1.5,sy0-sry+3.2+k*1.6,k%2?R[0]:white);
+    if(sd.k==='hi'||sd.k==='boot'||sd.k==='cboot'){ // голенище
+      const top=sd.k==='hi'?r.lb-6:r.lb-5.5;
+      P.paint(rr(fx-5.6,top,fx+5.6,sy0-sry+2.4,1.6),R,{});
+      P.hl(fx-4.6,fx+4.6,top+1,sd.k==='hi'?white:R[0]);
+      if(sd.k==='hi'){P.hl(fx-3,fx+3,top+4,white);P.set(fx,top+6,acc);}
+      else{P.hl(fx-4.6,fx+4.6,top+3.4,R[2]);P.rectf(fx-1,top+4.6,fx+1,top+6.6,acc);}
+    }
+    if(sd.k==='snk'||sd.k==='csnk'){ // ярлык на пятке/логотип
+      P.set(fx+s*(srx-3),sy0-1,acc);P.set(fx+s*(srx-3),sy0,acc);
+    }
+  }
 }
 
+// ── НОГИ ──────────────────────────────────────────────────────────────────
 function drawLegs(c){
-  const{P,av,d,f,S,PR}=c;
-  const o=av.o,pt=av.p;
-  const robe=o===7;
-  const L=(sx)=>{
-    const hx=25+sx*3.6,kx=25+sx*4.0,ax=25+sx*4.1;
-    // кожа ног (видна у шорт/юбки)
-    P.fill(cap(hx,47,kx,55,3.7,3.2),S,{edge:true});
-    P.fill(cap(kx,55,ax,61.5,3.2,2.6),S,{edge:true});
-  };
-  L(-1);L(1);
-  // штаны
-  const pants=(len,wide,cuff)=>{
-    for(const sx of[-1,1]){
-      const hx=25+sx*3.6,kx=25+sx*4.0,ax=25+sx*4.1;
-      const k2=Math.min(len,61.5);
-      const upper=cap(hx,46,kx,Math.min(len,55),3.9+wide,3.4+wide);
-      P.fill(upper,PR,{edge:true});
-      if(len>55){P.fill(cap(kx,54.5,ax,k2,3.4+wide,2.9+wide),PR,{edge:true});}
+  const{P,av,r,S}=c,PR=c.PR,pt=av.p;
+  const legC=(s)=>({hx:CX+s*r.lo+r.dx,fx:CX+s*(r.lo*1.12+1.5)});
+  const skinLegs=pt===2||pt===4;
+  const hem=pt===6||pt===7?84:pt===1?83:pt===3?81.4:82.2;
+  // голые ноги: шорты, юбка
+  if(skinLegs){
+    for(const s of[-1,1]){const l=legC(s);
+      P.paint(cap(l.hx,r.lt+4,l.fx,r.lb+1.5,r.lg*.95,r.lg*.82),c.SK,{});
+      // носок/щиколотка
+      P.hl(l.fx-r.lg*.8,l.fx+r.lg*.8,r.lb-.5,whiteD);P.hl(l.fx-r.lg*.8,l.fx+r.lg*.8,r.lb-1.5,white);
     }
-    // шаговый шов
-    P.vl(24,50,Math.min(len,59),PR[3]);P.vl(25,50,Math.min(len,59),PR[3]);
-  };
-  const beltC=0x2a2230;
-  const wideP=(kind)=>{
-    drawShoes(c);
-    for(const sx of[-1,1]){
-      const hx=25+sx*4.2,kx=25+sx*4.6,ax=25+sx*4.8;
-      const clip=rect(0,0,PW,60.3);
-      P.fill(inter(cap(hx,46,kx,54,4.5,4.9),clip),PR,{edge:true});
-      P.fill(inter(cap(kx,53.5,ax,58.6,4.9,5.5),clip),PR,{edge:true});
-      P.hl(Math.round(ax-5.3),Math.round(ax+4.8),60,PR[3]);
-      // складки у колена и «гармошка» у кроссовок
-      const xo=Math.round(25+sx*4.6);
-      P.hl(xo-3,xo+2,54,PR[3]);P.hl(xo-3,xo+2,55,PR[0]);
-      P.hl(xo-4,xo+3,58,PR[3]);P.hl(xo-4,xo+3,59,PR[2]);P.hl(xo-5,xo+4,60,PR[3]);
-      P.vl(Math.round(25+sx*9.2)-(sx<0?0:1),48,52,PR[2]);
-      if(kind===6){ // потёртости и карман
-        P.hl(xo-1,xo+1,50,PR[0]);P.hl(xo-2,xo+1,51,PR[0]);P.px(xo+sx,56,PR[0]);P.px(xo-sx,57,PR[0]);
-        P.line(25+sx*8,46,25+sx*7,48,PR[3]);
-      }else{ // спортивные: лампас
-        const lx=Math.round(25+sx*7.9)-(sx<0?0:1);P.vl(lx,48,59,0xf1f3f9);
-      }
-    }
-    P.vl(24,50,56,PR[3]);P.vl(25,50,56,PR[3]);
-    P.hl(25-d.hp,25+d.hp,46,kind===6?beltC:PR[3]);if(kind===6)P.hl(25-1,25,46,0xe3b64a);
-  };
-  if(pt>=6){wideP(pt);return;}
-  if(robe){
-    // мантия покрывает ноги — рисуется в drawTop; тут только стопы
-  }else if(pt===0){pants(61.5,0);P.hl(25-d.hp,25+d.hp,46,beltC);P.hl(25-1,25,46,0xe3b64a);
-    // швы и потёртости
-    for(const sx of[-1,1]){P.vl(25+sx*5.5-(sx<0?1:0),50,59,PR[2]);P.px(25+sx*3-(sx<0?1:0),54,PR[0]);P.px(25+sx*3-(sx<0?1:0),55,PR[0]);}
-  }else if(pt===1){pants(61.5,.5);P.hl(25-d.hp,25+d.hp,46,beltC);
-    for(const sx of[-1,1]){const x0=sx<0?18:28;P.rectf(x0,51,x0+3,54,PR[2]);P.hl(x0,x0+3,51,PR[3]);P.hl(x0,x0+3,54,PR[3]);P.vl(x0+(sx<0?3:0),51,54,PR[3]);P.hl(x0+1,x0+2,52,PR[1]);
-      P.hl(25+sx*5-(sx<0?3:0),25+sx*5+(sx<0?0:3)-(sx<0?3:0),59,PR[3]);}
-  }else if(pt===2){pants(54,.3);P.hl(25-d.hp,25+d.hp,46,beltC);
-    for(const sx of[-1,1]){P.hl(25+sx*4-2,25+sx*4+1,53,PR[3]);}
-  }else if(pt===3){pants(61.5,-.2);for(const sx of[-1,1]){const x=25+sx*4.1;P.hl(Math.round(x-3),Math.round(x+2),60,PR[3]);P.hl(Math.round(x-3),Math.round(x+2),61,PR[2]);}
-    P.hl(25-d.hp,25+d.hp,46,PR[3]);}
-  else if(pt===4){ // юбка
-    const sk=rows(46,54,y=>{const h=lerpPts([[46,d.hp],[50,d.hp+2.6],[54,d.hp+4.6]],y);return[25-h,25+h];});
-    P.fill(sk,PR,{edge:true});
-    for(let x=-9;x<=9;x+=3){const xx=25+x;P.vl(xx,49,53,PR[2]);}
-    P.hl(25-d.hp-4,25+d.hp+4,54,PR[3]);
-  }else if(pt===5){pants(61.5,-.1);P.hl(25-d.hp,25+d.hp,46,beltC);P.hl(25-1,25,46,0xe3b64a);
-    for(const sx of[-1,1]){P.vl(25+sx*4-(sx<0?1:0),48,60,PR[0]);}
   }
   drawShoes(c);
-}
-
-function drawShoes(c){
-  const{P,av}=c;
-  const sets=[
-    {col:'#e9ecf3',sole:'#9aa3b8',acc:'#e5484d',h:0},
-    {col:'#2a2d3a',sole:'#e0e3ec',acc:'#5a6070',h:0},
-    {col:'#6a4426',sole:'#2a1a10',acc:'#a8743f',h:1},
-    {col:'#d63b3b',sole:'#e9ecf3',acc:'#ffffff',h:1},
-    {col:'#3a2f2a',sole:'#c8a46a',acc:'#e0b060',h:1},
-    {col:'#eceff6',sole:'#cfd5e4',acc:'#ff7a2f',h:0},
-  ][av.s];
-  const R=ramp(sets.col),SO=pk(hex2(sets.sole)),AC=pk(hex2(sets.acc));
-  if(av.s>=4){
-    for(const sx of[-1,1]){
-      const fx=25+sx*5.3,x0=Math.round(fx-5.4),x1=Math.round(fx+5.4);
-      if(av.s===4)P.fill(cap(fx-sx*.4,57,fx-sx*.3,61.5,3.7,3.9),R,{edge:true});
-      P.fill(ell(fx,61.9,5.6,3.1),R,{edge:true});
-      // толстая подошва
-      P.hl(x0,x1,63,SO);P.hl(x0,x1,64,mixp(SO,0x000000,.35));
-      if(av.s===4){for(let x=x0;x<=x1;x+=2)P.px(x,64,mixp(SO,0x000000,.6));P.hl(Math.round(fx-3),Math.round(fx+2),60,AC);P.hl(Math.round(fx-3),Math.round(fx+2),58,R[3]);P.px(Math.round(fx-1),59,AC);P.px(Math.round(fx+1),59,AC);}
-      else{P.hl(x0+1,x1-1,62,R[2]);P.px(Math.round(fx+sx*1.2),61,AC);P.px(Math.round(fx+sx*2.2),61,AC);P.hl(Math.round(fx-2),Math.round(fx+2),60,AC);P.px(Math.round(fx-1),59,R[0]);P.px(Math.round(fx+1),59,R[0]);}
-    }
-    return;
-  }
-  for(const sx of[-1,1]){
-    const fx=25+sx*4.7;
-    if(sets.h){ // голенище
-      P.fill(cap(25+sx*4.1,58,25+sx*4.2,61.5,3.3,3.1),R,{edge:true});
-    }
-    P.fill(ell(fx,62.9,4.5,2.5),R,{edge:true});
-    // подошва
-    for(let x=Math.round(fx-4);x<=Math.round(fx+4);x++)P.set(x,64,SO);
-    // носок и шнуровка
-    P.px(fx-sx*.5-(sx<0?0:1),61,R[0]);
-    if(av.s===0||av.s===1){P.px(fx-(sx<0?1:0),61,AC);P.px(fx+sx*1.6-(sx<0?1:0),62,AC);}
-    if(av.s===2){P.hl(Math.round(fx-2),Math.round(fx+1),59,R[3]);P.hl(Math.round(fx-2),Math.round(fx+1),60,AC);}
-    if(av.s===3){P.px(Math.round(fx+sx*1.5-(sx<0?1:0)),63,AC);P.px(Math.round(fx+sx*2.5-(sx<0?1:0)),63,AC);P.hl(Math.round(fx-1),Math.round(fx),59,AC);}
-  }
-}
-
-// ── ВЕРХ: торс, рукава ────────────────────────────────────────────────────
-function armCaps(d,sx,fat=0){
-  const jx=25+sx*(d.sh-1.1+fat*.45),ex=jx+sx*(.9+fat*.25),wx=ex+sx*.6;
-  return{
-    upper:cap(jx,32.4,ex,40.4,d.ar+.35+fat,d.ar+fat),
-    fore:cap(ex,40,wx,47.6,d.ar+fat*.9,d.ar-.55+fat*.35),
-    hand:ell(wx+sx*.1,49.3,2.35,2.6),
-    jx,ex,wx,
+  const hipBlock=()=>P.paint(rr(CX-r.lo-r.lg+r.dx*.5,r.lt-4,CX+r.lo+r.lg+r.dx*.5,r.lt+8,4),PR,{edge:false});
+  const legFill=(s,flare,topR,o={})=>{
+    const l=legC(s),endY=o.endY||hem;
+    const shape=clip(cap(l.hx,r.lt,l.fx,endY+2,r.lg+topR,r.lg+flare),(x,y)=>y<endY);
+    P.paint(shape,PR,{});
+    return l;
   };
-}
-function drawArms(c,sleeve,SR,o={}){
-  // sleeve: 'long'|'short'|'none'
-  const{P,d,S}=c;
-  for(const sx of[-1,1]){
-    const a=armCaps(d,sx,o.fat||0);
-    if(sleeve==='long'){
-      P.fill(a.upper,SR,{edge:true});P.fill(a.fore,SR,{edge:true});
-    }else if(sleeve==='short'){
-      P.fill(o.fat?cap(a.ex,40,a.wx,47.6,d.ar,d.ar-.55):a.fore,S,{edge:true});P.fill(a.upper,SR,{edge:true});
-    }else{
-      P.fill(a.fore,S,{edge:true});P.fill(a.upper,S,{edge:true});
+  if(pt===0){ // джинсы: прямые
+    for(const s of[-1,1]){const l=legFill(s,.2,.4);
+      P.paint(ell(l.hx+(l.fx-l.hx)*.3,r.lt+10,2.4,3.6),PR,{flat:true,dark:-1,edge:false}); // выбеленность
+      P.line(l.hx+s*(r.lg-1.5),r.lt+1,l.hx+s*(r.lg-2.5),r.lt+6,PR[3]);                    // шов кармана
+      P.hl(l.fx-r.lg,l.fx+r.lg,hem-1,PR[2]);P.hl(l.fx-r.lg,l.fx+r.lg,hem-3,PR[3]);         // отворот
+      P.vl(Math.round(l.fx+s*(r.lg-.5)),r.lt+8,hem-4,PR[2]);
     }
-    P.fill(a.hand,S,{edge:true});
-    // пальцы
-    const hx=Math.round(a.wx+sx*.1);
-    P.hl(hx-1,hx,51,S[2]);P.px(hx+(sx<0?-1:1),50,S[3]);
-    if(o.cuff){ // манжета
-      const y=46;P.hl(Math.round(a.wx-2.2),Math.round(a.wx+2.2),y,o.cuff[3]);P.hl(Math.round(a.wx-2.2),Math.round(a.wx+2.2),y+1,o.cuff[2]);
+    hipBlock();P.hl(CX-r.hp+1,CX+r.hp-1,r.lt-3,0x2a2230);
+  }else if(pt===1){ // карго
+    for(const s of[-1,1]){const l=legFill(s,1.4,.9);
+      const px=l.hx+s*(r.lg+.6),pt0=r.lt+8;
+      P.paint(rr(px-3.2,pt0,px+3.2,pt0+9,.8),PR,{dark:1,flat:true});         // накладной карман
+      P.hl(px-3,px+3,pt0+2,PR[0]);P.set(px,pt0+3,0xcfd3df);
+      P.hl(l.fx-r.lg-1,l.fx+r.lg+1,hem-1,PR[2]);P.hl(l.fx-r.lg-1,l.fx+r.lg+1,hem-5,PR[3]);
     }
+    hipBlock();P.hl(CX-r.hp+1,CX+r.hp-1,r.lt-3,0x2a2230);
+  }else if(pt===2){ // шорты
+    for(const s of[-1,1]){const l=legC(s);
+      P.paint(clip(cap(l.hx,r.lt,l.hx+(l.fx-l.hx)*.5,r.lt+18,r.lg+1.2,r.lg+1.8),(x,y)=>y<r.lt+17),PR,{});
+      P.hl(l.hx+(l.fx-l.hx)*.5-r.lg-1.5,l.hx+(l.fx-l.hx)*.5+r.lg+1.5,r.lt+16,PR[3]);
+    }
+    hipBlock();P.hl(CX-r.hp+1,CX+r.hp-1,r.lt-3,0x2a2230);
+  }else if(pt===3){ // джоггеры: сужаются к манжете
+    for(const s of[-1,1]){const l=legFill(s,-1.2,.2);
+      P.hl(l.fx-r.lg+1,l.fx+r.lg-1,hem-1,PR[3]);P.hl(l.fx-r.lg+1,l.fx+r.lg-1,hem-2,PR[2]);P.hl(l.fx-r.lg+1,l.fx+r.lg-1,hem-3,PR[0]);
+      P.line(l.hx+s*(r.lg-1),r.lt+3,l.fx+s*(r.lg-2),hem-5,PR[3]);
+    }
+    hipBlock();P.hl(CX-r.hp+1,CX+r.hp-1,r.lt-3,PR[3]);
+  }else if(pt===4){ // юбка
+    const sk=sym([[r.lt-4,r.hp+.6],[r.lt+4,r.hp+3],[r.lt+13,r.hp+6.6]],CX+r.dx*.4,1.5);
+    P.paint(sk,PR,{});
+    for(let x=-12;x<=12;x+=4)P.vl(Math.round(CX+x+r.dx*.4),r.lt+2,r.lt+12,PR[2]);
+    P.hl(CX-r.hp-6.4+r.dx*.4,CX+r.hp+6.4+r.dx*.4,r.lt+13,PR[3]);
+    P.hl(CX-r.hp+1,CX+r.hp-1,r.lt-3,PR[3]);
+  }else if(pt===5){ // брюки со стрелкой
+    for(const s of[-1,1]){const l=legFill(s,.4,.3);
+      P.vl(Math.round(l.hx+(l.fx-l.hx)*.5),r.lt+6,hem-2,PR[0]);P.vl(Math.round(l.hx+(l.fx-l.hx)*.5)+1,r.lt+6,hem-2,PR[2]);
+      P.hl(l.fx-r.lg,l.fx+r.lg,hem-1,PR[3]);
+    }
+    hipBlock();P.hl(CX-r.hp+1,CX+r.hp-1,r.lt-3,0x2a2230);P.hl(CX-1,CX,r.lt-3,0xe3b64a);
+  }else{ // 6 широкие джинсы, 7 широкие спортивные
+    for(const s of[-1,1]){const l=legFill(s,3.6,.4);
+      if(pt===6){
+        P.paint(ell(l.hx+(l.fx-l.hx)*.4,r.lt+10,2.8,3.6),PR,{flat:true,dark:-1,edge:false});
+        P.hl(l.fx-r.lg-1,l.fx+r.lg+1,hem-2,PR[2]);P.hl(l.fx-r.lg,l.fx+r.lg,hem-4,PR[2]);P.hl(l.fx-r.lg,l.fx+r.lg,hem-8,PR[3]);
+        P.line(l.hx+s*(r.lg-2),r.lt+1,l.hx+s*(r.lg-3),r.lt+6,PR[3]);
+      }else{
+        P.vl(Math.round(l.hx+s*(r.lg+.2)+(l.fx-l.hx)*.5),r.lt+4,hem-2,white);
+        P.hl(l.fx-r.lg-1,l.fx+r.lg+1,hem-2,PR[3]);
+      }
+    }
+    hipBlock();P.hl(CX-r.hp+1,CX+r.hp-1,r.lt-3,pt===6?0x2a2230:PR[3]);
+    if(pt===6)P.hl(CX-1,CX,r.lt-3,0xe3b64a);
   }
 }
 
+// ── ВЕРХ ──────────────────────────────────────────────────────────────────
+const OF=[
+  {e:[.6,1.2,1.2],h:2,sl:'long',fat:.7,fn:'hoodie'},
+  {e:[.4,.8,.8],h:1,sl:'short',fat:.3,fn:'tee'},
+  {e:[.8,1.4,1.2],h:1,sl:'long',fat:.8,fn:'bomber'},
+  {e:[1.2,1.8,1.2],h:1,sl:'long',fat:.8,fn:'armor'},
+  {e:[0,.3,.5],h:0,sl:'none',fat:0,fn:'tank'},
+  {e:[.6,1,1],h:4,sl:'long',fat:.5,fn:'suit'},
+  {e:[.8,1.4,1],h:1,sl:'long',fat:.7,fn:'leather'},
+  {e:[.6,1.2,2],h:0,sl:'long',fat:.8,fn:'robe'},
+  {e:[.7,1.2,1.2],h:2,sl:'long',fat:.6,fn:'track'},
+  {e:[.4,.8,.6],h:1,sl:'short',fat:.3,fn:'vest'},
+  {e:[2,3.4,5],h:4,sl:'short',fat:1.8,fn:'otee'},
+  {e:[0,.2,0],h:0,sl:'long',fat:0,fn:'rash'},
+  {e:[2.2,3.6,5.6],h:5,sl:'long',fat:1.9,fn:'ohood'},
+  {e:[1,1.8,2.4],h:3,sl:'long',fat:.9,fn:'plaid'},
+  {e:[1.2,2.2,3.4],h:3,sl:'none',fat:0,fn:'jersey'},
+];
+function mkGarment(r,spec){
+  const E=spec.e,hem=r.tb+spec.h;
+  const pts=[[r.sy-1,r.nk+.8],[r.sy+.5,r.sh-1+E[0]*.5],[r.sy+3.5,r.sh+E[0]],[r.sy+9,r.ch+E[1]],[r.sy+16,r.wa+E[1]*.5+E[2]*.5],[r.tb,r.hp+E[2]*.8],[Math.max(hem,r.tb+.01),r.hp+E[2]]];
+  const hw=y=>lerpPts(pts,y);
+  const shape=sym(pts,r.cx,1.5);
+  return{hw,shape,hem,shG:r.sh+E[0],fat:spec.fat,sl:spec.sl,E};
+}
+function armGeo(c,G,s){
+  const{r}=c;
+  const jx=r.cx+s*(G.shG-2.4),jy=r.sy+3.6+s*r.dx*.25;
+  const ex=r.cx+s*(G.shG+.7+G.fat*.35),ey=r.sy+15.5;
+  const wx=ex+s*.9,wy=r.tb+1.5;
+  return{jx,jy,ex,ey,wx,wy};
+}
+function drawArms(c,G,SR,o={}){
+  const{P,r,SK}=c,rad=r.ar,fat=G.fat;
+  for(const s of[-1,1]){
+    const a=armGeo(c,G,s);
+    const up=cap(a.jx,a.jy,a.ex,a.ey,rad+fat+.5,rad+fat);
+    const fo=cap(a.ex,a.ey,a.wx,a.wy,rad+fat,rad+fat*.8-.2);
+    if(G.sl==='long'){P.paint(up,SR,{});P.paint(fo,SR,{});}
+    else if(G.sl==='short'){P.paint(cap(a.ex,a.ey-3,a.wx,a.wy,rad+.1,rad-.3),SK,{});P.paint(up,SR,{});}
+    else{P.paint(up,SK,{});P.paint(fo,SK,{});}
+    // кисть
+    P.paint(ell(a.wx+s*.2,a.wy+r.ar*.95,r.ar+.9,r.ar*1.25),SK,{});
+    const hx=Math.round(a.wx+s*.2);
+    P.hl(hx-1,hx+1,a.wy+r.ar*1.9,SK[2]);P.set(hx+s*2,a.wy+r.ar*.6,SK[2]);
+    if(o.cuff){P.hl(a.wx-r.ar-fat*.6,a.wx+r.ar+fat*.6,a.wy-.5,o.cuff[3]);P.hl(a.wx-r.ar-fat*.6,a.wx+r.ar+fat*.6,a.wy+.5,o.cuff[2]);P.hl(a.wx-r.ar-fat*.6,a.wx+r.ar+fat*.6,a.wy-1.5,o.cuff[0]);}
+  }
+}
+const _pn={};
 function drawTop(c){
-  const{P,av,d,f,S,OR,PR}=c;
-  const o=av.o;
-  const T=torsoShape(d);
-  const white=ramp('#e9ecf3'),dark=ramp('#2b3040');
-  const rowX=(y)=>{const h=lerpPts([[29,d.nk+.4],[30,d.sh-2.4],[31.5,d.sh-.4],[34,d.ch],[39,d.ch-.3],[43,d.wa],[48,d.hp]],y);return h==null?0:h;};
-  // мантия: длинная, закрывает ноги
-  if(o===7){
-    const rb=rows(29,58,y=>{const h=lerpPts([[29,d.nk+.4],[30,d.sh-2.4],[31.5,d.sh-.4],[36,d.ch],[43,d.wa+.6],[50,d.hp+2.5],[58,d.hp+5.5]],y);return[25-h,25+h];});
-    P.fill(rb,OR,{edge:true});
-    // складки
-    for(let y=46;y<=57;y++){P.set(25-2-(y-46)*.25,y,OR[2]);P.set(25+3+(y-46)*.3,y,OR[2]);P.set(25,y,OR[3]);}
-    P.hl(25-d.hp-6,25+d.hp+6,58,0xd9a52a);P.hl(25-d.hp-5,25+d.hp+5,57,mixp(0xd9a52a,0x000000,.2));
-    drawArms(c,'long',OR,{cuff:ramp('#d9a52a')});
-    // рукав-крыло
-    for(const sx of[-1,1]){const x=25+sx*(d.sh+.5);P.vl(Math.round(x),40,47,OR[2]);}
-    // пояс-верёвка
-    P.hl(25-d.wa-1,25+d.wa,43,0xd9a52a);P.hl(25-d.wa-1,25+d.wa,44,mixp(0xd9a52a,0,.3));P.vl(25,44,48,0xd9a52a);P.vl(26,44,47,mixp(0xd9a52a,0,.3));
-    // V-ворот
-    for(let k=0;k<4;k++){P.hl(24-k+1,25+k-1,30+k,k>2?S[2]:S[1]);}
-    neckShadow(c);
-    return;
-  }
-  if(o>=10){drawCasual(c);return;}
-  // базовый торс
-  let top=OR,base=OR;
-  if(o===3)top=ramp('#aab4c6');
-  if(o===5)top=OR;
-  P.fill(T,o===3?ramp('#aab4c6'):OR,{edge:true});
-  // рукава (по типу одежды)
-  const sleeve=o===1?'short':o===4?'none':'long';
-  if(o===3){ // броня
-    const sr=ramp('#4a4f64');
-    drawArms(c,'long',OR,{cuff:null});
-    for(const sx of[-1,1]){const a=armCaps(d,sx);
-      P.fill(cap(a.ex,41.5,a.wx,47.3,d.ar+.15,d.ar-.4),ramp('#aab4c6'),{edge:true}); // наручи
-      P.fill(ell(25+sx*(d.sh-.6),31.6,3.9,3),ramp('#c2cbdd'),{edge:true});          // наплечники
-      P.hl(Math.round(25+sx*(d.sh-.6)-2),Math.round(25+sx*(d.sh-.6)+1),30,0xffffff);
-    }
-  }else if(o===4){
-    drawArms(c,'none',OR);
-    for(const sx of[-1,1]){const a=armCaps(d,sx);P.hl(Math.round(a.wx-2),Math.round(a.wx+2),45,0xe9ecf3);P.hl(Math.round(a.wx-2),Math.round(a.wx+2),46,0xc9ccd6);}
-  }else{
-    drawArms(c,sleeve,OR,{cuff:(o===0||o===2||o===8)?(o===2?dark:OR):null});
-  }
-  // детали одежды
-  const cx=25;
-  if(o===0){ // худи
-    // капюшон вокруг шеи
-    P.fill(ell(25,29.6,d.nk+3.4,2.2),OR,{edge:true,dark:1});
-    P.fill(ell(25,30.4,d.nk+.6,1.6),S,{flat:true});P.hl(25-d.nk,25+d.nk-1,30,S[2]);
-    // шнурки
-    P.vl(23,31,36,0xe9ecf3);P.vl(26,31,37,0xe9ecf3);P.px(23,37,0xb8bdca);P.px(26,38,0xb8bdca);
-    // карман
-    const pk2=poly([[25-d.wa+.8,39.5],[25+d.wa-.8,39.5],[25+d.wa+.4,47.5],[25-d.wa-.4,47.5]]);
-    P.fill(pk2,OR,{edge:true,dark:1,dith:false,flat:true});P.hl(25-d.wa+1,25+d.wa-2,40,OR[2]);P.vl(25,41,47,OR[3]);
-    // резинка низа
-    P.hl(25-d.hp,25+d.hp-1,47,OR[3]);P.hl(25-d.hp,25+d.hp-1,48,OR[2]);
-    // складки на груди
-    P.line(25-d.ch+2,35,25-d.ch+4,38,OR[2]);P.line(25+d.ch-2,34,25+d.ch-4,38,OR[2]);
-  }else if(o===1){ // футболка
-    P.fill(ell(25,30.3,d.nk+1.4,1.5),S,{flat:true});
-    P.hl(25-d.nk-1,25+d.nk,31,OR[3]);P.hl(25-d.nk,25+d.nk-1,32,OR[2]);
-    for(const sx of[-1,1]){const a=armCaps(d,sx);const y=Math.round(a.ex+0)+0;P.hl(Math.round(a.ex-d.ar),Math.round(a.ex+d.ar-1),37,OR[3]);}
-    // принт-полоса и складки
-    P.hl(25-d.ch+2,25+d.ch-3,36,OR[0]);
-    P.line(25-3,43,25-5,46,OR[2]);P.line(25+4,42,25+5,46,OR[2]);
-    P.hl(25-d.hp,25+d.hp-1,47,OR[3]);
-  }else if(o===2){ // бомбер
-    const inner=ramp('#e9ecf3');
-    for(let k=0;k<5;k++){P.hl(24-k,25+k,30+k,k<4?inner[1]:inner[2]);}
-    P.fill(ell(25,30.2,d.nk+1.8,1.8),dark,{edge:true,flat:true});
-    P.vl(24,33,47,OR[3]);P.vl(25,33,47,OR[0]);
-    P.px(24,33,0xb8bdca);P.px(25,34,0xe9ecf3);
-    // манжета-резинка и подол
-    P.hl(25-d.hp,25+d.hp-1,46,dark[2]);P.hl(25-d.hp,25+d.hp-1,47,dark[1]);P.hl(25-d.hp,25+d.hp-1,48,dark[3]);
-    // карманы-щели
-    P.line(25-d.wa+1,40,25-d.wa+3,45,OR[3]);P.line(25+d.wa-2,40,25+d.wa-4,45,OR[3]);
-    // нашивка на плече
-    const a=armCaps(d,-1);P.rectf(Math.round(a.jx-1),34,Math.round(a.jx+1),36,0xe9ecf3);P.px(Math.round(a.jx),35,OR[1]);
-  }else if(o===3){ // броня
-    const st=ramp('#aab4c6'),gold=0xe3b64a;
-    // нагрудник с гребнем
-    P.vl(24,32,43,st[0]);P.vl(25,32,43,st[2]);
-    P.hl(25-d.ch+1,25+d.ch-2,31,0xe6ecf8);
-    // герб
-    P.fill(poly([[21,34],[29,34],[29,39],[25,43],[21,39]]),OR,{edge:true});
-    P.px(24,37,0xfff2c0);P.px(25,37,0xfff2c0);P.px(24,38,0xfff2c0);
-    // золотая окантовка
-    P.hl(25-d.ch+1,25+d.ch-2,32,gold);
-    // горжет
-    P.fill(ell(25,29.8,d.nk+2.6,2),st,{edge:true});
-    // пояс и пряжка
-    P.hl(25-d.wa,25+d.wa-1,44,0x4a3524);P.hl(25-d.wa,25+d.wa-1,45,0x6a4a30);P.rectf(24,44,25,45,gold);
-    // набедренники
-    P.hl(25-d.hp,25+d.hp-1,46,st[2]);P.hl(25-d.hp,25+d.hp-1,47,st[3]);
-    P.hl(25-d.ch+2,25+d.ch-3,39,st[2]);
-    // заклёпки
-    P.px(25-d.ch+2,33,gold);P.px(25+d.ch-3,33,gold);
-  }else if(o===4){ // майка
-    // проймы: кожа плеч
-    for(const sx of[-1,1]){
-      P.fill(cap(25+sx*(d.sh-1.6),31.5,25+sx*(d.sh-1.2),37,2.6,2.4),S,{edge:true});
-    }
-    // бретели
-    for(const sx of[-1,1]){const x=25+sx*(d.nk+1.5);P.fill(rect(Math.min(x,x+sx*3.2)-.0,29.5,Math.max(x,x+sx*3.2),33),OR,{edge:true,flat:true});}
-    P.fill(ell(25,30.6,d.nk+.2,1.7),S,{flat:true});
-    P.fill(ell(25,32.2,d.nk+1.2,1.8),S,{flat:true});
-    P.hl(25-d.nk,25+d.nk-1,33,OR[3]);
-    // полоса сбоку
-    P.vl(Math.round(25-d.wa),38,47,0xe9ecf3);P.vl(Math.round(25+d.wa-1),38,47,0xc9ccd6);
-    P.hl(25-d.hp,25+d.hp-1,47,OR[3]);
-    // принт
-    P.hl(22,27,38,OR[0]);P.hl(23,26,39,OR[0]);
-  }else if(o===5){ // костюм
-    const shirt=ramp('#f3f4f8'),tie=ramp('#b4232c');
-    // рубашка v
-    P.fill(poly([[25-3.2,30.3],[25+3.2,30.3],[25+1.2,41],[25-1.2,41]]),shirt,{flat:true});
-    P.fill(poly([[25-1,31],[25+1,31],[25+1.2,41],[25-1.2,41]]),tie,{flat:true});
-    P.px(24,32,tie[0]);
-    // лацканы
-    P.fill(poly([[25-d.nk-.8,30],[25-3.3,30.3],[25-1.3,41],[25-4.2,37],[25-d.nk-2.4,33]]),OR,{edge:true,dark:-1});
-    P.fill(poly([[25+d.nk+.8,30],[25+3.3,30.3],[25+1.3,41],[25+4.2,37],[25+d.nk+2.4,33]]),OR,{edge:true,dark:-1});
-    // пуговицы
-    P.px(25,42,OR[3]);P.px(24,44,OR[3]);P.vl(25,42,48,OR[3]);
-    // платок
-    P.rectf(25-d.ch+2,36,25-d.ch+4,36,0xf3f4f8);
-    // манжеты
-    for(const sx of[-1,1]){const a=armCaps(d,sx);P.hl(Math.round(a.wx-2),Math.round(a.wx+1),46,0xf3f4f8);}
-    P.hl(25-d.hp,25+d.hp-1,47,OR[3]);
-  }else if(o===6){ // кожанка
-    const inner=ramp('#e9ecf3');
-    P.fill(poly([[25-3,30.3],[25+3,30.3],[25+2,40],[25-4,40]]),inner,{flat:true});
-    // косая молния
-    P.line(24,31,28,47,0xc9ccd6);P.line(25,31,29,47,OR[3]);
-    // воротник-лацканы
-    P.fill(poly([[25-d.nk-.8,29.6],[25-1,31],[25-5,37],[25-d.nk-3,32]]),OR,{edge:true,dark:-1});
-    P.fill(poly([[25+d.nk+.8,29.6],[25+1,31],[25+5.5,38],[25+d.nk+3,32]]),OR,{edge:true,dark:-1});
-    // блики кожи
-    P.hl(25-d.sh+1,25-d.sh+3,32,OR[0]);P.hl(25+d.sh-4,25+d.sh-2,32,OR[0]);
-    P.px(25-d.ch+2,35,OR[0]);P.px(25-d.ch+2,36,OR[0]);
-    // пояс-подол
-    P.hl(25-d.hp,25+d.hp-1,46,OR[3]);P.hl(25-d.hp,25+d.hp-1,47,OR[2]);
-    // клёпки на плечах
-    for(const sx of[-1,1]){P.px(25+sx*(d.sh-2)-(sx<0?1:0),31,0xcfd3df);}
-    // карманы
-    P.line(25-d.wa+1,41,25-d.wa+4,41,OR[3]);P.line(25+d.wa-2,41,25+d.wa-5,41,OR[3]);
-  }else if(o===8){ // спортивка
-    const wh=0xf1f3f9;
-    P.fill(ell(25,30,d.nk+2.4,2.4),OR,{edge:true,dark:1});
-    P.fill(ell(25,30.9,d.nk,1.5),S,{flat:true});
-    P.vl(25,32,47,OR[3]);P.vl(24,32,47,OR[0]);P.px(24,33,0xcfd3df);P.px(24,34,0xcfd3df);
-    // лампасы
-    P.vl(Math.round(25-d.wa+.5),37,46,wh);P.vl(Math.round(25+d.wa-1.5),37,46,wh);
-    for(const sx of[-1,1]){const a=armCaps(d,sx);const x=Math.round(a.ex+sx*(d.ar-.2)-(sx<0?0:1));P.vl(x,35,47,wh);}
-    P.hl(25-d.hp,25+d.hp-1,47,OR[3]);P.hl(25-d.hp,25+d.hp-1,48,OR[2]);
-  }else if(o===9){ // разгрузка
-    const vest=ramp('#3d4350');
-    P.fill(poly([[25-d.ch+1,31.5],[25-3.2,31],[25-3.2,45],[25-d.wa+.2,45]]),vest,{edge:true,dark:-1});
-    P.fill(poly([[25+d.ch-1,31.5],[25+3.2,31],[25+3.2,45],[25+d.wa-.2,45]]),vest,{edge:true,dark:-1});
-    // подсумки
-    for(const sx of[-1,1]){const x0=sx<0?25-d.ch+2:25+3.8;P.rectf(Math.round(x0),37,Math.round(x0)+3,40,vest[2]);P.hl(Math.round(x0),Math.round(x0)+3,37,vest[3]);P.px(Math.round(x0)+1,38,vest[0]);P.rectf(Math.round(x0),42,Math.round(x0)+3,44,vest[2]);P.hl(Math.round(x0),Math.round(x0)+3,42,vest[3]);}
-    // ремни на плечах
-    P.hl(25-d.sh+1,25-3,31,vest[3]);P.hl(25+3,25+d.sh-2,31,vest[3]);
-    P.px(25-3,32,0xb8bdca);P.px(25+2,32,0xb8bdca);
-    // ворот футболки
-    P.fill(ell(25,30.3,d.nk+1.2,1.4),S,{flat:true});P.hl(25-d.nk-1,25+d.nk,31,OR[3]);
-  }
-  neckShadow(c);
+  const{P,av,r,SK,OR}=c;
+  const spec=OF[av.o],G=mkGarment(r,spec);
+  c.G=G;
+  if(spec.fn==='robe'){drawRobe(c,G);return;}
+  P.paint(G.shape,OR,{});
+  (OUTFITFN[spec.fn])(c,G);
 }
-
-// ── СТРИТВИР ──────────────────────────────────────────────────────────────
-const DG={'0':['111','101','101','101','111'],'1':['010','110','010','010','111'],'2':['111','001','111','100','111'],'3':['111','001','111','001','111'],'4':['101','101','111','001','001'],'5':['111','100','111','001','111'],'6':['111','100','111','101','111'],'7':['111','001','010','010','010'],'8':['111','101','111','101','111'],'9':['111','101','111','001','111']};
-function pixNum(P,x,y,str,col){let cx=x;for(const ch of str){const g=DG[ch];if(!g)continue;g.forEach((r,j)=>{for(let i=0;i<3;i++)if(r[i]==='1')P.set(cx+i,y+j,col);});cx+=5;}}
-function overTorso(d,k,y1){
-  return symRows([[29,d.nk+.4],[30,d.sh-1.5],[31.5,d.sh+.9],[34,d.ch+1.9*k],[39,d.ch+2.3*k],[45,d.wa+3.2*k],[y1,d.hp+3.8*k]]);
+const hwAt=(G,y)=>G.hw(y);
+function trimHem(c,G,col,rows=2){
+  const{P,r}=c;
+  for(let k=0;k<rows;k++){const y=G.hem-k,h=G.hw(y);P.hl(r.cx-h+.5,r.cx+h-.5,y,col[k===0?3:k===1?2:1]);}
 }
-function drawCasual(c){
-  const{P,av,d,f,S,OR,PR}=c;
-  const o=av.o,W=0xf1f3f9,Wd=0xc9ccd6,dark=ramp('#2b3040');
-  const hw=(y)=>{const h=lerpPts([[29,d.nk+.4],[30,d.sh-1.5],[31.5,d.sh+.9],[34,d.ch+1.9],[39,d.ch+2.3],[45,d.wa+3.2],[51,d.hp+3.8]],y);return h==null?0:h;};
-  if(o===10){ // оверсайз-футболка
-    P.fill(overTorso(d,1,50),OR,{edge:true});
-    drawArms(c,'short',OR,{fat:1.5});
-    // ворот
-    P.fill(ell(25,30.4,d.nk+1.4,1.6),S,{flat:true});
-    P.hl(25-d.nk-1,25+d.nk,31,OR[3]);P.hl(25-d.nk-1,25+d.nk,32,OR[2]);
-    // край рукавов
-    for(const sx of[-1,1]){const a=armCaps(d,sx,1.5);P.hl(Math.round(a.ex-d.ar-1.2),Math.round(a.ex+d.ar+.2),39,OR[3]);P.hl(Math.round(a.ex-d.ar-1.2),Math.round(a.ex+d.ar+.2),40,OR[2]);}
-    // принт
-    const pc=mixp(0xf1f3f9,OR[2],.1);
-    P.hl(21,28,36,pc);P.hl(20,29,37,pc);P.hl(21,28,38,pc);P.px(23,37,OR[0]);P.px(26,37,OR[0]);P.hl(22,27,40,pc);
-    // складки
-    P.line(25-5,43,25-8,47,OR[2]);P.line(25+6,42,25+8,47,OR[2]);P.line(25-2,45,25-3,49,OR[2]);
-    P.hl(25-hw(49),25+hw(49)-1,49,OR[2]);P.hl(25-hw(50),25+hw(50)-1,50,OR[3]);
-  }else if(o===11){ // рашгард
-    const A=OR,Bk=dark;
-    P.fill(torsoShape(d),A,{edge:true});
-    drawArms(c,'long',A,{});
-    // цветные вставки: бока и рукава
-    for(let y=33;y<=47;y++){const h=lerpPts([[29,d.nk+.4],[30,d.sh-2.4],[31.5,d.sh-.4],[34,d.ch],[39,d.ch-.3],[43,d.wa],[48,d.hp]],y);if(h==null)continue;
-      for(let k=0;k<2;k++){P.set(Math.round(25-h+.4+k),y,Bk[k?2:3]);P.set(Math.round(25+h-1.4-k+1),y,Bk[k?1:2]);}}
-    for(const sx of[-1,1]){const a=armCaps(d,sx);
-      for(let t=0;t<=1;t+=.12){const x=a.jx+(a.wx-a.jx)*t+sx*(d.ar-1.1),y=33+(47-33)*t;P.set(Math.round(x),Math.round(y),Bk[2]);P.set(Math.round(x),Math.round(y)+1,Bk[2]);}
-      P.hl(Math.round(a.wx-d.ar+.6),Math.round(a.wx+d.ar-.6),46,Bk[3]);
-    }
-    // реглан-швы и мышцы
-    P.line(25-d.nk-.5,31,25-d.ch+1,36,A[3]);P.line(25+d.nk+.5,31,25+d.ch-1,36,A[3]);
-    P.hl(25-d.ch+3,25-1,38,A[3]);P.hl(25+1,25+d.ch-3,38,A[3]);P.vl(25,34,41,A[2]);P.vl(24,34,41,A[2]);
-    for(let y=41;y<=46;y+=2){P.px(24,y,A[3]);P.px(25,y,A[3]);}
-    // высокий ворот
-    P.fill(ell(25,30.2,d.nk+1.4,2.1),A,{edge:true,dark:1});
-    P.fill(ell(25,30.4,d.nk-.2,1.2),S,{flat:true});P.hl(25-d.nk+1,25+d.nk-2,30,S[3]);
-    // лого
-    P.hl(25-d.ch+3,25-d.ch+5,35,W);P.px(25-d.ch+4,36,W);
-    P.hl(25-d.hp,25+d.hp-1,47,A[3]);P.hl(25-d.hp,25+d.hp-1,48,Bk[2]);
-  }else if(o===12){ // оверсайз-худи
-    P.fill(overTorso(d,1.15,51),OR,{edge:true});
-    drawArms(c,'long',OR,{fat:1.4,cuff:OR});
-    // широкий капюшон
-    P.fill(ell(25,29.8,d.nk+4.8,3),OR,{edge:true,dark:1});
-    P.fill(ell(25,30.6,d.nk+.6,1.7),S,{flat:true});P.hl(25-d.nk,25+d.nk-1,30,S[2]);
-    P.vl(22,32,38,W);P.vl(27,32,39,W);P.px(22,39,Wd);P.px(27,40,Wd);
+// воротник-капюшон для худи
+function hoodRing(c,G,wide){
+  const{P,r,OR,SK}=c;
+  P.paint(ell(r.cx,r.sy-.2,r.nk+wide,4.6),OR,{dark:1});
+  P.paint(ell(r.cx,r.sy+.9,r.nk+wide-3.6,2.8),OR,{flat:true,dark:-1,edge:false});
+  P.paint(ell(r.cx,r.sy+.8,r.nk-.4,1.8),SK,{flat:true,edge:false});
+}
+function hoodStrings(c,G,len){
+  const{P,r}=c;
+  for(const s of[-1,1]){const x=Math.round(r.cx+s*3.4);P.vl(x,r.sy+4,r.sy+4+len,white);P.vl(x+(s<0?-1:1)*(1),r.sy+4,r.sy+4+len,whiteD);P.set(x,r.sy+5+len,0xb8bdca);P.set(x+s,r.sy+5+len,0xb8bdca);}
+}
+function foldLines(c,G,OR,list){
+  const{P}=c;for(const[a,b,x,y]of list)P.line(a,b,x,y,OR[2]);
+}
+const OUTFITFN={
+  hoodie(c,G){
+    const{P,r,OR}=c;drawArms(c,G,OR,{cuff:OR});
+    hoodRing(c,G,5.6);hoodStrings(c,G,8);
+    const cx=r.cx,pk0=G.hem-11;
+    P.paint(poly([[cx-G.hw(pk0)+2,pk0],[cx+G.hw(pk0)-2,pk0],[cx+G.hw(G.hem)+.2,G.hem-.5],[cx-G.hw(G.hem)-.2,G.hem-.5]]),OR,{dark:1,flat:true});
+    P.hl(cx-G.hw(pk0)+4,cx+G.hw(pk0)-4,pk0+1,OR[2]);
+    P.vl(cx,pk0+3,G.hem-1,OR[3]);
+    trimHem(c,G,OR,3);
+    foldLines(c,G,OR,[[cx-G.hw(r.sy+10)+3,r.sy+11,cx-G.hw(r.sy+10)+5,r.sy+15],[cx+G.hw(r.sy+10)-3,r.sy+10,cx+G.hw(r.sy+10)-5,r.sy+15]]);
+  },
+  ohood(c,G){
+    const{P,r,OR}=c;drawArms(c,G,OR,{cuff:OR});
+    hoodRing(c,G,7.4);hoodStrings(c,G,9);
+    const cx=r.cx;
     // принт на груди
-    P.hl(21,28,35,W);P.hl(22,27,36,Wd);P.px(24,36,OR[0]);P.px(25,36,OR[0]);
-    // карман-кенгуру
-    P.fill(poly([[25-d.wa-.4,41.5],[25+d.wa+.4,41.5],[25+d.wa+3,50],[25-d.wa-3,50]]),OR,{edge:true,dark:1,dith:false,flat:true});
-    P.hl(25-d.wa+1,25+d.wa-1,42,OR[2]);P.vl(25,43,50,OR[3]);
-    // складки на рукавах и резинка
-    for(const sx of[-1,1]){const a=armCaps(d,sx,1.4);P.hl(Math.round(a.ex-d.ar),Math.round(a.ex+d.ar-1),41,OR[3]);P.hl(Math.round(a.ex-d.ar),Math.round(a.ex+d.ar-1),42,OR[2]);}
-    P.hl(25-hw(50),25+hw(50)-1,50,OR[3]);P.hl(25-hw(51),25+hw(51)-1,51,OR[2]);
-  }else if(o===13){ // рубашка в клетку, расстёгнутая
-    const tex=(x,y)=>(x%5===0?-1:0)+(y%5===2?1:0);
-    const hh=(y)=>{const h=lerpPts([[29,d.nk+.4],[30,d.sh-1.6],[31.5,d.sh+.4],[34,d.ch+.9],[39,d.ch+1.2],[45,d.wa+1.8],[49,d.hp+2.1]],y);return h==null?0:h;};
-    P.fill(symRows([[29,d.nk+.4],[30,d.sh-1.6],[31.5,d.sh+.4],[34,d.ch+.9],[39,d.ch+1.2],[45,d.wa+1.8],[49,d.hp+2.1]]),OR,{edge:true,tex});
-    drawArms(c,'long',OR,{fat:.7,cuff:OR});
-    // футболка внутри
+    P.hl(cx-5,cx+5,r.sy+12,white);P.hl(cx-4,cx+4,r.sy+13,whiteD);P.set(cx-1,r.sy+13,OR[2]);P.set(cx,r.sy+13,OR[2]);
+    const pk0=G.hem-12;
+    P.paint(poly([[cx-G.hw(pk0)+1,pk0],[cx+G.hw(pk0)-1,pk0],[cx+G.hw(G.hem)+.4,G.hem-.5],[cx-G.hw(G.hem)-.4,G.hem-.5]]),OR,{dark:1,flat:true});
+    P.hl(cx-G.hw(pk0)+3,cx+G.hw(pk0)-3,pk0+1,OR[2]);P.vl(cx,pk0+3,G.hem-1,OR[3]);
+    trimHem(c,G,OR,3);
+    // складки на рукавах (гармошка)
+    for(const s of[-1,1]){const a=armGeo(c,G,s);P.hl(a.ex-r.ar-1.4,a.ex+r.ar+1.4,a.ey+2,OR[3]);P.hl(a.ex-r.ar-1.2,a.ex+r.ar+1.2,a.ey+3,OR[2]);P.hl(a.wx-r.ar-2,a.wx+r.ar+2,a.wy-4,OR[3]);}
+    foldLines(c,G,OR,[[cx-G.hw(r.sy+10)+3,r.sy+11,cx-G.hw(r.sy+10)+6,r.sy+17],[cx+G.hw(r.sy+10)-3,r.sy+10,cx+G.hw(r.sy+10)-6,r.sy+17]]);
+  },
+  tee(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx;
+    drawArms(c,G,OR,{});
+    P.paint(ell(cx,r.sy+.4,r.nk+1.8,2.2),OR,{dark:1,edge:true});
+    P.paint(ell(cx,r.sy+1.2,r.nk+.6,1.5),SK,{flat:true,edge:false});
+    for(const s of[-1,1]){const a=armGeo(c,G,s);P.hl(a.ex-r.ar-.6,a.ex+r.ar+.6,a.ey-2,OR[3]);P.hl(a.ex-r.ar-.6,a.ex+r.ar+.6,a.ey-1,OR[2]);}
+    P.hl(cx-G.hw(r.sy+7)+3,cx+G.hw(r.sy+7)-3,r.sy+8,OR[0]);
+    foldLines(c,G,OR,[[cx-4,r.sy+19,cx-6,G.hem-2],[cx+5,r.sy+18,cx+6,G.hem-2]]);
+    trimHem(c,G,OR,2);
+  },
+  otee(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx;
+    drawArms(c,G,OR,{});
+    P.paint(ell(cx,r.sy+.4,r.nk+1.8,2.2),OR,{dark:1,edge:true});
+    P.paint(ell(cx,r.sy+1.2,r.nk+.6,1.5),SK,{flat:true,edge:false});
+    for(const s of[-1,1]){const a=armGeo(c,G,s);P.hl(a.ex-r.ar-G.fat-1.4,a.ex+r.ar+G.fat+.6,a.ey-2,OR[3]);P.hl(a.ex-r.ar-G.fat-1.2,a.ex+r.ar+G.fat+.4,a.ey-1,OR[2]);}
+    // принт
+    P.paint(rr(cx-7,r.sy+9,cx+7,r.sy+20,1.6),ramp('#1b1a20'),{flat:true});
+    const pc=0xfff4d6;P.hl(cx-5,cx+5,r.sy+11,pc);P.hl(cx-5,cx+1,r.sy+13,pc);P.hl(cx-5,cx+5,r.sy+15,pc);P.hl(cx-5,cx-1,r.sy+17,pc);P.set(cx+3,r.sy+13,0xff7a2f);P.set(cx+4,r.sy+13,0xff7a2f);
+    foldLines(c,G,OR,[[cx-8,r.sy+22,cx-11,G.hem-2],[cx+9,r.sy+21,cx+11,G.hem-2],[cx-3,r.sy+23,cx-4,G.hem-1]]);
+    trimHem(c,G,OR,2);
+  },
+  rash(c,G){
+    const{P,r,OR}=c,cx=r.cx,DK=ramp('#2b3040');
+    drawArms(c,G,OR,{});
+    for(const s of[-1,1]){ // тёмные боковые вставки
+      const pts=[];for(let y=r.sy+4;y<=r.tb;y+=2)pts.push([cx+s*(G.hw(y)-.5),y]);
+      const pts2=pts.map(p=>[p[0]-s*3.6,p[1]]).reverse();
+      P.paint(poly(pts.concat(pts2)),DK,{edge:false});
+    }
+    // вставки по рукавам
+    for(const s of[-1,1]){const a=armGeo(c,G,s);P.paint(cap(a.jx+s*(r.ar-1.2),a.jy+2,a.ex+s*(r.ar-1.2),a.ey,1.4,1.4),DK,{edge:false});P.paint(cap(a.ex+s*(r.ar-1.2),a.ey,a.wx+s*(r.ar-1.2),a.wy,1.4,1.2),DK,{edge:false});}
+    // реглан-швы, мышцы, лого
+    P.line(cx-4,r.sy+1,cx-G.hw(r.sy+5)+1,r.sy+7,OR[2]);P.line(cx+4,r.sy+1,cx+G.hw(r.sy+5)-1,r.sy+7,OR[2]);
+    P.hl(cx-G.hw(r.sy+10)+4,cx-1,r.sy+11,OR[2]);P.hl(cx+1,cx+G.hw(r.sy+10)-4,r.sy+11,OR[2]);P.vl(cx,r.sy+9,r.sy+16,OR[2]);
+    for(let y=r.sy+16;y<=r.tb-2;y+=3)P.hl(cx-1,cx,y,OR[2]);
+    P.hl(cx-G.hw(r.sy+7)+3,cx-G.hw(r.sy+7)+5,r.sy+8,white);P.set(cx-G.hw(r.sy+7)+4,r.sy+9,white);
+    P.paint(ell(cx,r.sy-.6,r.nk+1.8,2.8),OR,{dark:1});
+    P.paint(ell(cx,r.sy+.2,r.nk-.2,1.4),c.SK,{flat:true,edge:false});
+    P.hl(cx-G.hw(r.tb)+3,cx+G.hw(r.tb)-3,r.tb-1,OR[3]);
+    trimHem(c,G,OR,1);
+  },
+  jersey(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx;
+    drawArms(c,G,OR,{});
+    for(const s of[-1,1]){P.paint(cap(cx+s*(G.shG-2.6),r.sy+1.6,cx+s*(G.shG-2.2),r.sy+11,2.8,2.6),SK,{edge:false});}
+    // бретели
+    for(const s of[-1,1]){const x=cx+s*(r.nk+2);P.paint(rect(Math.min(x,x+s*4.4),r.sy-1,Math.max(x,x+s*4.4),r.sy+3.8),OR,{flat:true});}
+    P.paint(poly([[cx-r.nk-.6,r.sy-.4],[cx+r.nk+.6,r.sy-.4],[cx,r.sy+8]]),SK,{flat:true,edge:false});
+    for(let k=0;k<7;k++){P.set(cx-r.nk-.4+k*.95,r.sy-.2+k*1.15,white);P.set(cx+r.nk+.4-k*.95,r.sy-.2+k*1.15,white);}
+    // номер крупно
+    const num=String((c.av.hc*8+c.av.pc+c.av.oc*3)%90+10);
+    let nx0=cx-7;
+    for(const chn of num){const gl=DG[chn];gl.forEach((row,j)=>{for(let i=0;i<3;i++)if(row[i]==='1')for(let a=0;a<2;a++)for(let b=0;b<2;b++)P.set(nx0+i*2+a,r.sy+11+j*2+b,white);});nx0+=8;}
+    P.vl(Math.round(cx-G.hw(r.sy+17)+1),r.sy+12,G.hem-1,whiteD);P.vl(Math.round(cx+G.hw(r.sy+17)-1),r.sy+12,G.hem-1,whiteD);
+    P.hl(cx-G.hw(G.hem)+.5,cx+G.hw(G.hem)-.5,G.hem-1,white);P.hl(cx-G.hw(G.hem)+.5,cx+G.hw(G.hem)-.5,G.hem,OR[2]);
+  },
+  plaid(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx;
+    // клетка
+    P.paint(G.shape,OR,{tex:(x,y)=>(x%6===0?-1:0)+(y%6===2?1:0),flat:false});
+    drawArms(c,G,OR,{cuff:OR});
     const tee=ramp('#eef0f6');
-    P.fill(poly([[25-3.2,30.3],[25+3.2,30.3],[25+3.4,49],[25-3.4,49]]),tee,{flat:true});
-    P.fill(ell(25,30.5,d.nk+.2,1.3),S,{flat:true});
-    P.hl(24,25,36,0x9aa3b8);P.px(24,37,0x9aa3b8);
-    // края рубашки и воротник
-    P.vl(25-4,32,49,OR[3]);P.vl(25+3,32,49,OR[3]);
-    P.fill(poly([[25-d.nk-1,29.6],[25-2,31],[25-4.4,35],[25-d.nk-2.6,32]]),OR,{edge:true,dark:-1,flat:true});
-    P.fill(poly([[25+d.nk+1,29.6],[25+2,31],[25+4.4,35],[25+d.nk+2.6,32]]),OR,{edge:true,dark:-1,flat:true});
-    // карман, пуговицы
-    P.rectf(25-d.ch+1,38,25-d.ch+4,41,OR[2]);P.hl(25-d.ch+1,25-d.ch+4,38,OR[3]);P.px(25-d.ch+2,39,0xe9d9a8);
-    P.px(25-4,40,0xe9d9a8);P.px(25+3,43,0xe9d9a8);
-    P.hl(25-hh(48),25+hh(48)-1,48,OR[3]);P.hl(25-hh(49),25+hh(49)-1,49,OR[2]);
-  }else{ // 14: джерси
-    P.fill(overTorso(d,.9,50),OR,{edge:true});
-    drawArms(c,'none',OR);
-    // проймы
-    for(const sx of[-1,1])P.fill(cap(25+sx*(d.sh-1.7),31.5,25+sx*(d.sh-1.2),38,2.7,2.6),S,{edge:true});
-    // лямки
-    for(const sx of[-1,1]){const x=25+sx*(d.nk+1.6);P.fill(rect(Math.min(x,x+sx*3.4),29.5,Math.max(x,x+sx*3.4),33.4),OR,{edge:true,flat:true});}
-    // V-вырез с окантовкой
-    P.fill(poly([[25-d.nk-.2,30],[25+d.nk+.2,30],[25,35.5]]),S,{flat:true});
-    for(let k=0;k<5;k++){P.px(25-d.nk-.2+k*.9,30+k*1.1,W);P.px(25+d.nk-.8-k*.9+1,30+k*1.1,W);}
-    // номер
-    pixNum(P,21,37,String((av.hc*8+av.pc+av.oc*3)%90+10),W);
-    // полосы по бокам
-    P.vl(Math.round(25-hw(44)+2),41,49,Wd);P.vl(Math.round(25+hw(44)-3),41,49,Wd);
-    P.hl(25-hw(49),25+hw(49)-1,49,OR[3]);P.hl(25-hw(50),25+hw(50)-1,50,W);
-  }
+    P.paint(poly([[cx-4.6,r.sy+1],[cx+4.6,r.sy+1],[cx+4.8,G.hem-.5],[cx-4.8,G.hem-.5]]),tee,{flat:true});
+    P.paint(ell(cx,r.sy+1.2,r.nk+.4,1.5),SK,{flat:true,edge:false});
+    P.hl(cx-2,cx+1,r.sy+8,0x9aa3b8);P.hl(cx-2,cx-1,r.sy+9,0x9aa3b8);
+    P.vl(Math.round(cx-5),r.sy+3,G.hem-1,OR[3]);P.vl(Math.round(cx+4),r.sy+3,G.hem-1,OR[3]);
+    P.paint(poly([[cx-r.nk-1.2,r.sy-1],[cx-2,r.sy+1],[cx-5.4,r.sy+6],[cx-r.nk-3.4,r.sy+2]]),OR,{dark:-1,flat:true});
+    P.paint(poly([[cx+r.nk+1.2,r.sy-1],[cx+2,r.sy+1],[cx+5.4,r.sy+6],[cx+r.nk+3.4,r.sy+2]]),OR,{dark:-1,flat:true});
+    P.rectf(cx-G.hw(r.sy+12)+2,r.sy+11,cx-G.hw(r.sy+12)+6,r.sy+15,OR[2]);P.hl(cx-G.hw(r.sy+12)+2,cx-G.hw(r.sy+12)+6,r.sy+11,OR[3]);P.set(cx-G.hw(r.sy+12)+3,r.sy+12,0xe9d9a8);
+    P.set(cx-5,r.sy+14,0xe9d9a8);P.set(cx+4,r.sy+19,0xe9d9a8);
+    trimHem(c,G,OR,2);
+  },
+  bomber(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx,dark=ramp('#2b3040'),inner=ramp('#e9ecf3');
+    drawArms(c,G,OR,{cuff:dark});
+    for(let k=0;k<6;k++)P.hl(cx-k,cx+k-1,r.sy+k,k<5?inner[1]:inner[2]);
+    P.paint(ell(cx,r.sy-.2,r.nk+2.4,2.2),dark,{flat:true});
+    P.vl(cx-1,r.sy+6,G.hem-1,OR[3]);P.vl(cx,r.sy+6,G.hem-1,OR[0]);P.set(cx-1,r.sy+7,0xb8bdca);P.set(cx,r.sy+8,0xe9ecf3);
+    for(let k=0;k<3;k++)P.hl(cx-G.hw(G.hem)+.5,cx+G.hw(G.hem)-.5,G.hem-k,dark[k===0?3:k===1?2:1]);
+    P.line(cx-G.hw(r.sy+14)+1,r.sy+14,cx-G.hw(r.sy+14)+4,r.sy+21,OR[3]);P.line(cx+G.hw(r.sy+14)-2,r.sy+14,cx+G.hw(r.sy+14)-5,r.sy+21,OR[3]);
+    const a=armGeo(c,G,-1);P.rectf(a.jx-1,r.sy+4,a.jx+2,r.sy+8,white);P.set(a.jx+.5,r.sy+6,OR[1]);
+    P.hl(cx-G.hw(r.sy+9)+3,cx-G.hw(r.sy+9)+6,r.sy+9,OR[0]);
+  },
+  armor(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx,st=ramp('#aab4c6'),gold=0xe3b64a,steel=ramp('#4a4f64');
+    P.paint(G.shape,st,{});
+    drawArms(c,G,OR,{});
+    for(const s of[-1,1]){const a=armGeo(c,G,s);
+      P.paint(cap(a.ex,a.ey+1.5,a.wx,a.wy,r.ar+G.fat+.2,r.ar+G.fat-.4),st,{});            // наручи
+      P.paint(ell(cx+s*(G.shG-2.2),r.sy+2.4,6,4.4),ramp('#c2cbdd'),{});                    // наплечники
+      P.hl(cx+s*(G.shG-2.2)-3,cx+s*(G.shG-2.2)+2,r.sy,0xffffff);
+    }
+    P.vl(cx-1,r.sy+3,r.sy+17,st[0]);P.vl(cx,r.sy+3,r.sy+17,st[2]);
+    P.hl(cx-G.hw(r.sy+4)+1,cx+G.hw(r.sy+4)-1,r.sy+4,0xe6ecf8);P.hl(cx-G.hw(r.sy+5)+1,cx+G.hw(r.sy+5)-1,r.sy+5,gold);
+    P.paint(poly([[cx-5,r.sy+8],[cx+5,r.sy+8],[cx+5,r.sy+14],[cx,r.sy+19],[cx-5,r.sy+14]]),OR,{});
+    P.hl(cx-1,cx,r.sy+11,0xfff2c0);P.set(cx-1,r.sy+12,0xfff2c0);
+    P.paint(ell(cx,r.sy+.4,r.nk+3.6,2.6),st,{});
+    P.hl(cx-G.hw(r.sy+17),cx+G.hw(r.sy+17)-1,r.sy+18,0x4a3524);P.hl(cx-G.hw(r.sy+17),cx+G.hw(r.sy+17)-1,r.sy+19,0x6a4a30);P.rectf(cx-2,r.sy+18,cx+1,r.sy+19,gold);
+    P.hl(cx-G.hw(G.hem)+.5,cx+G.hw(G.hem)-.5,G.hem-1,st[2]);P.hl(cx-G.hw(G.hem)+.5,cx+G.hw(G.hem)-.5,G.hem,st[3]);
+    P.set(cx-G.hw(r.sy+6)+2,r.sy+6,gold);P.set(cx+G.hw(r.sy+6)-3,r.sy+6,gold);
+  },
+  tank(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx;
+    drawArms(c,G,OR,{});
+    for(const s of[-1,1]){P.paint(cap(cx+s*(G.shG-2.2),r.sy+2,cx+s*(G.shG-1.6),r.sy+12,3.4,3.2),SK,{edge:false});}
+    for(const s of[-1,1]){const x=cx+s*(r.nk+2);P.paint(rect(Math.min(x,x+s*3.6),r.sy-1,Math.max(x,x+s*3.6),r.sy+3.6),OR,{flat:true});}
+    P.paint(ell(cx,r.sy+.4,r.nk+.4,2.2),SK,{flat:true,edge:false});P.paint(ell(cx,r.sy+2.8,r.nk+1.8,2.6),SK,{flat:true,edge:false});
+    P.hl(cx-r.nk,cx+r.nk-1,r.sy+5,OR[3]);
+    P.vl(Math.round(cx-G.hw(r.sy+14)+.8),r.sy+11,G.hem-1,white);P.vl(Math.round(cx+G.hw(r.sy+14)-1.8),r.sy+11,G.hem-1,whiteD);
+    P.hl(cx-4,cx+3,r.sy+12,OR[2]);P.hl(cx-3,cx+2,r.sy+13,OR[2]);
+    trimHem(c,G,OR,2);
+  },
+  suit(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx,shirt=ramp('#f3f4f8'),tie=ramp('#b4232c');
+    drawArms(c,G,OR,{});
+    P.paint(poly([[cx-4,r.sy],[cx+4,r.sy],[cx+1.8,r.sy+12],[cx-1.8,r.sy+12]]),shirt,{flat:true});
+    P.paint(poly([[cx-1.2,r.sy+1],[cx+1.2,r.sy+1],[cx+1.6,r.sy+11],[cx-1.6,r.sy+11]]),tie,{flat:true});
+    P.set(cx-1,r.sy+2,tie[0]);
+    P.paint(poly([[cx-r.nk-1.2,r.sy-1],[cx-4,r.sy],[cx-1.8,r.sy+12],[cx-6,r.sy+8],[cx-r.nk-3.4,r.sy+3]]),OR,{dark:-1});
+    P.paint(poly([[cx+r.nk+1.2,r.sy-1],[cx+4,r.sy],[cx+1.8,r.sy+12],[cx+6,r.sy+8],[cx+r.nk+3.4,r.sy+3]]),OR,{dark:-1});
+    P.vl(cx,r.sy+13,G.hem-1,OR[3]);P.set(cx-1,r.sy+15,OR[3]);P.set(cx+1,r.sy+19,OR[3]);
+    P.hl(cx-G.hw(r.sy+10)+2,cx-G.hw(r.sy+10)+5,r.sy+10,white);
+    for(const s of[-1,1]){const a=armGeo(c,G,s);P.hl(a.wx-r.ar,a.wx+r.ar,a.wy-.5,shirt[1]);}
+    trimHem(c,G,OR,1);
+  },
+  leather(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx,inner=ramp('#e9ecf3');
+    drawArms(c,G,OR,{});
+    P.paint(poly([[cx-3.6,r.sy],[cx+3.6,r.sy],[cx+2.6,r.sy+12],[cx-4.4,r.sy+12]]),inner,{flat:true});
+    P.line(cx-1,r.sy+2,cx+4,G.hem-1,0xc9ccd6);P.line(cx,r.sy+2,cx+5,G.hem-1,OR[3]);
+    P.paint(poly([[cx-r.nk-1.2,r.sy-1],[cx-1.4,r.sy+1],[cx-6,r.sy+9],[cx-r.nk-3.8,r.sy+3]]),OR,{dark:-1});
+    P.paint(poly([[cx+r.nk+1.2,r.sy-1],[cx+1.4,r.sy+1],[cx+6.6,r.sy+10],[cx+r.nk+3.8,r.sy+3]]),OR,{dark:-1});
+    P.hl(cx-G.shG+1.5,cx-G.shG+4,r.sy+3,OR[0]);P.hl(cx+G.shG-4.5,cx+G.shG-2,r.sy+3,OR[0]);
+    P.vl(Math.round(cx-G.hw(r.sy+10)+2.4),r.sy+8,r.sy+11,OR[0]);
+    P.set(cx-G.shG+3,r.sy+1,0xcfd3df);P.set(cx+G.shG-4,r.sy+1,0xcfd3df);
+    P.line(cx-G.hw(r.sy+16)+1,r.sy+17,cx-G.hw(r.sy+16)+5,r.sy+17,OR[3]);P.line(cx+G.hw(r.sy+16)-1,r.sy+17,cx+G.hw(r.sy+16)-5,r.sy+17,OR[3]);
+    trimHem(c,G,OR,2);
+  },
+  track(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx;
+    drawArms(c,G,OR,{cuff:OR});
+    P.paint(ell(cx,r.sy-.2,r.nk+2.6,2.8),OR,{dark:1});P.paint(ell(cx,r.sy+.8,r.nk,1.6),SK,{flat:true,edge:false});
+    P.vl(cx-1,r.sy+3,G.hem-1,OR[3]);P.vl(cx-2,r.sy+3,G.hem-1,OR[0]);P.set(cx-2,r.sy+4,0xcfd3df);P.set(cx-2,r.sy+5,0xcfd3df);
+    P.vl(Math.round(cx-G.hw(r.sy+14)+1.6),r.sy+9,G.hem-2,white);P.vl(Math.round(cx+G.hw(r.sy+14)-2.6),r.sy+9,G.hem-2,white);
+    for(const s of[-1,1]){const a=armGeo(c,G,s);P.vl(Math.round(a.ex+s*(r.ar+G.fat-.4)),a.jy+5,a.wy-2,white);}
+    trimHem(c,G,OR,3);
+  },
+  vest(c,G){
+    const{P,r,OR,SK}=c,cx=r.cx,vest=ramp('#3d4350');
+    drawArms(c,G,OR,{});
+    P.paint(ell(cx,r.sy+.4,r.nk+1.6,2),OR,{dark:1});P.paint(ell(cx,r.sy+1.2,r.nk+.4,1.4),SK,{flat:true,edge:false});
+    for(const s of[-1,1]){
+      const xs=cx+s*(r.nk+3.4),xo=cx+s*(G.shG-2.4),xw=cx+s*(G.hw(r.sy+16)-1);
+      P.paint(poly([[xs,r.sy],[xo,r.sy+3],[xw,r.sy+19],[cx+s*3,r.sy+19]]),vest,{dark:-1});
+      for(const py of[r.sy+7,r.sy+13]){const x0=Math.min(cx+s*4.4,cx+s*(G.hw(py)-3));P.rectf(x0,py,x0+4.6,py+4.4,vest[2]);P.hl(x0,x0+4.6,py,vest[3]);P.hl(x0,x0+4.6,py+4.4,vest[3]);P.set(x0+2,py+2,vest[0]);}
+      P.hl(cx+s*(r.nk+1.6),cx+s*(G.shG-3),r.sy+1,vest[3]);
+    }
+    P.set(cx-3,r.sy+1,0xb8bdca);P.set(cx+3,r.sy+1,0xb8bdca);
+    trimHem(c,G,OR,1);
+  },
+};
+function drawRobe(c,G){
+  const{P,r,OR,SK}=c,cx=r.cx;
+  const pts=[[r.sy-1,r.nk+.8],[r.sy+.5,r.sh],[r.sy+3.5,r.sh+.6],[r.sy+9,r.ch+1.2],[r.sy+16,r.wa+1.4],[r.tb,r.hp+3],[r.lb+3,r.hp+8.6]];
+  const hw=y=>lerpPts(pts,y);
+  P.paint(sym(pts,cx,1.5),OR,{});
+  G.hw=hw;G.hem=r.lb+3;
+  const gold=0xd9a52a;
+  drawArms(c,G,OR,{cuff:ramp('#d9a52a')});
+  for(let y=r.tb+3;y<=r.lb+1;y++){P.set(cx-3-(y-r.tb)*.25,y,OR[2]);P.set(cx+4+(y-r.tb)*.3,y,OR[2]);P.set(cx,y,OR[3]);}
+  P.hl(cx-hw(r.lb+3)+.5,cx+hw(r.lb+3)-.5,r.lb+3,gold);P.hl(cx-hw(r.lb+2)+.5,cx+hw(r.lb+2)-.5,r.lb+2,mixp(gold,0,.25));
+  P.hl(cx-hw(r.sy+17)-1,cx+hw(r.sy+17)+1,r.sy+17,gold);P.hl(cx-hw(r.sy+17)-1,cx+hw(r.sy+17)+1,r.sy+18,mixp(gold,0,.3));P.vl(cx,r.sy+18,r.sy+23,gold);P.vl(cx+1,r.sy+18,r.sy+22,mixp(gold,0,.3));
+  for(let k=0;k<5;k++)P.hl(cx-k+.5,cx+k-1.5,r.sy+k,k>3?SK[2]:SK[1]);
+  P.paint(ell(cx,r.sy-.2,r.nk+2.6,2.4),OR,{dark:1});P.paint(ell(cx,r.sy+.9,r.nk+.2,1.8),SK,{flat:true,edge:false});
 }
-function neckShadow(c){}
 
-// ── ПРЕДМЕТ ───────────────────────────────────────────────────────────────
-function drawItem(c){
-  const{P,av,d,S}=c;if(!av.it)return;
-  const a=armCaps(d,-1),hx=Math.round(a.wx),hy=49;
-  const redraw=()=>{ // пальцы поверх предмета
-    P.fill(ell(a.wx-.2,hy+.5,2.3,2.2),S,{edge:true});P.hl(hx-2,hx,hy+2,S[2]);
-  };
-  if(av.it===1){ // камера
-    const body=ramp('#3a3f50');
-    P.fill(rect(hx-7,hy-3,hx+3,hy+5),body,{edge:true,dith:false});
-    P.fill(ell(hx-3,hy+1.4,3,3),ramp('#1d2030'),{edge:true});P.fill(ell(hx-3,hy+1.4,1.6,1.6),ramp('#3f8fe0'),{edge:true,flat:true});P.px(hx-4,hy,0xffffff);
-    P.hl(hx-6,hx+1,hy-3,body[0]);P.px(hx+1,hy-1,0xe5484d);P.rectf(hx-1,hy-1,hx+1,hy,body[2]);
-    redraw();
-  }else if(av.it===2){ // кофе
-    const cup=ramp('#f1f3f9');
-    P.fill(poly([[hx-3.4,hy-3.2],[hx+3.4,hy-3.2],[hx+2.4,hy+5],[hx-2.4,hy+5]]),cup,{edge:true});
-    P.hl(hx-3,hx+2,hy-1,0xb9722f);P.hl(hx-3,hx+2,hy,0xb9722f);P.hl(hx-3,hx+2,hy+1,0xb9722f);P.hl(hx-4,hx+3,hy-4,0x6a4a30);
-    P.px(hx-1,hy-6,0xd6dbe6);P.px(hx,hy-7,0xd6dbe6);P.px(hx-1,hy-8,0xd6dbe6);
-    redraw();
-  }else if(av.it===3){ // книга
-    const bk=ramp('#7a3b2e');
-    P.fill(rect(hx-6,hy-4,hx+2,hy+6),bk,{edge:true});
-    P.vl(hx-5,hy-4,hy+6,bk[3]);P.hl(hx-4,hx+1,hy-1,0xe9d9a8);P.hl(hx-4,hx+1,hy,0xe9d9a8);P.hl(hx-4,hx,hy+2,bk[0]);
-    P.hl(hx-5,hx+2,hy+6,0xe9d9a8);
-    redraw();
-  }else if(av.it===4){ // меч
-    const bl=ramp('#c9d2e4');
-    P.fill(rect(hx-1.5,hy-27,hx+2,hy+.5),bl,{edge:true,dith:false});
-    P.vl(hx-0,hy-26,hy-1,0xffffff);P.vl(hx+1,hy-26,hy-1,0x8e99b3);
-    P.rectf(hx-5,hy+0,hx+5,hy+1,0xe3b64a);P.px(hx-5,hy,0xb8862a);P.px(hx+5,hy,0xb8862a);P.hl(hx-4,hx+4,hy+1,0xb8862a);
-    P.fill(rect(hx-1,hy+1,hx+1.5,hy+5),ramp('#6a3d2a'),{edge:true,dith:false});
-    P.fill(ell(hx+.3,hy+5.6,2,1.6),ramp('#e3b64a'),{edge:true});
-    redraw();
-  }else if(av.it===5){ // гантель
-    const mt=ramp('#4a5060');
-    P.fill(rect(hx-7,hy+.5,hx+6,hy+2.5),ramp('#b8bdca'),{edge:true});
-    P.fill(rect(hx-8,hy-3,hx-5,hy+6),mt,{edge:true,dith:false});
-    P.fill(rect(hx+5,hy-3,hx+8,hy+6),mt,{edge:true,dith:false});
-    redraw();
-  }
+// ── ГОЛОВА, ЛИЦО, ВОЛОСЫ, АКСЕССУАРЫ ───────────────────────────────────────
+// Типы лиц: геометрия челюсти и черты. Всё в координатах относительно центра головы.
+const FACEP=[
+  {tmp:11.6,chk:12,jw:9.6,cw:5.2,jy:8.6,cy:13.6,nw:2,nl:5,brow:0,bags:0,ridge:0,soft:0},    // классика
+  {tmp:12.2,chk:12.6,jw:12,cw:8.2,jy:9.2,cy:13.6,nw:2,nl:5,brow:0,bags:0,ridge:0,soft:0},   // квадратное
+  {tmp:10.4,chk:10.8,jw:8,cw:4,jy:10,cy:15.8,nw:1,nl:6,brow:0,bags:0,ridge:0,soft:0},       // узкое
+  {tmp:11.6,chk:13.4,jw:8.8,cw:3.8,jy:9.2,cy:14,nw:2,nl:5,brow:0,bags:0,ridge:0,soft:0},    // скулы
+  {tmp:12,chk:12.8,jw:11.4,cw:7.4,jy:8.2,cy:13.2,nw:2,nl:4,brow:0,bags:0,ridge:0,soft:1},   // мягкое
+  {tmp:12.6,chk:12,jw:10.6,cw:6.2,jy:8.8,cy:13.6,nw:3,nl:5,brow:1,bags:0,ridge:1,soft:0},   // тяжёлый лоб
+  {tmp:11.8,chk:11.8,jw:7.6,cw:2.4,jy:9.8,cy:15,nw:1,nl:5,brow:0,bags:0,ridge:0,soft:0},    // острое
+  {tmp:11.6,chk:12,jw:9.6,cw:5.4,jy:8.6,cy:14.2,nw:2,nl:5,brow:1,bags:1,ridge:0,soft:0},    // усталое
+];
+function headGeo(av){
+  const p={...FACEP[av.fc]};
+  if(av.g===1){p.jw-=1.5;p.cw-=.9;p.chk-=.6;p.tmp-=.3;p.nw=Math.max(1,p.nw-1);}
+  return p;
 }
-
-// ── ГОЛОВА И ЛИЦО ─────────────────────────────────────────────────────────
+function headShape(c){
+  const{hx,hy,hg}=c;
+  const R=[[6,-13.6],[9.6,-12],[hg.tmp,-7],[hg.chk,1.2]];
+  if(hg.soft)R.push([hg.chk-.2,4.6]);
+  R.push([hg.jw,hg.jy],[hg.cw+1.4,hg.cy-.8],[hg.cw,hg.cy]);
+  const pts=R.map(p=>[hx+p[0],hy+p[1]]).concat(R.slice().reverse().map(p=>[hx-p[0],hy+p[1]]));
+  const s=poly(pts);
+  return renorm(s,hx,hy+2,13.5,14.5);
+}
 function drawHead(c){
-  const{P,av,d,f,S,HR,blink}=c;
+  const{P,av,r,SK,hx,hy,f,hg}=c;
   // шея
-  P.fill(cap(25,25,25,30.6,f?2.4:2.55,f?2.4:2.55),S,{edge:true,k:.8});
+  P.paint(cap(CX+r.ts*.6,hy+9,CX+r.ts,r.sy+1,r.nk,r.nk+.2),SK,{k:.8});
+  P.hl(hx-r.nk+1,hx+r.nk-1,hy+hg.cy+1,SK[3]);P.hl(hx-r.nk+1,hx+r.nk-1,hy+hg.cy+2,SK[2]);
   // уши
-  for(const sx of[-1,1]){P.fill(ell(25+sx*8.3,18.8,1.7,2.3),S,{edge:true});P.px(25+sx*8.3-(sx<0?1:0),18,S[3]);}
-  // голова
-  P.fill(c.head,S,{edge:true,dith:true,k:.45});
-  // тень под подбородком на шее
-  for(let x=23;x<=26;x++)P.set(x,27,S[3]);
-  // лицо
+  for(const s of[-1,1]){P.paint(ell(hx+s*(hg.chk+.2),hy+1.6,2.2,3.4),SK,{});P.set(hx+s*(hg.chk+.2)-(s<0?-.6:.6),hy+1,SK[3]);}
+  P.paint(c.head,SK,{k:.5});
+  // тень от подбородка и скулы
+  P.hl(hx-hg.cw+1,hx+hg.cw-1,hy+hg.cy-.6,SK[2]);
+  if(hg.jw>=11)for(const s of[-1,1]){P.line(hx+s*(hg.jw-.6),hy+hg.jy-3,hx+s*(hg.jw-.6),hy+hg.jy,SK[2]);}
+  if(hg.chk>=13.8)for(const s of[-1,1]){P.line(hx+s*(hg.chk-1.8),hy+1,hx+s*(hg.chk-3),hy+4,SK[2]);}
   drawFace(c);
 }
-
+function lipCol(c){return mixp(c.SK[1],c.f?0xd23a64:0xa8505a,.58);}
 function drawFace(c){
-  const{P,av,f,S,HR,blink}=c;
-  const ink=0x2a1c26;
-  const EC=ramp(EYEC[av.ec]);
+  const{P,av,r,SK,hx,hy,f,hg,pose}=c;
+  const ey=Math.round(hy+1.6)+(hg.ridge?1:0),ex=5.8;
+  const ec=ramp(EYEC[av.ec]),W=0xf2efea,lid=INK;
   // нос
-  P.px(25,20,S[2]);P.px(24,21,S[2]);P.px(25,21,S[3]);
-  P.px(24,20,S[0]);
-  // щёки
-  if(f){P.px(19,21,mixp(S[1],0xff7a90,.4));P.px(20,21,mixp(S[1],0xff7a90,.3));P.px(30,21,mixp(S[1],0xff7a90,.4));P.px(29,21,mixp(S[1],0xff7a90,.3));}
+  const ny=ey+6;
+  P.vl(hx+1,ey+1,ny-1,SK[2]);P.vl(hx,ey+2,ny-1,SK[0]);P.set(hx-1,ny-2,SK[0]);
+  for(let i=-hg.nw;i<=hg.nw;i++)P.set(hx+i,ny,SK[2]);
+  P.set(hx-hg.nw,ny,SK[3]);P.set(hx+hg.nw,ny,SK[3]);P.set(hx-hg.nw+1,ny+1,SK[2]);P.set(hx+hg.nw-1,ny+1,SK[2]);
+  P.set(hx,ny-1,SK[1]);
+  // надбровье
+  if(hg.ridge)for(const s of[-1,1])P.hl(hx+s*2.6,hx+s*9.4,ey-3,SK[2]);
   // брови
-  const BR=ramp(HAIRC[av.hc]),bc=BR[3],yb=14.5;
-  for(const sx of[-1,1]){
-    const X=(col)=>sx<0?col:49-col;
-    const cols=[19,20,21,22];
-    if(av.br===0){cols.forEach((cx,i)=>P.set(X(cx),i===0?15:14,bc));P.set(X(22),14,bc);}
-    else if(av.br===1){cols.forEach((cx)=>{P.set(X(cx),14,bc);P.set(X(cx),15,bc);});P.set(X(19),16,BR[2]);}
-    else if(av.br===2){cols.forEach((cx)=>P.set(X(cx),14,BR[2]));P.set(X(19),15,BR[2]);}
-    else{P.set(X(19),14,bc);P.set(X(20),14,bc);P.set(X(21),15,bc);P.set(X(22),16,bc);P.set(X(21),14,BR[2]);}
+  const BR=ramp(HAIRC[av.hc]);
+  const brC=BR[2],brD=BR[3];
+  const byo=hg.brow?1:0;
+  for(const s of[-1,1]){
+    const x=(i)=>hx+s*(2.6+i);            // i: от внутреннего края наружу
+    const yb=ey-4-1+byo;
+    const L=av.br;
+    if(L===0){for(let i=0;i<7;i++)P.set(x(i),yb+(i<2?.5:i>4?-.5:0),brD);for(let i=1;i<6;i++)P.set(x(i),yb+1,brC);}
+    else if(L===1){for(let i=0;i<7;i++){P.set(x(i),yb-.4+(i>4?-.6:0),brD);P.set(x(i),yb+.6,brD);}for(let i=1;i<6;i++)P.set(x(i),yb+1.6,brC);}
+    else if(L===2){for(let i=0;i<7;i++)P.set(x(i),yb+(i>4?-1:0)+(i<1?1:0),brC);}
+    else{for(let i=0;i<7;i++){P.set(x(i),yb+1.2-i*.38+(i>4?0:0),brD);P.set(x(i),yb+2.2-i*.38,brC);}P.set(x(0),yb+2.5,brD);}
   }
+  if(hg.bags)for(const s of[-1,1]){P.hl(hx+s*3.4,hx+s*8,ey+3,SK[2]);P.set(hx+s*8.2,ey+2,SK[2]);}
   // глаза
-  for(const sx of[-1,1]){
-    const X=(col)=>sx<0?col:49-col;
-    const x0=19,y0=17;
-    const W=0xf4f1ee;
-    if(blink){
-      P.hl(Math.min(X(19),X(22)),Math.max(X(19),X(22)),y0+1,ink);
-      if(f){P.px(X(18),y0,ink);}
-      continue;
-    }
-    const e=av.e;
-    if(e===0){ // обычные
-      [19,20,21,22].forEach(cx=>P.set(X(cx),y0,ink));
-      P.set(X(19),y0+1,W);P.set(X(20),y0+1,EC[2]);P.set(X(21),y0+1,EC[2]);P.set(X(22),y0+1,W);
-      P.set(X(20),y0+2,EC[1]);P.set(X(21),y0+2,EC[0]);P.set(X(19),y0+2,S[2]);P.set(X(22),y0+2,S[2]);
-      P.set(X(20),y0+1,mixp(EC[3],0x000000,.3));
-    }else if(e===1){ // острые
-      [20,21,22].forEach(cx=>P.set(X(cx),y0,ink));P.set(X(19),y0-1+1,ink);P.set(X(19),y0+0,ink);P.set(X(18),y0-1,ink);
-      P.set(X(20),y0+1,EC[2]);P.set(X(21),y0+1,EC[1]);P.set(X(22),y0+1,W);P.set(X(19),y0+1,W);
-      P.set(X(21),y0+2,S[2]);P.set(X(20),y0+2,S[2]);
-    }else if(e===2){ // большие
-      [19,20,21,22].forEach(cx=>P.set(X(cx),y0-0,ink));P.set(X(18),y0+1,S[2]);
-      P.set(X(19),y0+1,W);P.set(X(20),y0+1,EC[3]);P.set(X(21),y0+1,EC[2]);P.set(X(22),y0+1,W);
-      P.set(X(19),y0+2,W);P.set(X(20),y0+2,EC[1]);P.set(X(21),y0+2,EC[0]);P.set(X(22),y0+2,W);
-      P.set(X(20),y0+3,S[2]);P.set(X(21),y0+3,S[2]);P.set(X(20),y0+1,0x0d0912);P.set(X(21),y0+2,EC[0]);
-      P.set(X(21),y0+1,0xffffff);
-    }else if(e===3){ // сонные
-      [19,20,21,22].forEach(cx=>{P.set(X(cx),y0,S[3]);P.set(X(cx),y0+1,ink);});
-      P.set(X(20),y0+2,EC[1]);P.set(X(21),y0+2,EC[2]);P.set(X(19),y0+2,W);P.set(X(22),y0+2,W);
+  for(const s of[-1,1]){
+    const c0=hx+s*ex,e=av.e;
+    const X=(i)=>c0+i*s;            // i от центра: отрицательные — внутрь (к носу)
+    const blink=pose.blink;
+    const px=(i,y,col)=>P.set(X(i),y,col);
+    if(blink){for(let i=-2;i<=2;i++)px(i,ey+1,lid);if(f)px(3,ey,lid);continue;}
+    if(e===0){ // обычные: узкая щель, радужка 3 px
+      for(let i=-2;i<=2;i++)px(i,ey,lid);
+      px(-2,ey+1,W);px(-1,ey+1,ec[2]);px(0,ey+1,0x120d18);px(1,ey+1,ec[2]);px(2,ey+1,W);
+      px(-1,ey+2,ec[0]);px(0,ey+2,ec[1]);px(1,ey+2,ec[0]);px(-2,ey+2,SK[2]);px(2,ey+2,SK[2]);
+    }else if(e===1){ // острые: наклон наружу, злой взгляд
+      for(let i=-2;i<=2;i++)px(i,ey+(i>=2?-1:0)+(i<=-2?1:0),lid);px(3,ey-1,lid);
+      px(-1,ey+1,W);px(0,ey+1,ec[2]);px(1,ey+1,0x120d18);px(2,ey+1,ec[2]);
+      px(0,ey+2,SK[2]);px(1,ey+2,ec[1]);px(-1,ey+2,SK[2]);
+    }else if(e===2){ // большие: выше, без бликов
+      for(let i=-2;i<=2;i++)px(i,ey-1,lid);px(-3,ey,lid);px(3,ey,lid);
+      for(let y=ey;y<=ey+1;y++){px(-2,y,W);px(-1,y,ec[2]);px(0,y,y===ey?0x120d18:ec[1]);px(1,y,ec[2]);px(2,y,W);}
+      px(-1,ey+2,ec[0]);px(0,ey+2,ec[1]);px(1,ey+2,ec[0]);px(-2,ey+2,SK[2]);px(2,ey+2,SK[2]);
+    }else if(e===3){ // сонные: тяжёлое веко
+      for(let i=-2;i<=2;i++){px(i,ey,SK[3]);px(i,ey+1,lid);}
+      px(-1,ey+2,ec[2]);px(0,ey+2,ec[1]);px(1,ey+2,ec[2]);px(-2,ey+2,W);px(2,ey+2,W);
     }else{ // точки
-      P.set(X(20),y0+1,ink);P.set(X(21),y0+1,ink);P.set(X(20),y0+2,ink);P.set(X(21),y0+2,ink);P.set(X(20),y0+1,0x4a3d66);
+      for(const[dx,dy]of[[0,0],[1,0],[0,1],[1,1]])px(dx-.5,ey+1+dy,lid);
     }
-    if(f&&e!==3&&e!==4){P.set(X(18),y0-1,ink);}
+    if(f&&e!==3&&e!==4)px(3,ey-1,lid);   // ресницы
   }
-  // борода
+  // румянец
+  if(f)for(const s of[-1,1]){P.set(hx+s*8,ey+5,mixp(SK[1],0xff7a90,.4));P.set(hx+s*9,ey+5,mixp(SK[1],0xff7a90,.3));}
   drawBeard(c);
   // рот
-  const lip=LIP(S),teeth=0xf4f1ee;
-  const m=av.m;
-  if(m===0){for(let x=23;x<=26;x++)P.set(x,24,lip);}
-  else if(m===1){for(let x=23;x<=26;x++)P.set(x,24,lip);P.set(22,23,lip);P.set(27,23,lip);}
-  else if(m===2){for(let x=23;x<=26;x++)P.set(x,24,lip);P.set(27,23,lip);P.set(28,22,mixp(S[2],0,.2));}
-  else{for(let x=22;x<=27;x++)P.set(x,24,0x6a2030);for(let x=23;x<=26;x++)P.set(x,25,teeth);P.set(22,23,lip);P.set(27,23,lip);P.set(23,26,0x6a2030);}
-  if(f&&m!==3){for(let x=24;x<=25;x++)P.set(x,25,mixp(lip,0xff8aa0,.35));}
+  const my=Math.round(hy+hg.jy+.4),lip=lipCol(c),lipD=mixp(lip,0x1a0810,.45),teeth=0xf4f1ee,m=av.m;
+  const wH=hg.cw>=6.5?4:3;
+  if(m===0){P.hl(hx-wH,hx+wH,my,lipD);P.hl(hx-wH+1,hx+wH-1,my+1,lip);}
+  else if(m===1){P.hl(hx-wH,hx+wH,my,lipD);P.hl(hx-wH+1,hx+wH-1,my+1,lip);P.set(hx-wH-1,my-1,lipD);P.set(hx+wH+1,my-1,lipD);}
+  else if(m===2){P.hl(hx-wH,hx+wH,my,lipD);P.hl(hx-wH+1,hx+wH-1,my+1,lip);P.set(hx+wH+1,my-1,lipD);P.set(hx+wH+2,my-2,lipD);P.set(hx+wH+2,my-1,SK[2]);}
+  else{P.hl(hx-wH-1,hx+wH+1,my,0x5a1c2a);P.hl(hx-wH,hx+wH,my+1,teeth);P.hl(hx-wH+1,hx+wH-1,my+2,0x5a1c2a);P.set(hx-wH-2,my-1,lipD);P.set(hx+wH+2,my-1,lipD);}
+  if(f&&m!==3)P.hl(hx-1,hx+1,my+2,mixp(lip,0xff9ab0,.3));
+  P.hl(hx-2,hx+2,my+(m===3?4:3),SK[2]);
 }
-
 function drawBeard(c){
-  const{P,av,S,HR,head}=c;
-  const fh=av.fh;if(!fh)return;
-  const R=HR,hc=mixp(R[2],0x000000,.1);
-  const lowFace=(x,y)=>{const n=head.n(x,y);return n&&y>=21.4+Math.abs(x-25)*.22?n:null;};
-  if(fh===1){ // щетина
-    const sh=shp(head.b,(x,y)=>{const n=lowFace(x,y);return n&&(Math.abs(x-25)>1.6||y>23.2)?n:null;});
-    for(let y=head.b[1];y<=head.b[3];y++)for(let x=head.b[0];x<=head.b[2];x++){
-      if(sh.n(x+.5,y+.5)&&((x+y)&1)&&!(y>=23&&y<=25&&x>=22&&x<=27))P.set(x,y,mixp(S[1],HR[3],.55));
+  const{P,av,SK,hx,hy,hg}=c,fh=av.fh;
+  if(!fh)return;
+  const R=ramp(HAIRC[av.hc]),head=c.head;
+  const low=(x,y)=>{const n=head.f(x,y);return n&&y>=hy+hg.jy-3.6+Math.abs(x-hx)*.2?n:null;};
+  const mouthY=hy+hg.jy;
+  if(fh===1){
+    for(let y=fl(head.b[1]);y<=ce(head.b[3]);y++)for(let x=fl(head.b[0]);x<=ce(head.b[2]);x++){
+      if(!low(x+.5,y+.5)||((x+y)&1))continue;
+      if(Math.abs(x+.5-hx)<4&&y>=mouthY-1&&y<=mouthY+1)continue;
+      P.set(x,y,mixp(SK[1],R[3],.55));
     }
     return;
   }
-  const must=ell(25,22.6,4.2,1.3);
-  if(fh===2||fh===3||fh===4||fh===5)P.fill(must,R,{dith:false,edge:false});
-  if(fh===3){P.fill(ell(25,25.8,2.6,2.2),R,{dith:false});}
-  if(fh===4||fh===5){
-    const bs=shp([14,18,36,31],(x,y)=>{
-      const n=lowFace(x,y);
-      if(!n)return null;
-      // вырез под рот
-      if(y>=22.8&&y<=24.9&&Math.abs(x-25)<=3.2)return null;
+  const must=ell(hx,mouthY-2.6,5.6,1.8);
+  if(fh>=2)P.paint(must,R,{edge:false,flat:true,dark:1});
+  if(fh===3)P.paint(ell(hx,mouthY+3.6,3,2.6),R,{flat:true,dark:1});
+  if(fh>=4){
+    const bs=shp(head.b,(x,y)=>{
+      const n=low(x,y);if(!n)return null;
+      if(y>=mouthY-1.5&&y<=mouthY+1.6&&Math.abs(x-hx)<=4.6)return null;
       return n;});
-    P.fill(bs,R,{dith:false,tex:(x,y)=>((x*3+y)%5===0?1:0)});
-    if(fh===5){P.fill(sub(ell(25,26.3,7.2,3.3),shp([0,0,0,0],()=>null)),R,{dith:false,tex:(x,y)=>((x+y*2)%4===0?1:0)});}
-    P.px(22,23,R[1]);P.px(27,23,R[1]);
+    P.paint(bs,R,{flat:true,dark:1,edge:false,tex:(x,y)=>((x*3+y)%5===0?1:0)});
+    if(fh===5)P.paint(ell(hx,hy+hg.cy-1.2,hg.jw-1,3.4),R,{flat:true,dark:1,edge:false,tex:(x,y)=>((x+y*2)%4===0?1:0)});
+    P.set(hx-5,mouthY-.4,R[1]);P.set(hx+5,mouthY-.4,R[1]);
   }
 }
 
 // ── ВОЛОСЫ ────────────────────────────────────────────────────────────────
-function capShape(o){
-  const{rx=9.7,ry=8.7,cy=14.4,hl0=11.2,hlk=3,hlp=1.5,sideW=7.4,sideY=16.5,tilt=0}=o;
-  const big=ell(25,cy,rx,ry);
+function capHair(c,o={}){
+  const{hx,hy}=c;
+  const{rx=14.4,ry=13.8,cy=-1.4,hl=-5,hk=3.4,hp=1.4,side=11.8,sideY=3,tilt=0}=o;
+  const big=ell(hx,hy+cy,rx,ry);
   return shp(big.b,(x,y)=>{
-    const nn=big.n(x,y);if(!nn)return null;
-    const dx=x-25,hl=hl0+hlk*Math.pow(Math.abs(dx)/8,hlp)+tilt*dx;
-    const face=(y>=hl&&Math.abs(dx)<=sideW)||y>=sideY;
-    return face?null:nn;
-  });
+    const nn=big.f(x,y);if(!nn)return null;
+    const dx=x-hx,yh=hy+hl+hk*Math.pow(Math.abs(dx)/13,hp)+tilt*dx;
+    const face=(y>=yh&&Math.abs(dx)<=side)||y>=hy+sideY;
+    return face?null:nn;});
 }
-const strand=(x,y)=>((x*2+(y>>1))%5===0?1:0);
-const strandV=(x,y)=>((x+(y>>2))%4===0?1:0);
-
+const strand=(x,y)=>((x*2+(y>>1))%7===0?-1:0);
+const strandV=(x,y)=>((x+(y>>2))%5===0?-1:0);
+const strandHi=(x,y)=>((x*3+y)%9===0?1:0);
+function bumps(c,list,rad,o={}){const{P,HR}=c;for(const[bx,by,k]of list)P.paint(ell(bx,by,rad*(k||1),rad*(k||1)*.94),HR,{...o});}
+function curlRing(c,n,rr0,ry0,cyOff,rad,a0=190,a1=350){
+  const{hx,hy}=c,list=[];
+  for(let k=0;k<n;k++){const a=(a0+k*(a1-a0)/(n-1))*Math.PI/180;list.push([hx+Math.cos(a)*rr0,hy+cyOff+Math.sin(a)*ry0]);}
+  return list;
+}
 function drawHairBack(c){
-  const{P,av,d,HR,sway}=c;
-  const h=av.h;
-  P.ox=0;
+  const{P,av,hx,hy,HR,pose}=c,h=av.h,sw=pose.dx*.3;
   if(h===3){ // длинные
-    const sh=rows(10,44,y=>{const w=lerpPts([[10,9.6],[16,10.6],[26,11.2],[36,10.6],[43,8.6],[44,6]],y);return w==null?null:[25-w+sway*(y>34?-1:0)*.6,25+w+sway*(y>34?1:0)*.6];});
-    P.fill(sh,HR,{edge:true,tex:strandV,dark:1});
+    P.paint(rows2(hy-4,hy+24,y=>{const w=lerpPts([[hy-4,13.4],[hy+4,14.6],[hy+16,14],[hy+24,11]],y);return[hx-w+sw*(y>hy+14?-1:0),hx+w+sw*(y>hy+14?1:0)];}),HR,{tex:strandV,dark:1});
   }else if(h===4){ // каре
-    const sh=rows(10,28,y=>{const w=lerpPts([[10,9.6],[16,10.6],[26,10.4],[28,9]],y);return w==null?null:[25-w,25+w];});
-    P.fill(sh,HR,{edge:true,tex:strandV,dark:1});
+    P.paint(rows2(hy-4,hy+10,y=>{const w=lerpPts([[hy-4,13.6],[hy+4,14.6],[hy+10,13.8]],y);return[hx-w,hx+w];}),HR,{tex:strandV,dark:1});
   }else if(h===5){ // хвост
-    const o=sway;
-    P.fill(cap(31,10,36+o,16,2.6,3.3),HR,{edge:true,tex:strand});
-    P.fill(cap(36+o,16,36+o*1.5,24,3.3,3.5),HR,{edge:true,tex:strand});
-    P.fill(cap(36+o*1.5,24,34+o*2,33,3.5,1.6),HR,{edge:true,tex:strand});
-    P.rectf(Math.round(32+o*.3),9,Math.round(34+o*.3),10,0xe5484d);
+    const o=sw;
+    P.paint(cap(hx+12,hy-9,hx+17+o,hy-2,3.4,4.2),HR,{tex:strand});
+    P.paint(cap(hx+17+o,hy-2,hx+18+o*1.4,hy+9,4.2,4.4),HR,{tex:strand});
+    P.paint(cap(hx+18+o*1.4,hy+9,hx+16+o*2,hy+19,4.4,2),HR,{tex:strand});
+    P.rectf(hx+11.5,hy-10.5,hx+13.5,hy-8,0xe5484d);
   }else if(h===7){ // афро
-    P.fill(ell(25,12.4,12.8,11.6),HR,{edge:true,tex:(x,y)=>((x*5+y*3)%7===0?1:((x+y*2)%9===0?-1:0))});
+    P.paint(ell(hx,hy-5,18.6,16.4),HR,{tex:(x,y)=>((x*5+y*3)%7===0?1:((x+y*2)%9===0?-1:0))});
   }else if(h===14){ // хвостики
-    const o=sway;
-    for(const sx of[-1,1]){
-      P.fill(cap(25+sx*10,12,25+sx*13.5+sx*o,19,2.6,3.2),HR,{edge:true,tex:strand});
-      P.fill(cap(25+sx*13.5+sx*o,19,25+sx*13.5+sx*o*1.4,28,3.2,1.5),HR,{edge:true,tex:strand});
+    for(const s of[-1,1]){
+      P.paint(cap(hx+s*13,hy-5,hx+s*17+s*sw,hy+3,3.4,4),HR,{tex:strand});
+      P.paint(cap(hx+s*17+s*sw,hy+3,hx+s*17.6+s*sw*1.4,hy+14,4,2),HR,{tex:strand});
     }
   }else if(h===17){ // длинные кудри
-    const bumps=[];
-    for(let y=11;y<=38;y+=3.6){const w=lerpPts([[10,9.4],[18,11.2],[28,11.8],[38,9.6]],y);bumps.push([25-w-.4,y],[25+w+.4,y]);}
-    P.fill(rows(9,36,y=>{const w=lerpPts([[9,9.2],[16,10.6],[26,11],[36,9.2]],y);return w==null?null:[25-w,25+w];}),HR,{edge:true,tex:()=>0});
-    bumps.forEach(([x,y],i)=>P.fill(ell(x+(i%2?sway*.4:-sway*.4),y,3.1,2.9),HR,{edge:true}));
-  }else if(h===19){ // маллет: длинная задняя часть
-    P.fill(rows(12,34,y=>{const w=lerpPts([[12,9.4],[22,9.2],[28,8.2],[34,5.2]],y);return w==null?null:[25-w+(y>28?-sway*.5:0),25+w+(y>28?sway*.5:0)];}),HR,{edge:true,tex:strandV,dark:1});
-  }else if(h===6){ // пучок — сзади
+    P.paint(rows2(hy-6,hy+20,y=>{const w=lerpPts([[hy-6,12.6],[hy+2,15],[hy+12,15.4],[hy+20,13]],y);return[hx-w,hx+w];}),HR,{flat:true});
+    for(let k=0;k<6;k++){const y=hy+2+k*3.8;for(const s of[-1,1])P.paint(ell(hx+s*(15.2-(k>3?k*.2:0))+s*sw*.3,y,5,4.8),HR,{});}
+  }else if(h===19){ // маллет
+    P.paint(rows2(hy-2,hy+19,y=>{const w=lerpPts([[hy-2,13],[hy+8,12.6],[hy+14,11],[hy+19,7.8]],y);return[hx-w+(y>hy+12?-sw:0),hx+w+(y>hy+12?sw:0)];}),HR,{tex:strandV,dark:1});
   }
-  P.ox=0;
 }
-
+function rows2(y0,y1,fn){
+  const L=[],R=[];
+  for(let y=y0;y<=y1;y+=1){const[a,b]=fn(y);L.push([a,y]);R.push([b,y]);}
+  return poly(L.concat(R.reverse()));
+}
 function drawHairFront(c){
-  const{P,av,d,HR,sway}=c;
-  const h=av.h;
-  const R=HR;
-  if(h===15){ // лысый — блик
-    P.px(22,9,R[0]);return;
-  }
-  const fillCap=(shape,o={})=>P.fill(shape,R,{edge:true,tex:strand,...o});
-  if(h===0){ // короткая
-    fillCap(capShape({hl0:11.4,hlk:3.2,hlp:1.4,sideW:7.3,sideY:16.2}));
-  }else if(h===1){ // шипы
-    fillCap(capShape({hl0:11,hlk:3.2,sideW:7.3,sideY:16}));
-    const sp=[[17,9,15.5,3.5,19.5,7],[20.5,8,20,0.5,23,7],[25,7,25,-0.5,27.5,7],[28.5,8,30,0.5,29.4,7],[32,9,34.5,3.5,31,7]];
-    for(const[x0,y0,x1,y1,x2,y2]of sp){P.fill(poly([[x0-1.4,y0+1],[x1,y1+1],[x2+1,y2+1]]),R,{edge:true,tex:strand});}
-  }else if(h===2){ // ирокез
-    const side=capShape({hl0:11,hlk:4,hlp:1.2,sideW:7.4,sideY:15.4});
-    P.fill(side,R,{edge:true,flat:true,dark:2});
-    for(let y=7;y<=15;y++)for(let x=14;x<=36;x++)if(P.get(x,y)>=0&&Math.abs(x-25)>3.5&&(x*3+y*5)%5===0)P.set(x,y,R[2]);
-    P.fill(poly([[21,12],[29,12],[29,6],[28,2],[27,-.5],[25,2.5],[23,-.5],[22,2],[21,6]]),R,{edge:true,tex:strandV});
-    P.vl(24,3,10,R[0]);
-  }else if(h===3){ // длинные: пробор
-    fillCap(capShape({hl0:10.6,hlk:5,hlp:1.1,sideW:7.5,sideY:21}));
-    // пряди перед плечами
-    P.fill(cap(15.2,18,15.6,38,2.7,2.2),R,{edge:true,tex:strandV});
-    P.fill(cap(34.8,18,34.4,38,2.7,2.2),R,{edge:true,tex:strandV});
-    P.vl(25,7,10,R[3]);
-  }else if(h===4){ // каре с чёлкой
-    fillCap(capShape({hl0:12.8,hlk:1.2,hlp:2,sideW:7.5,sideY:23}));
-    P.hl(18,31,12,R[2]);
-  }else if(h===5){ // хвост
-    fillCap(capShape({hl0:11.2,hlk:3.4,sideW:7.4,sideY:16.2,tilt:.12}));
-  }else if(h===6){ // пучок
-    P.fill(ell(25,5.2,4.3,3.8),R,{edge:true,tex:strand});
-    P.hl(22,28,8,0xe5484d);
-    fillCap(capShape({hl0:10,hlk:4.4,hlp:1.2,sideW:7.4,sideY:16.2}));
-  }else if(h===7){ // афро: лицо открывается впереди
-    fillCap(capShape({rx:11.2,ry:9.4,cy:12.6,hl0:10.4,hlk:3,hlp:1.4,sideW:7.4,sideY:15.5}),{tex:(x,y)=>((x*5+y*3)%7===0?1:0)});
-  }else if(h===8){ // ёжик
-    P.fill(capShape({rx:9.2,ry:8.2,cy:14.3,hl0:9.3,hlk:3,hlp:1.3,sideW:7.5,sideY:15}),R,{edge:true,flat:true,dark:1});
-    for(let y=6;y<=13;y++)for(let x=15;x<=35;x++)if(P.get(x,y)>=0&&(x*3+y*5)%7===0)P.set(x,y,R[0]);
-    for(let y=6;y<=14;y++)for(let x=15;x<=35;x++)if(P.get(x,y)>=0&&(x*5+y*3)%6===0)P.set(x,y,R[3]);
-  }else if(h===9){ // зачёс назад
-    fillCap(capShape({hl0:9.6,hlk:5.5,hlp:1.1,sideW:7.5,sideY:15.5}),{tex:strandV});
-    P.line(22,8,19,12,R[3]);P.line(25,7,25,11,R[3]);P.line(28,8,31,12,R[3]);
-  }else if(h===10){ // кудри
-    fillCap(capShape({hl0:10.4,hlk:3.6,hlp:1.3,sideW:7.3,sideY:16}),{tex:()=>0});
-    const bumps=[[17,10],[20,7],[25,6],[30,7],[33,10],[16,14],[34,14],[22,10],[28,10],[25,11],[19,12],[31,12]];
-    for(const[bx,by]of bumps)P.fill(ell(bx,by,2.8,2.6),R,{edge:true});
-  }else if(h===11){ // косы
-    fillCap(capShape({hl0:10.6,hlk:5,hlp:1.1,sideW:7.5,sideY:20}));
-    for(const sx of[-1,1]){
-      for(let i=0;i<7;i++){const y=21+i*3.3,x=25+sx*(10.3+(i%2?.5:-.3));P.fill(ell(x,y,2.5,2),R,{edge:true,flat:true,dark:i%2?1:0});}
-    }
-    P.vl(25,7,10,R[3]);
-  }else if(h===12){ // андеркат
-    const under=capShape({hl0:11,hlk:4,hlp:1.2,sideW:7.4,sideY:15.8});
-    P.fill(under,R,{edge:true,flat:true,dark:2});
-    for(let y=7;y<=15;y++)for(let x=14;x<=36;x++)if(P.get(x,y)>=0&&(x*3+y*5)%5===0&&(Math.abs(x-25)>5.5||y>11))P.set(x,y,R[2]);
-    P.fill(poly([[17,10],[19,4.5],[25,2],[32,4],[34,10],[31,9],[26,8.5],[20,9]]),R,{edge:true,tex:strand});
-  }else if(h===13){ // пробор набок
-    fillCap(capShape({hl0:9.4,hlk:3.4,hlp:1.2,sideW:7.5,sideY:16,tilt:.55}));
-    P.fill(poly([[26,9.2],[34,10.2],[34.3,16],[31,13],[28,11.6]]),R,{edge:true,tex:strand});
-    P.line(21,8,27,10,R[3]);
-  }else if(h===14){ // хвостики
-    fillCap(capShape({hl0:11,hlk:3.8,sideW:7.4,sideY:16.2}));
-    for(const sx of[-1,1])P.rectf(Math.round(25+sx*10.2)-1,12,Math.round(25+sx*10.2)+1,13,0xec4899);
-  }else if(h===16){ // кудрявый фейд: бока коротко, сверху кудри
-    P.fill(capShape({hl0:11,hlk:4,hlp:1.2,sideW:7.4,sideY:15.6}),R,{edge:true,flat:true,dark:2});
-    for(let y=8;y<=15;y++)for(let x=14;x<=36;x++)if(P.get(x,y)>=0&&(x*3+y*5)%5===0&&Math.abs(x-25)>5.5)P.set(x,y,R[2]);
-    const bumps=[[18,8.5],[22,5.6],[26,4.8],[30,5.8],[33,8.8],[20,9],[25,9],[30,9.6],[23,7.2],[28,7.4],[16.6,11.2],[33.6,11.2]];
-    for(const[bx,by]of bumps)P.fill(ell(bx,by,2.9,2.7),R,{edge:true});
-    for(const[bx,by]of bumps.slice(0,6))P.px(bx-1,by-1,R[3]);
-  }else if(h===17){ // длинные кудри: чёлка из завитков
-    fillCap(capShape({hl0:10.6,hlk:4.4,hlp:1.2,sideW:7.5,sideY:19}),{tex:()=>0});
-    const bumps=[[17,10],[21,7],[25,6],[29,7],[33,10],[16,15],[34,15],[19.5,11.6],[30.5,11.6],[25,10.4],[16,19.5],[34,19.5]];
-    for(const[bx,by]of bumps)P.fill(ell(bx,by,2.9,2.7),R,{edge:true});
-    for(const sx of[-1,1])for(const yy of[24,28.4,32.6])P.fill(ell(25+sx*10.6+sx*sway*.3,yy,2.9,2.8),R,{edge:true});
-  }else if(h===18){ // шторки: пробор по центру
-    fillCap(capShape({hl0:9.2,hlk:8.2,hlp:1.15,sideW:7.5,sideY:18.5}),{tex:strandV});
-    P.line(25,7,24,10,R[3]);P.line(24,10,22,12,R[3]);P.line(26,10,28,12,R[3]);
-    P.px(25,8,R[0]);
-  }else if(h===19){ // маллет: короткий верх с чёлкой
-    fillCap(capShape({hl0:11.8,hlk:2.6,hlp:1.3,sideW:7.4,sideY:16.6,tilt:-.1}));
-    for(let x=19;x<=31;x+=3)P.px(x,12,R[3]);
-    P.line(21,8,17,12,R[3]);P.line(28,8,32,12,R[3]);
+  const{P,av,hx,hy,HR,pose}=c,h=av.h,sw=pose.dx*.3;
+  if(h===15){P.set(hx-4,hy-12,HR[0]);P.set(hx-3,hy-12,HR[0]);P.set(hx-5,hy-11,HR[0]);return;}
+  const cap0=(o,t={})=>P.paint(capHair(c,o),HR,{tex:strand,...t});
+  if(h===0){cap0({hl:-5.6,hk:3.4,hp:1.4,side:11.6,sideY:2.4});}
+  else if(h===1){
+    cap0({hl:-6,hk:3.4,side:11.6,sideY:2.4});
+    const sp=[[-10,-11,-13,-17,-6,-13],[-5,-12.6,-7,-19.4,-1.6,-14],[0,-13,0,-21,3,-14],[5,-12.6,8,-19,5.4,-14],[10,-11,13.4,-16.6,7.4,-13]];
+    for(const[x0,y0,x1,y1,x2,y2]of sp)P.paint(poly([[hx+x0-2.4,hy+y0+1.4],[hx+x1,hy+y1],[hx+x2+1.4,hy+y2+1.4]]),HR,{tex:strand});
+  }else if(h===2){
+    P.paint(capHair(c,{hl:-6,hk:4.4,hp:1.2,side:11.8,sideY:2}),HR,{flat:true,dark:2});
+    P.paint(poly([[hx-3.6,hy-9],[hx+3.6,hy-9],[hx+3.6,hy-17],[hx+2.4,hy-20],[hx+1,hy-23],[hx,hy-20],[hx-1,hy-23],[hx-2.4,hy-20],[hx-3.6,hy-17]]),HR,{tex:strandV});
+    P.vl(hx-1,hy-19,hy-10,HR[2]);
+  }else if(h===3){
+    cap0({hl:-6.6,hk:5.8,hp:1.1,side:12,sideY:12});
+    P.paint(cap(hx-14.2,hy-3,hx-14.4,hy+17,3.4,2.8),HR,{tex:strandV});P.paint(cap(hx+14.2,hy-3,hx+14.4,hy+17,3.4,2.8),HR,{tex:strandV});
+    P.vl(hx,hy-14,hy-9,HR[3]);
+  }else if(h===4){
+    cap0({hl:-1.4,hk:1.6,hp:2,side:12,sideY:9});
+    P.hl(hx-9,hx+9,hy-1.6,HR[2]);
+  }else if(h===5){cap0({hl:-5.8,hk:3.6,side:11.8,sideY:2.4,tilt:.12});}
+  else if(h===6){
+    P.paint(ell(hx,hy-16,5.6,4.8),HR,{tex:strand});P.hl(hx-4.4,hx+4.4,hy-13.4,0xe5484d);
+    cap0({hl:-6.6,hk:4.6,hp:1.2,side:11.8,sideY:2.4});
+  }else if(h===7){cap0({rx:17.2,ry:15.2,cy:-4.2,hl:-6.2,hk:3.4,hp:1.4,side:11.8,sideY:2.4},{tex:(x,y)=>((x*5+y*3)%7===0?1:0)});}
+  else if(h===8){
+    P.paint(capHair(c,{rx:13.8,ry:12.8,cy:-1.2,hl:-8,hk:3.4,hp:1.3,side:12,sideY:1.6}),HR,{flat:true,dark:1});
+    for(let y=hy-13;y<=hy-4;y++)for(let x=hx-14;x<=hx+14;x++)if(P.get(x,y)>=0){if((x*3+y*5)%7===0)P.set(x,y,HR[3]);else if((x*5+y*3)%6===0)P.set(x,y,HR[0]);}
+  }else if(h===9){
+    cap0({hl:-8,hk:6.4,hp:1.1,side:12,sideY:2.4},{tex:strandV});
+    P.line(hx-3,hy-12,hx-7,hy-7,HR[3]);P.line(hx,hy-13,hx,hy-8,HR[3]);P.line(hx+3,hy-12,hx+7,hy-7,HR[3]);
+  }else if(h===10){
+    cap0({hl:-6,hk:3.8,hp:1.3,side:11.6,sideY:2.4},{tex:null});
+    bumps(c,curlRing(c,9,14.2,13.4,-1.6,5.2),5.2);
+    bumps(c,curlRing(c,5,8.6,8.2,-4,4.6,205,335),4.6);
+    bumps(c,[[hx-6.6,hy-6.4],[hx-2.2,hy-6.8],[hx+2.4,hy-6.8],[hx+6.8,hy-6.4]],4);
+  }else if(h===11){
+    cap0({hl:-6.6,hk:5.8,hp:1.1,side:12,sideY:11});
+    for(const s of[-1,1])for(let i=0;i<7;i++)P.paint(ell(hx+s*(14+(i%2?.6:-.4)),hy+2+i*3.5,3.2,2.8),HR,{flat:true,dark:i%2?1:0});
+    P.vl(hx,hy-14,hy-9,HR[3]);
+  }else if(h===12){
+    P.paint(capHair(c,{hl:-6,hk:4.4,hp:1.2,side:11.8,sideY:2}),HR,{flat:true,dark:2});
+    for(let y=hy-14;y<=hy-2;y++)for(let x=hx-14;x<=hx+14;x++)if(P.get(x,y)>=0&&(x*3+y*5)%5===0&&(Math.abs(x-hx)>7||y>hy-7))P.set(x,y,HR[2]);
+    P.paint(poly([[hx-10,hy-7],[hx-8,hy-15],[hx,hy-19],[hx+8,hy-16],[hx+11,hy-7],[hx+7,hy-8.4],[hx+1,hy-9.4],[hx-6,hy-8.4]]),HR,{tex:strand});
+  }else if(h===13){
+    cap0({hl:-8.4,hk:4,hp:1.2,side:11.8,sideY:2.4,tilt:.55});
+    P.paint(poly([[hx+1,hy-9.4],[hx+12,hy-8],[hx+12.6,hy-1],[hx+8,hy-5],[hx+3,hy-7.4]]),HR,{tex:strand});
+    P.line(hx-6,hy-12,hx+2,hy-9,HR[3]);
+  }else if(h===14){
+    cap0({hl:-6,hk:4.2,side:11.8,sideY:2.4});
+    for(const s of[-1,1])P.rectf(hx+s*13-1.4,hy-5,hx+s*13+1.4,hy-3.6,0xec4899);
+  }else if(h===16){
+    P.paint(capHair(c,{hl:-6.4,hk:4.8,hp:1.2,side:11.8,sideY:2.2}),HR,{flat:true,dark:2});
+    for(let y=hy-14;y<=hy-2;y++)for(let x=hx-14;x<=hx+14;x++)if(P.get(x,y)>=0&&(x*3+y*5)%5===0&&Math.abs(x-hx)>7)P.set(x,y,HR[2]);
+    const bl=[[hx-8.4,hy-12],[hx-3.6,hy-14.6],[hx+1.6,hy-15.4],[hx+6.4,hy-14],[hx+10.4,hy-10.6],[hx-5.6,hy-9],[hx+0,hy-9.6],[hx+5.6,hy-9.2],[hx-2.2,hy-12.4],[hx+3.6,hy-12.6],[hx-11,hy-7.6],[hx+11.4,hy-7.8]];
+    bumps(c,bl,5.4);
+    for(const[bx,by]of bl.slice(0,6))P.set(bx-1.4,by-1.6,HR[0]);
+  }else if(h===17){
+    cap0({hl:-6.4,hk:4.8,hp:1.2,side:11.8,sideY:9},{tex:null});
+    bumps(c,[[hx-9,hy-10],[hx-4.4,hy-13.6],[hx+1,hy-14.4],[hx+6,hy-13],[hx+10.4,hy-9.6],[hx-12.4,hy-3.6],[hx+12.6,hy-3.6],[hx-6.6,hy-8.8],[hx+7.6,hy-8.6],[hx,hy-9.6],[hx-13,hy+2],[hx+13,hy+2]],5.2);
+    for(const s of[-1,1])for(const yy of[hy+7,hy+12,hy+16.6])P.paint(ell(hx+s*14.6+s*sw*.3,yy,4.8,4.6),HR,{});
+  }else if(h===18){
+    cap0({hl:-10,hk:11,hp:1.1,side:12,sideY:7},{tex:strandV});
+    P.line(hx,hy-14,hx-1,hy-10,HR[3]);P.line(hx-1,hy-10,hx-5,hy-6,HR[3]);P.line(hx+1,hy-10,hx+5,hy-6,HR[3]);P.line(hx-3,hy-11,hx-8,hy-8,HR[2]);P.line(hx+3,hy-11,hx+8,hy-8,HR[2]);
+    P.set(hx,hy-12,HR[0]);
+  }else if(h===19){
+    cap0({hl:-4.6,hk:2.6,hp:1.3,side:11.8,sideY:2.8,tilt:-.1});
+    for(let x=hx-9;x<=hx+9;x+=3)P.set(x,hy-4.4,HR[3]);P.line(hx-8,hy-11,hx-13,hy-5,HR[3]);P.line(hx+7,hy-11,hx+12,hy-5,HR[3]);
   }
 }
 
 // ── АКСЕССУАРЫ ────────────────────────────────────────────────────────────
 function drawAccessory(c){
-  const{P,av,f,S,OR,HR}=c;
-  const a=av.a;if(!a)return;
-  if(a===1){ // очки
+  const{P,av,hx,hy,SK,OR,hg,f}=c,a=av.a;
+  if(!a)return;
+  const ey=Math.round(hy+1.6)+(hg.ridge?1:0),ex=5.8;
+  if(a===1){ // прямоугольные очки
     const fr=0x18121f;
-    for(const sx of[-1,1]){
-      const X=(col)=>sx<0?col:49-col;
-      for(let x=18;x<=23;x++){P.set(X(x),16,fr);P.set(X(x),20,fr);}
-      for(let y=17;y<=19;y++){P.set(X(18),y,fr);P.set(X(23),y,fr);}
+    for(const s of[-1,1]){const x0=hx+s*ex;
+      for(let i=-4;i<=4;i++){P.set(x0+i,ey-1,fr);P.set(x0+i,ey+4,fr);}
+      for(let y=ey-1;y<=ey+4;y++){P.set(x0-4,y,fr);P.set(x0+4,y,fr);}
+      P.set(x0-s*2.5,ey,mixp(0xffffff,0x9fd4ff,.5));P.set(x0-s*3,ey+1,mixp(0xffffff,0x9fd4ff,.3));
     }
-    P.hl(24,25,17,fr);
-    for(const sx of[-1,1]){const X=(col)=>sx<0?col:49-col;P.set(X(19),17,mixp(0xffffff,0x9fd4ff,.3));}
-    P.hl(14,17,17,fr);P.hl(33,36,17,fr);
+    P.hl(hx-1,hx+1,ey+1,fr);P.hl(hx-hg.tmp-1,hx-ex-4,ey+1,fr);P.hl(hx+ex+4,hx+hg.tmp+1,ey+1,fr);
   }else if(a===2){ // тёмные
     const fr=0x0b0a10;
-    for(const sx of[-1,1]){const X=(col)=>sx<0?col:49-col;
-      for(let y=16;y<=19;y++)for(let x=18;x<=23;x++)P.set(X(x),y,y===19?0x1a1824:fr);
-      P.set(X(19),16,0x6a7080);P.set(X(20),17,0x4a5060);P.set(X(19),17,0x4a5060);
+    for(const s of[-1,1]){const x0=hx+s*ex;
+      for(let y=ey-1;y<=ey+3;y++)for(let i=-4;i<=4;i++)P.set(x0+i,y,y===ey+3?0x1a1824:fr);
+      P.set(x0-s*2.5,ey,0x6a7080);P.set(x0-s*1.5,ey+1,0x4a5060);P.set(x0-s*3,ey+1,0x4a5060);
     }
-    P.hl(24,25,16,fr);P.hl(14,17,16,fr);P.hl(33,36,16,fr);
+    P.hl(hx-1,hx+1,ey,fr);P.hl(hx-hg.tmp-1,hx-ex-4,ey,fr);P.hl(hx+ex+4,hx+hg.tmp+1,ey,fr);
   }else if(a===3){ // кепка
     const R=OR;
-    P.fill(shp([14,3,37,13],(x,y)=>{const n=ell(25,12.5,10.4,9).n(x,y);return n&&y<=12.8?n:null;}),R,{edge:true});
-    // козырёк
-    P.fill(rect(14.5,11.6,35.5,13.6),ramp(OUTC[av.oc]),{edge:true,dark:1,dith:false});
-    P.fill(poly([[15,13],[35,13],[37,15],[13,15]]),R,{edge:true,dark:2,dith:false});
-    P.px(25,6,R[0]);P.hl(22,28,7,R[0]);
-    P.vl(24,5,11,R[3]);P.vl(25,5,11,R[3]);
+    P.paint(shp([hx-15,hy-18,hx+15,hy-3],(x,y)=>{const n=ell(hx,hy-3.4,14.6,13).f(x,y);return n&&y<=hy-5?n:null;}),R,{});
+    P.paint(rr(hx-15.4,hy-7.4,hx+15.4,hy-4.4,1),ramp(OUTC[av.oc]),{dark:1,flat:true});
+    P.paint(poly([[hx-14,hy-4.6],[hx+14,hy-4.6],[hx+17,hy-1],[hx-17,hy-1]]),R,{dark:2,flat:true});
+    P.hl(hx-4,hx+4,hy-16,R[2]);P.vl(hx-1,hy-17,hy-8,R[3]);P.vl(hx,hy-17,hy-8,R[3]);P.set(hx,hy-17.5,R[0]);
   }else if(a===4){ // повязка
-    P.fill(shp([15,10,35,13],(x,y)=>{const n=ell(25,13.4,9.8,9).n(x,y);return n&&y>=10.2&&y<=12.6?n:null;}),OR,{edge:true,dith:false});
-    P.hl(18,32,11,OR[0]);
-    P.fill(rect(33.5,11,38,13),OR,{edge:true,dith:false});P.fill(poly([[36,13],[39,17],[37,17]]),OR,{edge:true});
+    P.paint(shp([hx-15,hy-9,hx+15,hy-3],(x,y)=>{const n=ell(hx,hy-2,14.2,12.6).f(x,y);return n&&y>=hy-9&&y<=hy-5.4?n:null;}),OR,{flat:true});
+    P.hl(hx-12,hx+12,hy-7.4,OR[0]);
+    P.paint(rr(hx+13,hy-8,hx+19,hy-5.4,1),OR,{flat:true});P.paint(poly([[hx+17,hy-5],[hx+22,hy+2],[hx+18.6,hy+2]]),OR,{});
   }else if(a===5){ // наушники
     const bc=ramp('#2b3040');
-    P.fill(shp([14,4,36,14],(x,y)=>{const n=ell(25,14.4,9.8,9.8).n(x,y);const m=ell(25,14.4,7.8,7.8).n(x,y);return n&&!m&&y<=17?n:null;}),bc,{edge:true,dith:false});
-    for(const sx of[-1,1]){P.fill(ell(25+sx*9.2,18.6,2.7,4),OR,{edge:true});P.px(25+sx*9.2-(sx<0?1:0),17,OR[0]);}
+    P.paint(shp([hx-15,hy-17,hx+15,hy-2],(x,y)=>{const n=ell(hx,hy-1,15.2,14.6).f(x,y),m=ell(hx,hy-1,12.4,11.8).f(x,y);return n&&!m&&y<=hy+2?n:null;}),bc,{flat:true});
+    for(const s of[-1,1]){P.paint(ell(hx+s*14.6,hy+2.6,3.6,5.2),OR,{});P.set(hx+s*14.6-(s<0?-1.4:1.4),hy,OR[0]);}
   }else if(a===6){ // шапка
-    P.fill(shp([14,3,37,13],(x,y)=>{const n=ell(25,12.2,10.4,9.2).n(x,y);return n&&y<=12.4?n:null;}),OR,{edge:true,tex:(x,y)=>(x%2===0?1:0),dith:false});
-    P.fill(rect(14.5,10.8,35.5,13.4),ramp(OUTC[av.oc]),{edge:true,dark:1,dith:false});
-    for(let x=15;x<=35;x+=2)P.vl(x,11,13,OR[3]);
-    P.fill(ell(25,3.4,2.4,2),OR,{edge:true});
+    P.paint(shp([hx-15,hy-19,hx+15,hy-3],(x,y)=>{const n=ell(hx,hy-3.6,14.8,13.4).f(x,y);return n&&y<=hy-4.4?n:null;}),OR,{tex:(x,y)=>(x%2===0?1:0)});
+    P.paint(rr(hx-15.4,hy-8.4,hx+15.4,hy-3.6,1.4),ramp(OUTC[av.oc]),{dark:1,flat:true});
+    for(let x=hx-14;x<=hx+14;x+=2)P.vl(x,hy-7.4,hy-4.4,OR[3]);
+    P.paint(ell(hx,hy-18.6,3,2.6),OR,{});
   }else if(a===7){ // серьга
-    P.px(16,21,0xffe08a);P.px(16,22,0xe3b64a);P.px(15,22,0xe3b64a);
+    const ex2=hx-hg.chk-.2;P.set(ex2,hy+5.4,0xffe08a);P.set(ex2,hy+6.4,0xe3b64a);P.set(ex2-1,hy+7.4,0xe3b64a);P.set(ex2,hy+7.4,0xffe08a);
   }else if(a===9){ // круглые очки
     const fr=0x1b1420;
-    for(const sx of[-1,1]){
-      const X=(col)=>sx<0?col:49-col;
-      for(let y=14;y<=22;y++)for(let x=16;x<=25;x++){
-        const dd=Math.hypot(x+.5-21,y+.5-18.4);
-        if(dd>2.3&&dd<=3.3)P.set(X(x),y,fr);
-        else if(dd<=2.3&&x===19&&y===17)P.set(X(x),y,mixp(0xffffff,0xa8dcff,.4));
-      }
+    for(const s of[-1,1]){const cx2=hx+s*ex,cy2=ey+1.4,r0=4.8;
+      for(let y=fl(cy2-r0-1);y<=ce(cy2+r0+1);y++)for(let x=fl(cx2-r0-1);x<=ce(cx2+r0+1);x++){
+        const d=Math.hypot(x+.5-cx2,y+.5-cy2);if(d>r0-1.2&&d<=r0)P.set(x,y,fr);}
+      P.set(cx2-s*2.2,cy2-2.2,mixp(0xffffff,0xa8dcff,.5));P.set(cx2-s*2.2+s*-1,cy2-1.2,mixp(0xffffff,0xa8dcff,.4));
     }
-    P.hl(24,25,17,fr);P.hl(13,15,17,fr);P.hl(34,36,17,fr);
+    P.hl(hx-ex+4,hx+ex-4,ey+.4,fr);P.hl(hx-hg.tmp-1,hx-ex-4.6,ey+1,fr);P.hl(hx+ex+4.6,hx+hg.tmp+1,ey+1,fr);
   }else if(a===10){ // большие очки
     const fr=ramp(OUTC[av.oc]);
-    for(const sx of[-1,1]){
-      const X=(col)=>sx<0?col:49-col;
-      for(let y=15;y<=21;y++)for(let x=16;x<=24;x++){
-        const edge=x===16||x===24||y===15||y===21;
-        if(edge)P.set(X(x),y,fr[3]);
-        else if(P.get(X(x),y)>=0&&((x+y)&3)!==0)P.set(X(x),y,mixp(P.get(X(x),y),0x1c2b55,.28));
+    for(const s of[-1,1]){const x0=hx+s*ex;
+      for(let y=ey-2;y<=ey+5;y++)for(let i=-5;i<=5;i++){
+        const edge=Math.abs(i)===5||y===ey-2||y===ey+5;
+        if(edge)P.set(x0+i,y,fr[3]);
+        else{const col=P.get(x0+i,y);if(col>=0&&((i+y)&3)!==0)P.set(x0+i,y,mixp(col,0x1c2b55,.16));}
       }
-      P.set(X(17),16,0xffffff);P.set(X(18),17,mixp(0xffffff,0xa8dcff,.5));
-      P.set(X(16),15,fr[2]);P.set(X(24),21,fr[2]);
+      P.set(x0-s*3.4,ey-1,0xffffff);P.set(x0-s*2.4,ey,mixp(0xffffff,0xa8dcff,.5));P.set(x0-s*5,ey-2,fr[2]);P.set(x0+s*5,ey+5,fr[2]);
     }
-    P.hl(25,25,17,fr[3]);P.hl(24,25,16,fr[3]);P.hl(13,15,17,fr[3]);P.hl(34,36,17,fr[3]);
+    P.hl(hx-1,hx+1,ey,fr[3]);P.hl(hx-hg.tmp-1,hx-ex-5,ey,fr[3]);P.hl(hx+ex+5,hx+hg.tmp+1,ey,fr[3]);
   }else if(a===11){ // цепочка
-    const g=0xe3b64a,gl=0xfff2c0;
-    for(let k=0;k<=6;k++){const y=31+k*.75;P.px(25-6.5+k*1.05-.5,y,k%2?g:gl);P.px(25+6.5-k*1.05-.5,y,k%2?g:gl);}
-    P.px(24,36,g);P.px(25,36,gl);P.fill(ell(25,38,1.6,1.7),ramp('#e3b64a'),{edge:true,flat:true});P.px(24,37,0xffffff);
+    const r=c.r,g=0xe3b64a,gl=0xfff2c0;
+    for(let k=0;k<=12;k++){const u=(k-6)/6,x=c.r.cx+u*(r.nk+5.4),y=r.sy+1.6+(1-Math.abs(u))*8.6;P.set(x,y,k%2?g:gl);P.set(x,y+1,g);}
+    P.paint(ell(c.r.cx,r.sy+11.6,2.2,2.4),ramp('#e3b64a'),{flat:true});P.set(c.r.cx-.8,r.sy+10.8,0xffffff);
   }else if(a===8){ // шрам
-    P.line(18,13,21,20,0xe0a8a0);P.line(19,13,22,20,mixp(S[2],0xc04050,.4));
-    P.px(20,16,S[0]);P.px(21,17,S[0]);
+    P.line(hx-9,hy-6,hx-6,hy+2,0xe0a8a0);P.line(hx-8,hy-6,hx-5,hy+2,mixp(SK[2],0xc04050,.4));P.set(hx-8,hy-3,SK[0]);P.set(hx-7,hy-1,SK[0]);
   }
 }
 
+// ── ПЛАЩ, ПРЕДМЕТЫ, СБОРКА КАДРА, ВЫВОД ─────────────────────────────────────
+function drawCape(c){
+  const{P,av,r}=c;if(!av.cp)return;
+  const R=ramp(['#c0392b','#22232e','#2f5fb8'][av.cp-1]),sw=c.pose.dx*.5,cx=CX+r.ts*.5;
+  const pts=[[r.sy,r.sh+1],[r.sy+8,r.sh+3.6],[r.sy+20,r.sh+7],[r.lb-6,r.sh+9.4]];
+  const L=[],Rr=[];
+  for(let y=r.sy;y<=r.lb-6;y++){const h=lerpPts(pts,y),k=y>r.sy+14?(y-r.sy-14)/30:0;L.push([cx-h-sw*k*2,y]);Rr.push([cx+h-sw*k*2,y]);}
+  P.paint(poly(L.concat(Rr.reverse())),R,{});
+  for(let y=r.sy+8;y<=r.lb-8;y++){const k=(y-r.sy-8)/34;P.set(cx-5-k*5,y,R[2]);P.set(cx+5+k*5,y,R[2]);}
+  P.hl(cx-r.sh-8,cx+r.sh+8,r.lb-6,R[3]);
+}
+function drawItem(c){
+  const{P,av,r,SK,G}=c;if(!av.it||!G)return;
+  const a=armGeo(c,G,-1),hx=Math.round(a.wx),hy=Math.round(a.wy+r.ar*.9);
+  const fingers=()=>{P.paint(ell(a.wx-.2,hy+.4,r.ar+.4,r.ar),SK,{});P.hl(hx-3,hx,hy+3,SK[2]);P.set(hx-3,hy+1,SK[2]);};
+  if(av.it===1){ // камера
+    const body=ramp('#3a3f50');
+    P.paint(rr(hx-11,hy-4,hx+4,hy+7,1.4),body,{});
+    P.paint(ell(hx-5,hy+2,4.4,4.4),ramp('#1d2030'),{});P.paint(ell(hx-5,hy+2,2.4,2.4),ramp('#3f8fe0'),{flat:true});P.set(hx-6,hy,0xffffff);
+    P.hl(hx-10,hx+2,hy-4,body[0]);P.rectf(hx,hy-2,hx+2,hy,0xe5484d);P.rectf(hx-1,hy+2,hx+2,hy+4,body[2]);
+    fingers();
+  }else if(av.it===2){ // кофе
+    const cup=ramp('#f1f3f9');
+    P.paint(poly([[hx-4.6,hy-5],[hx+4.6,hy-5],[hx+3.4,hy+7],[hx-3.4,hy+7]]),cup,{});
+    P.hl(hx-4,hx+3,hy-1,0xb9722f);P.hl(hx-4,hx+3,hy,0xb9722f);P.hl(hx-4,hx+3,hy+1,0xb9722f);P.hl(hx-5,hx+4,hy-6,0x6a4a30);
+    for(let k=0;k<3;k++)P.set(hx-1+(k%2),hy-8-k*2,0xd6dbe6);
+    fingers();
+  }else if(av.it===3){ // книга
+    const bk=ramp('#7a3b2e');
+    P.paint(rr(hx-9,hy-6,hx+3,hy+8,1),bk,{});
+    P.vl(hx-8,hy-6,hy+8,bk[3]);P.hl(hx-6,hx+1,hy-2,0xe9d9a8);P.hl(hx-6,hx+1,hy-1,0xe9d9a8);P.hl(hx-6,hx-1,hy+2,bk[0]);P.hl(hx-8,hx+3,hy+8,0xe9d9a8);
+    fingers();
+  }else if(av.it===4){ // меч
+    const bl=ramp('#c9d2e4');
+    P.paint(rect(hx-2,hy-38,hx+3,hy-1),bl,{});
+    P.vl(hx-1,hy-37,hy-2,0xffffff);P.vl(hx+1,hy-37,hy-2,0x8e99b3);P.set(hx,hy-39,0xffffff);
+    P.rectf(hx-7,hy-1,hx+7,hy+1,0xe3b64a);P.set(hx-7,hy-1,0xb8862a);P.set(hx+7,hy-1,0xb8862a);P.hl(hx-6,hx+6,hy+1,0xb8862a);
+    P.paint(rr(hx-1.4,hy+1,hx+2,hy+7,.6),ramp('#6a3d2a'),{});P.paint(ell(hx+.3,hy+8,2.8,2.2),ramp('#e3b64a'),{});
+    fingers();
+  }else if(av.it===5){ // гантель
+    const mt=ramp('#4a5060');
+    P.paint(rect(hx-10,hy+.4,hx+9,hy+3.6),ramp('#b8bdca'),{});
+    P.paint(rr(hx-12,hy-4,hx-7,hy+8,.8),mt,{});P.paint(rr(hx+7,hy-4,hx+12,hy+8,.8),mt,{});
+    fingers();
+  }
+}
+
+// ── СБОРКА ────────────────────────────────────────────────────────────────
+function renderAvatar(av,pose){
+  av=normAv(av);pose=pose||{dx:0,bob:0,blink:0};
+  const P=new Painter(),r=mkRig(av,pose),f=av.g===1;
+  const SK=skinRamp(SKIN[av.sk]);
+  const c={P,av,r,f,SK,HR:ramp(HAIRC[av.hc]),OR:ramp(OUTC[av.oc]),PR:ramp(PANTC[av.pc]),pose,hg:headGeo(av),G:null};
+  c.hx=CX+r.hs;c.hy=r.hy;
+  c.head=headShape(c);
+  P.oy=0;drawCape(c);
+  P.oy=pose.bob;drawHairBack(c);
+  P.oy=0;drawLegs(c);
+  P.oy=pose.bob;drawTop(c);drawItem(c);
+  drawHead(c);drawHairFront(c);drawAccessory(c);
+  return P.buf;
+}
+
 // ── ВЫВОД ─────────────────────────────────────────────────────────────────
-const CROPS={head:[0,0,PW,34],bust:[9,2,32,29],face:[10,4,30,26],top:[2,24,46,28],legs:[6,48,38,18],full:[0,0,PW,PH]};
+const CROPS={head:[8,0,56,42],bust:[10,0,52,40],face:[16,8,40,28],top:[4,32,64,36],legs:[4,56,64,40],full:[0,0,PW,PH]};
 const _fc=new Map();
 function avKey(av){return AV_KEYS.map(k=>av[k]).join(',');}
-function frameCanvas(av,bob,blink){
-  const key=avKey(av)+'|'+bob+blink;
+function frameCanvas(av,pose){
+  const key=avKey(av)+'|'+pose.dx+'|'+pose.bob+'|'+pose.blink+'|'+(pose.t||0);
   let cv=_fc.get(key);
   if(cv)return cv;
-  const buf=outlinePass(renderAvatar(av,bob,blink));
+  let buf=outlinePass(renderAvatar(av,pose));
+  if(av.x&&typeof applySkin==='function')buf=applySkin(buf,av,pose);
   cv=document.createElement('canvas');cv.width=PW;cv.height=PH;
   const ctx=cv.getContext('2d'),img=ctx.createImageData(PW,PH);
   for(let i=0;i<buf.length;i++){const v=buf[i];if(v>=0){img.data[i*4]=v>>16&255;img.data[i*4+1]=v>>8&255;img.data[i*4+2]=v&255;img.data[i*4+3]=255;}}
   ctx.putImageData(img,0,0);
-  if(_fc.size>400)_fc.delete(_fc.keys().next().value);
+  if(_fc.size>360)_fc.delete(_fc.keys().next().value);
   _fc.set(key,cv);
   return cv;
 }
 const _anim=new Set();
-function paint(cv,av,crop,bob,blink){
-  const src=frameCanvas(av,bob,blink),r=CROPS[crop]||CROPS.full;
-  if(cv.width!==r[2]||cv.height!==r[3]){cv.width=r[2];cv.height=r[3];}
-  const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(src,r[0],r[1],r[2],r[3],0,0,r[2],r[3]);
+const IDLE=pose=>pose;
+function paint(cv,av,crop,pose){
+  const src=frameCanvas(av,pose),r=CROPS[crop]||CROPS.full;
+  const dpr=window.devicePixelRatio||1;
+  if(!cv._tw){const w=parseFloat(getComputedStyle(cv).width);cv._tw=w>0?w:r[2]*3;}
+  const k=Math.max(1,Math.round(cv._tw*dpr/r[2])),W=r[2]*k,H=r[3]*k;
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;cv.style.width=(W/dpr)+'px';cv.style.height=(H/dpr)+'px';}
+  const ctx=cv.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,W,H);ctx.drawImage(src,r[0],r[1],r[2],r[3],0,0,W,H);
   cv.style.imageRendering='pixelated';
 }
+const REST={dx:0,bob:0,blink:0,t:0};
 function drawHero(cv,av,crop,still){
   av=normAv(av);
-  paint(cv,av,crop,0,0);
+  paint(cv,av,crop,REST);
   if(!still&&!matchMedia('(prefers-reduced-motion: reduce)').matches){cv._av=av;cv._crop=crop;_anim.add(cv);}
   else _anim.delete(cv);
 }
-const SEQ=[[0,0],[1,0],[1,0],[0,0],[0,0],[0,0],[1,0],[1,0],[0,0],[0,1],[0,0],[0,0]];
+// цикл покоя: смещение веса с ноги на ногу, дыхание, моргание
+const DX=[0,0,-1.2,-2.4,-2.4,-2.4,-2.4,-1.2,0,0,1.2,2.4,2.4,2.4,2.4,1.2];
+const BOB=[0,0,0,1,1,1,0,0,0,0,0,1,1,1,0,0];
+const BLK=[0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0];
 let _tick=0,_timer=null;
 function animTick(){
-  _tick=(_tick+1)%SEQ.length;
-  const[b,k]=SEQ[_tick];
-  for(const cv of _anim){if(!cv.isConnected){_anim.delete(cv);continue;}paint(cv,cv._av,cv._crop,b,k);}
+  _tick=(_tick+1)%DX.length;
+  const pose={dx:DX[_tick],bob:BOB[_tick],blink:BLK[_tick],t:_tick&3};
+  for(const cv of _anim){
+    if(!cv.isConnected){_anim.delete(cv);continue;}
+    const sk=cv._av&&cv._av.x?pose:{...pose,t:0};
+    paint(cv,cv._av,cv._crop,sk);
+  }
 }
 function startAnim(){if(_timer)return;_timer=setInterval(animTick,240);}
 function heroCanvas(av,cls,crop,still){const cv=document.createElement('canvas');if(cls)cv.className=cls;drawHero(cv,av,crop,still);return cv;}
@@ -1258,6 +1271,73 @@ function iconSVG(stat,color,size){
   let r='';
   m.forEach((row,y)=>{for(let x=0;x<8;x++){const ch=row[x];if(ch==='#')r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>`;else if(ch==='+')r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${shade(color,.62)}"/>`;}});
   return`<svg width="${size}" height="${size}" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
+}
+
+// ── ЭКСКЛЮЗИВНЫЕ СКИНЫ ─────────────────────────────────────────────────────
+// Постобработка готового кадра: материал по яркости пикселя, цветной контур, искры вокруг героя.
+// Выдаёт только сервер (таблица inventory), здесь лишь внешний вид и подписи.
+const hsh=(a,b,c)=>{let h=(Math.imul(a+11,73856093)^Math.imul(b+7,19349663)^Math.imul(c+3,83492791))>>>0;h^=h>>>13;h=Math.imul(h,1274126177)>>>0;return h%1000;};
+function grad(stops,l){
+  l=l<0?0:l>1?1:l;
+  for(let i=1;i<stops.length;i++)if(l<=stops[i][0]){const a=stops[i-1],b=stops[i],t=(l-a[0])/((b[0]-a[0])||1);return[a[1][0]+(b[1][0]-a[1][0])*t,a[1][1]+(b[1][1]-a[1][1])*t,a[1][2]+(b[1][2]-a[1][2])*t];}
+  return stops[stops.length-1][1];
+}
+function hsl2rgb(h,s,l){h=((h%360)+360)%360;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return[f(0)*255,f(8)*255,f(4)*255];}
+const SK_GOLD=[[0,[62,34,4]],[.35,[176,116,18]],[.62,[236,186,52]],[.86,[255,232,134]],[1,[255,251,226]]];
+const SK_CHR=[[0,[16,22,44]],[.4,[104,124,160]],[.75,[204,218,238]],[1,[255,255,255]]];
+const SK_ICE=[[0,[8,44,86]],[.4,[58,158,220]],[.8,[172,232,255]],[1,[255,255,255]]];
+const SK_NEO=[[0,[10,6,36]],[.5,[170,24,190]],[1,[255,130,255]]];
+const SK_OBS=[[0,[4,2,10]],[.55,[40,30,62]],[1,[118,96,160]]];
+const SK_LAV=[[0,[24,0,0]],[.4,[150,22,0]],[.75,[255,112,10]],[1,[255,226,70]]];
+const SK_VOI=[[0,[2,0,8]],[.55,[30,10,62]],[1,[96,52,148]]];
+const SK_PLT=[[0,[26,26,38]],[.5,[170,172,196]],[1,[255,255,255]]];
+const SKINS={
+  1:{n:'GOLD',r:'legendary',max:25,aura:[[255,226,110],[255,255,255]],
+     map:(l,x,y,t)=>hsh(x,y,t)<14?[255,255,235]:grad(SK_GOLD,l),edge:()=>[96,58,6]},
+  2:{n:'CHROME',r:'epic',max:50,aura:[[190,210,255]],
+     map:(l,x,y,t)=>grad(SK_CHR,l+.2*Math.sin(y*.34+x*.06-t*.8)),edge:()=>[30,40,74]},
+  3:{n:'ICE',r:'epic',max:50,aura:[[170,230,255],[255,255,255]],
+     map:(l,x,y,t)=>hsh(x,y,t&1)<16?[255,255,255]:grad(SK_ICE,l),edge:()=>[20,90,150]},
+  4:{n:'NEON',r:'rare',max:100,aura:[[60,255,240],[255,70,220]],
+     map:(l)=>grad(SK_NEO,l),edge:(x,y,t)=>(t&1)?[60,255,240]:[255,70,220]},
+  5:{n:'OBSIDIAN',r:'legendary',max:25,aura:[[255,50,70],[120,20,40]],
+     map:(l,x,y,t)=>l>.8&&hsh(x,y,t)<90?[255,60,80]:grad(SK_OBS,l),edge:(x,y,t)=>[190+((t&1)?50:0),30,50]},
+  6:{n:'GLITCH',r:'epic',max:50,aura:[[0,255,240],[255,0,90]],
+     map:(l,x,y,t,v)=>{const h=hsh(0,y,t);const c=unpk(v);if(h<110)return[c[2],c[0],c[1]];if(h<170)return[c[0]*.4,c[1]*1.3+40,c[2]*1.3+60];return c;},
+     edge:(x,y,t)=>hsh(1,y,t)<400?[0,255,240]:[255,0,90]},
+  7:{n:'LAVA',r:'legendary',max:25,aura:[[255,140,20],[255,230,90]],
+     map:(l,x,y,t)=>grad(SK_LAV,l+.16*Math.sin(y*.55-t*1.7+x*.35)),edge:(x,y,t)=>[255,70+((t&1)?50:0),0]},
+  8:{n:'HOLO',r:'mythic',max:10,aura:[[255,120,255],[120,255,255],[255,255,120]],
+     map:(l,x,y,t)=>hsl2rgb(x*5+y*3+t*50,.85,.3+.5*l),edge:(x,y,t)=>hsl2rgb(x*8+y*4+t*70,1,.7)},
+  9:{n:'VOID',r:'mythic',max:10,aura:[[170,90,255],[255,255,255]],
+     map:(l,x,y,t)=>hsh(x,y,t)<9?[255,255,255]:grad(SK_VOI,l),edge:(x,y,t)=>(t&1)?[160,70,255]:[110,40,200]},
+  10:{n:'CREATOR',r:'unique',max:1,aura:[[255,210,80],[255,255,255]],
+     map:(l,x,y,t)=>hsh(x,y,t)<10?[255,226,120]:grad(SK_PLT,l),edge:()=>[255,196,48]},
+};
+const RARITY_NAMES={rare:'РЕДКИЙ',epic:'ЭПИЧЕСКИЙ',legendary:'ЛЕГЕНДАРНЫЙ',mythic:'МИФИЧЕСКИЙ',unique:'ЕДИНСТВЕННЫЙ'};
+const RARITY_COL={rare:'#5b9bff',epic:'#a78bfa',legendary:'#ffd24a',mythic:'#ff6b9a',unique:'#ffffff'};
+function applySkin(buf,av,pose){
+  const S=SKINS[av.x];if(!S)return buf;
+  const t=pose.t||0,out=new Int32Array(buf),OUTP=pk(OUT_RGB);
+  const keep=new Set([0xf2efea,0x120d18,INK]);
+  for(let y=0;y<PH;y++)for(let x=0;x<PW;x++){
+    const i=y*PW+x,v=buf[i];if(v<0)continue;
+    if(v===OUTP){out[i]=pk(S.edge(x,y,t));continue;}
+    if(keep.has(v))continue;
+    const c=unpk(v),l=(.3*c[0]+.59*c[1]+.11*c[2])/255;
+    out[i]=pk(S.map(l,x,y,t,v));
+  }
+  // искры вокруг героя, поднимаются вверх
+  for(let j=0;j<16;j++){
+    const px=6+(hsh(j,1,0)%60),py=PH-((hsh(j,2,0)%96)+t*5+j*3)%PH;
+    const col=S.aura[j%S.aura.length];
+    for(const[dx,dy]of[[0,0],[1,0],[-1,0],[0,1],[0,-1]]){
+      if(dx||dy){if(hsh(j,3,t)>480)continue;}
+      const xx=px+dx,yy=Math.round(py)+dy;
+      if(xx>=0&&yy>=0&&xx<PW&&yy<PH&&buf[yy*PW+xx]<0&&out[yy*PW+xx]<0)out[yy*PW+xx]=pk(dx||dy?col.map(v=>v*.55):col);
+    }
+  }
+  return out;
 }
 
 // ── КОНФИГ ─────────────────────────────────────────────────────────────────
@@ -1317,7 +1397,8 @@ const rankIdx=r=>Math.max(0,RANKS.indexOf(r));
 const levelOf=xp=>Math.floor(Math.sqrt(Math.max(0,xp)/30))+1;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function hap(kind){try{const H=TGW&&TGW.HapticFeedback;if(!H)return;if(kind==='ok')H.notificationOccurred('success');else if(kind==='err')H.notificationOccurred('error');else H.impactOccurred('light');}catch{}}
-const DEFAULT_AV={g:0,b:1,sk:2,h:0,hc:2,e:0,ec:0,br:0,m:1,fh:0,o:10,oc:5,p:6,pc:0,s:4,a:0,it:0,cp:0};
+const DEFAULT_AV={g:0,b:1,sk:2,h:0,hc:2,e:0,ec:0,br:0,m:1,fh:0,o:10,oc:5,p:6,pc:0,s:4,a:0,it:0,cp:0,fc:0,x:0};
+const edTag=b=>{const x=b&&b.avatar&&b.avatar.x,S=SKINS[x];return S&&b.xn?` <span class="ed" style="color:${RARITY_COL[S.r]}">${S.n} #${n(b.xn)}</span>`:'';};
 const safeAv=a=>validAvatar(a)?normAv(a):{...DEFAULT_AV};
 const avAttr=a=>{a=safeAv(a);return AV_KEYS.map(k=>a[k]).join(',');};
 const parseAv=s=>{const p=String(s).split(',').map(Number),o={};AV_KEYS.forEach((k,i)=>o[k]=p[i]);return safeAv(o);};
@@ -1420,18 +1501,22 @@ function renderSplash(){
 
 // ── СОЗДАНИЕ ГЕРОЯ ─────────────────────────────────────────────────────────
 const CR_TABS=[
-  {id:'face',name:'ЛИЦО',secs:[['sw','sk','КОЖА',SKIN],['tl','e','ГЛАЗА',EYE_NAMES,'face'],['sw','ec','ЦВЕТ ГЛАЗ',EYEC],['tl','br','БРОВИ',BROW_NAMES,'face'],['tl','m','РОТ',MOUTH_NAMES,'face'],['tl','fh','БОРОДА',BEARD_NAMES,'face']]},
+  {id:'face',name:'ЛИЦО',secs:[['sw','sk','КОЖА',SKIN],['tl','fc','ТИП ЛИЦА',FACE_NAMES,'head'],['tl','e','ГЛАЗА',EYE_NAMES,'face'],['sw','ec','ЦВЕТ ГЛАЗ',EYEC],['tl','br','БРОВИ',BROW_NAMES,'face'],['tl','m','РОТ',MOUTH_NAMES,'face'],['tl','fh','БОРОДА',BEARD_NAMES,'face']]},
   {id:'hair',name:'ВОЛОСЫ',secs:[['tl','h','ПРИЧЁСКА',HAIR_NAMES,'head'],['sw','hc','ЦВЕТ ВОЛОС',HAIRC]]},
   {id:'body',name:'ТЕЛО',secs:[['tl','b','ТЕЛОСЛОЖЕНИЕ',BODY_NAMES,'full']]},
   {id:'wear',name:'ОДЕЖДА',secs:[['tl','o','ВЕРХ',OUTFIT_NAMES,'top'],['sw','oc','ЦВЕТ ВЕРХА',OUTC],['tl','p','НИЗ',PANT_NAMES,'legs'],['sw','pc','ЦВЕТ НИЗА',PANTC],['tl','s','ОБУВЬ',SHOE_NAMES,'legs'],['tl','cp','ПЛАЩ',CAPE_NAMES,'full']]},
   {id:'extra',name:'ДЕТАЛИ',secs:[['tl','a','АКСЕССУАР',ACC_NAMES,'head'],['tl','it','ПРЕДМЕТ',ITEM_NAMES,'full']]},
+  {id:'skin',name:'СКИНЫ',secs:[['sk','x','ЭКСКЛЮЗИВНЫЕ СКИНЫ']]},
 ];
+const ownedSkins=()=>{const inv=(W.data&&W.data.me&&W.data.me.inv)||[];const m={};inv.forEach(i=>m[i.id]=i);return m;};
 function creatorCanBack(){return !W.data.joined||validAvatar(W.data.me&&W.data.me.avatar);}
 function renderCreator(){
   if(!C.av)C.av=randomAvatar(0);
   const sw=(k,arr,label)=>`<div class="cr-sec"><div class="cr-h">${label}</div><div class="cr-row">${arr.map((c,i)=>`<button class="sw" data-k="${k}" data-v="${i}" style="background:${c}" aria-label="${label} ${i+1}"></button>`).join('')}</div></div>`;
   const tl=(k,names,label,crop)=>`<div class="cr-sec"><div class="cr-h">${label}</div><div class="cr-row">${names.map((nm,i)=>`<button class="tile" data-k="${k}" data-v="${i}"><canvas data-tile="1" data-k="${k}" data-v="${i}" data-crop="${crop}"></canvas>${esc(nm)}</button>`).join('')}</div></div>`;
-  const panes=CR_TABS.map(t=>`<div class="cr-pane" data-pane="${t.id}"${ui.crTab===t.id?'':' hidden'}>${t.secs.map(s=>s[0]==='sw'?sw(s[1],s[3],s[2]):tl(s[1],s[3],s[2],s[4])).join('')}</div>`).join('');
+  const skinSec=()=>{const own=ownedSkins();const ids=Object.keys(SKINS).map(Number);
+    return`<div class="cr-sec"><div class="cr-h">ЭКСКЛЮЗИВНЫЕ СКИНЫ</div><div class="skin-note">Нумерованные издания. Выдаёт автор в роликах и стримах: купить или обменять нельзя.</div><div class="cr-row"><button class="tile" data-k="x" data-v="0"><canvas data-tile="1" data-k="x" data-v="0" data-crop="full"></canvas>Без скина</button>${ids.map(id=>{const S=SKINS[id],o=own[id];return`<button class="tile${o?'':' lock'}" data-k="x" data-v="${id}" data-own="${o?1:0}"><canvas data-tile="1" data-k="x" data-v="${id}" data-crop="full"></canvas><span class="sk-n" style="color:${RARITY_COL[S.r]}">${S.n}</span><span class="sk-e">${o?`#${o.no} из ${S.max}`:`${RARITY_NAMES[S.r]} · ${S.max} шт.`}</span></button>`;}).join('')}</div></div>`;};
+  const panes=CR_TABS.map(t=>`<div class="cr-pane" data-pane="${t.id}"${ui.crTab===t.id?'':' hidden'}>${t.secs.map(s=>s[0]==='sk'?skinSec():s[0]==='sw'?sw(s[1],s[3],s[2]):tl(s[1],s[3],s[2],s[4])).join('')}</div>`).join('');
   const nickBlock=ui.edit?'':`<div class="cr-sec"><div class="cr-h">ПОЗЫВНОЙ</div><input class="inp" id="nick" maxlength="16" placeholder="Как тебя называть" autocomplete="off" value="${esc(C.nick)}"><div class="row2" style="margin-top:8px"><button class="btn ghost sm" id="nickRnd">СЛУЧАЙНЫЙ</button><div class="faint" style="font-size:11px;align-self:center">3–16 символов: буквы, цифры, пробел, _ . -</div></div><div class="err" id="crErr"></div></div>`;
   setApp(`<div style="padding-top:6px">
     <div class="topbar"><div class="brand">${ui.edit?'ИЗМЕНИТЬ ГЕРОЯ':'ВЫБЕРИ ГЕРОЯ'}</div>${creatorCanBack()?'<button class="ico" id="crBack" aria-label="Назад">←</button>':''}</div>
@@ -1450,9 +1535,9 @@ function renderCreator(){
     const gb=e.target.closest('[data-g]');
     if(gb){C.av.g=Number(gb.dataset.g);if(C.av.g===1)C.av.fh=0;document.querySelectorAll('.cr-g').forEach(b=>b.classList.toggle('on',Number(b.dataset.g)===C.av.g));hap();refreshCreator();return;}
     const t=e.target.closest('.tile,.sw');
-    if(t){C.av[t.dataset.k]=Number(t.dataset.v);hap();refreshCreator();return;}
+    if(t){if(t.dataset.k==='x'&&Number(t.dataset.v)>0&&t.dataset.own!=='1'){hap('err');toast('Этот скин выдаёт автор. Лови дропы в роликах.');return;}C.av[t.dataset.k]=Number(t.dataset.v);hap();refreshCreator();return;}
   };
-  $('dice').onclick=()=>{C.av=randomAvatar(C.av.g===1?1:0);hap();refreshCreator();};
+  $('dice').onclick=()=>{const x=C.av.x||0;C.av=randomAvatar(C.av.g===1?1:0);C.av.x=x;hap();refreshCreator();};
   const back=$('crBack');if(back)back.onclick=()=>{ui.step=null;ui.edit=false;route();};
   const ni=$('nick');
   if(ni){ni.oninput=()=>{C.nick=ni.value;$('crErr').textContent='';};ni.onkeydown=e=>{if(e.key==='Enter')$('crGo').click();};}
@@ -1469,10 +1554,11 @@ function refreshCreator(){
 async function creatorSubmit(){
   const btn=$('crGo'),err=$('crErr');
   if(!validAvatar(C.av))return;
+  if(C.av.x&&!ownedSkins()[C.av.x])C.av.x=0;
   if(ui.edit){
     btn.disabled=true;let res=null;
     try{res=await rpc('set_avatar',{p_code:userCode,p_avatar:C.av});}catch{}
-    if(!res||!res.ok){toast('Не удалось сохранить');btn.disabled=false;return;}
+    if(!res||!res.ok){toast(res&&res.error==='skin_not_owned'?'Этот скин тебе не выдан':'Не удалось сохранить');btn.disabled=false;return;}
     await worldLoad(true);ui.edit=false;ui.step=null;ui.tab='hero';toast('Герой обновлён');route();return;
   }
   const nick=C.nick.trim();
@@ -1480,7 +1566,7 @@ async function creatorSubmit(){
   btn.disabled=true;err.textContent='';
   let res=null;try{res=await rpc('join_world',{p_code:userCode,p_nick:nick,p_avatar:C.av});}catch{}
   if(!res){err.textContent='Нет связи. Попробуй ещё раз.';btn.disabled=false;return;}
-  if(!res.ok){err.textContent=res.error==='nick_taken'?'Этот позывной занят.':res.error==='bad_nick'?'Недопустимый позывной.':'Не получилось войти.';btn.disabled=false;return;}
+  if(!res.ok){err.textContent=res.error==='nick_taken'?'Этот позывной занят.':res.error==='bad_nick'?'Недопустимый позывной.':res.error==='skin_not_owned'?'Этот скин тебе не выдан.':'Не получилось войти.';btn.disabled=false;return;}
   hap('ok');
   await worldLoad(true);ui.step=null;route();
 }
@@ -1602,13 +1688,15 @@ function heroTab(me,xp,lvl){
   const ri=rankIdx(me.rank),nxt=me.next_rank_at;
   const mx=Math.max(60,...STATS.map(k=>n((me.stats||{})[k])));
   return`
-  <div class="panel"><div class="stage"><div class="plat">${heroTag(me.avatar,'')}</div><div class="nm">${esc(me.nick)}</div>
-    <div class="chips"><span class="chip rank" style="--rc:${rankColor(me.rank)}">${esc(me.rank)}</span><span class="chip">LV ${lvl}</span><span class="chip">${xp} XP</span></div></div>
-    <div class="rl">${RANKS.map((r,i)=>`<div class="rl-i${i<=ri?' on':''}${i===ri?' cur':''}" style="--rc:${RANK_C[r]}"><b>${r}</b><span>${i?RANK_AT[i]+' '+plural(RANK_AT[i],['день','дня','дней']):'старт'}</span></div>`).join('')}</div>
-    <div class="bar-meta"><span>${nxt?`до ранга ${RANKS[ri+1]}: ${Math.max(0,nxt-n(me.days))} ${plural(Math.max(0,nxt-n(me.days)),['день','дня','дней'])}`:'максимальный ранг'}</span><span>${n(me.days)} дн. в игре</span></div></div>
-  <div class="h-sec">ХАРАКТЕРИСТИКИ</div>
-  <div class="panel">${STATS.map(k=>{const M=STAT_META[k],v=n((me.stats||{})[k]);return`<div class="stat-row" style="--c:${M.c}"><div>${iconSVG(k,M.c,28)}</div><div><div class="nm">${k} · ${M.ru}</div><div class="bar" style="--c:${M.c};--c2:${M.c}"><i style="width:${Math.round(v/mx*100)}%"></i></div></div><div class="v">${v}<small>XP</small></div></div>`;}).join('')}
-    <div class="faint" style="font-size:11px;line-height:1.5">Каждый квест качает одну характеристику. Тянешь все пять — растёшь ровно.</div></div>
+  <div class="panel hs"><div class="hs-l"><div class="plat">${heroTag(me.avatar,'')}</div></div>
+    <div class="hs-r"><div class="nm">${esc(me.nick)}</div>
+      <div class="chips"><span class="chip rank" style="--rc:${rankColor(me.rank)}">${esc(me.rank)}</span><span class="chip">LV ${lvl}</span></div>
+      <div class="hs-xp">${xp} XP</div>
+      ${STATS.map(k=>{const M=STAT_META[k],v=n((me.stats||{})[k]);return`<div class="hs-st" style="--c:${M.c}"><div class="hs-h"><span>${iconSVG(k,M.c,14)}${k}<i>${M.ru}</i></span><b>${v}</b></div><div class="bar" style="--c:${M.c};--c2:${M.c}"><i style="width:${Math.round(v/mx*100)}%"></i></div></div>`;}).join('')}
+    </div></div>
+  <div class="panel"><div class="rl">${RANKS.map((r,i)=>`<div class="rl-i${i<=ri?' on':''}${i===ri?' cur':''}" style="--rc:${RANK_C[r]}"><b>${r}</b><span>${i?RANK_AT[i]+' '+plural(RANK_AT[i],['день','дня','дней']):'старт'}</span></div>`).join('')}</div>
+    <div class="bar-meta"><span>${nxt?`до ранга ${RANKS[ri+1]}: ${Math.max(0,nxt-n(me.days))} ${plural(Math.max(0,nxt-n(me.days)),['день','дня','дней'])}`:'максимальный ранг'}</span><span>${n(me.days)} дн. в игре</span></div>
+    <div class="faint" style="font-size:11px;line-height:1.5;margin-top:10px">Каждый квест качает одну характеристику. Тянешь все пять — растёшь ровно.</div></div>
   <div class="kv">
     <div class="c"><div class="l">Серия</div><div class="n">${n(me.streak)}</div><div class="s">дней подряд</div></div>
     <div class="c"><div class="l">Щит</div><div class="n" style="color:${me.shield_ready?'var(--teal)':'var(--faint)'}">${me.shield_ready?'ГОТОВ':'ИСПОЛЬЗОВАН'}</div><div class="s">${me.shield_ready?'один пропуск не сломает серию':'вернётся, когда серия окрепнет'}</div></div>
@@ -1616,7 +1704,8 @@ function heroTab(me,xp,lvl){
   <div class="h-sec">НАСТРОЙКИ</div>
   <button class="btn ghost sm" id="editHero" style="margin-bottom:10px">ИЗМЕНИТЬ ГЕРОЯ</button>
   <button class="btn ghost sm" id="editEnemy" style="margin-bottom:10px">${S.enemy?'СМЕНИТЬ ВРАГА':'ВЫБРАТЬ ВРАГА'}</button>
-  <button class="btn ghost sm" id="editSeason">${S.program?'НОВЫЙ СЕЗОН':'ВЫБРАТЬ СЕЗОН'}</button>
+  <button class="btn ghost sm" id="editSeason"${''}>${S.program?'НОВЫЙ СЕЗОН':'ВЫБРАТЬ СЕЗОН'}</button>
+  ${IN_TG&&TGW.addToHomeScreen?'<button class="btn ghost sm" id="homeScr" style="margin-top:10px">ИКОНКА НА ГЛАВНЫЙ ЭКРАН</button>':''}
   <div class="note-sm">Приложение — инструмент привычек, а не лечение. При серьёзной зависимости обратись к специалисту.</div>`;
 }
 
@@ -1626,10 +1715,10 @@ function lobbyTab(d){
   return`
   <div class="panel"><div class="kv"><div class="c"><div class="l">В лобби</div><div class="n">${total}</div><div class="s">${plural(total,['игрок','игрока','игроков'])}</div></div><div class="c"><div class="l">Сегодня в деле</div><div class="n" style="color:var(--green)">${online}</div><div class="s">закрыли квест</div></div></div></div>
   <div class="h-sec">ТОП НЕДЕЛИ<span>по дням активности</span></div>
-  ${board.length?board.map((b,i)=>`<div class="bd-row${b.me?' me':''}"><span class="bd-pos">${i+1}</span>${heroTag(b.avatar,'bust')}<div style="min-width:0"><div class="bd-nick">${esc(b.nick)}</div><div class="bd-rank" style="--rc:${rankColor(b.rank)}">${esc(b.rank)}</div></div><span></span><span class="bd-days">${n(b.days)} дн.</span></div>`).join(''):'<div class="empty">На этой неделе никто ещё не закрыл квест. Первое место свободно.</div>'}
+  ${board.length?board.map((b,i)=>`<div class="bd-row${b.me?' me':''}"><span class="bd-pos">${i+1}</span>${heroTag(b.avatar,'bust')}<div style="min-width:0"><div class="bd-nick">${esc(b.nick)}</div><div class="bd-rank" style="--rc:${rankColor(b.rank)}">${esc(b.rank)}${edTag(b)}</div></div><span></span><span class="bd-days">${n(b.days)} дн.</span></div>`).join(''):'<div class="empty">На этой неделе никто ещё не закрыл квест. Первое место свободно.</div>'}
   ${myPos?`<div class="note-sm">Ты на ${myPos} месте.</div>`:'<div class="note-sm">Закрой квест — и ты появишься в рейтинге.</div>'}
   <div class="h-sec">ИГРОКИ<span>${total} в лобби · зелёная точка: квест закрыт сегодня</span></div>
-  ${roster.length?roster.map(b=>`<div class="bd-row rs${b.me?' me':''}"><span class="dot${b.active?' on':''}"></span>${heroTag(b.avatar,'bust')}<div style="min-width:0"><div class="bd-nick">${esc(b.nick)}${b.me?' · ты':''}</div><div class="bd-rank" style="--rc:${rankColor(b.rank)}">${esc(b.rank)}</div></div><span></span><span class="bd-days">${n(b.days)} дн.</span></div>`).join(''):'<div class="empty">В лобби пока никого.</div>'}
+  ${roster.length?roster.map(b=>`<div class="bd-row rs${b.me?' me':''}"><span class="dot${b.active?' on':''}"></span>${heroTag(b.avatar,'bust')}<div style="min-width:0"><div class="bd-nick">${esc(b.nick)}${b.me?' · ты':''}</div><div class="bd-rank" style="--rc:${rankColor(b.rank)}">${esc(b.rank)}${edTag(b)}</div></div><span></span><span class="bd-days">${n(b.days)} дн.</span></div>`).join(''):'<div class="empty">В лобби пока никого.</div>'}
   ${total>roster.length?`<div class="note-sm">Показаны ${roster.length} из ${total}.</div>`:''}
   <div class="h-sec">ПОЗОВИ СВОИХ</div>
   <div class="panel"><div class="muted" style="font-size:13px;line-height:1.6;margin-bottom:12px">Лобби живёт, пока в нём есть люди. Один в лобби — это тренировка. Вдвоём — уже игра.</div><button class="btn sm" id="invite">ПОЗВАТЬ ДРУГА</button></div>
@@ -1648,6 +1737,7 @@ function bindHome(){
     if(t.id==='editEnemy'){ui.reenemy=true;route();return;}
     if(t.id==='editSeason'||t.id==='newSeason'){ui.reprogram=true;route();return;}
     if(t.id==='invite'){invite();return;}
+    if(t.id==='homeScr'){if(!tgHome())toast('Доступно в Telegram 8.0+');return;}
   };
 }
 
@@ -1711,6 +1801,21 @@ function tgSetup(){
   try{TGW.ready();TGW.expand();}catch{}
   try{TGW.setHeaderColor('#0a0b10');TGW.setBackgroundColor('#0a0b10');}catch{}
   try{if(TGW.disableVerticalSwipes)TGW.disableVerticalSwipes();}catch{}
+  // полный экран только на телефонах (Bot API 8.0+); на десктопе остаётся обычное окно
+  try{
+    const mob=/android|iphone|ipad|ipod/i.test(navigator.userAgent);
+    if(mob&&TGW.isVersionAtLeast&&TGW.isVersionAtLeast('8.0')&&TGW.requestFullscreen&&!TGW.isFullscreen)TGW.requestFullscreen();
+  }catch{}
+  const safe=()=>{try{
+    const s=TGW.safeAreaInset||{},c=TGW.contentSafeAreaInset||{},r=document.documentElement.style;
+    r.setProperty('--tg-top',((s.top||0)+(c.top||0))+'px');
+  }catch{}};
+  safe();
+  try{TGW.onEvent('fullscreenChanged',safe);TGW.onEvent('safeAreaChanged',safe);TGW.onEvent('contentSafeAreaChanged',safe);}catch{}
+}
+function tgHome(){
+  try{if(TGW&&TGW.isVersionAtLeast&&TGW.isVersionAtLeast('8.0')&&TGW.addToHomeScreen){TGW.addToHomeScreen();return true;}}catch{}
+  return false;
 }
 async function tgSession(){
   const r=await fetch(SESSION_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:TGW.initData})});
